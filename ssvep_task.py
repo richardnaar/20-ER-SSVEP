@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-SSVEP demo with visual.ImageStim
+SSVEP task 15/01/2020
 """
 # IMPORT MODULES
 # region
@@ -11,6 +11,8 @@ SSVEP demo with visual.ImageStim
 
 import os  # system and path functions
 import pandas as pd  # data structures
+
+import serial
 
 from numpy import pi, sin, random
 from psychopy import locale_setup, gui, visual, core, data, event
@@ -170,6 +172,16 @@ def draw_VAS(win, VAS, VAS_text):
     # VAS.getRT()
 # endregion
 
+# for sending the triggers
+# port = serial.Serial('COM3', baudrate=115200)
+# if stimulus1.status = STARTED and not stimulus1_msg_sent:
+#     port.write(bytes(str(binary))) # send the message now
+#     stimulus1_msg_sent = True
+# or
+# if stimulus1.status = STARTED and not stimulus1_msg_sent:
+#     win.callOnFlip(port.write, something) # send the message when the window is updated
+#     stimulus1_msg_sent = True
+
 
 # This is the trial loop
 runExperiment = True
@@ -185,7 +197,7 @@ while runExperiment:
     draw_fix(win, fixation, fixDuration)
 
     # Draw appraisal text
-    appraisal_text.text = apprSeries[ti]  
+    appraisal_text.text = apprSeries[ti]
     draw_appraisal(win, appraisal_text, apprDuration)
 
     # Draw flickering picture
