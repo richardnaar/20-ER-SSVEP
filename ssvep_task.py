@@ -41,7 +41,7 @@ dirpath = os.getcwd()
 # define the path to the pictures folder and find the list of files
 pic_dir = dirpath + '\\ssvep_iaps'
 all_files = list(filter(lambda x: x.endswith('.jpg'), os.listdir(pic_dir)))
-conditions = ['ssvep_iaps']
+picFolder = ['ssvep_iaps']
 # endregion
 
 # Setup the Window
@@ -69,7 +69,7 @@ appraisal_text = visual.TextStim(
     win=win, name='appraisal_text',
     text='juku',
     font='Arial',
-    pos=(0, 0), height=1, wrapWidth=None, ori=0,
+    pos=(0, 0), height=1, wrapWidth=20, ori=0,
     color='white', colorSpace='rgb', opacity=1,
     languageStyle='LTR',
     depth=0.0)
@@ -94,6 +94,7 @@ VAS_text = visual.TextStim(
 
 xls_file = pd.ExcelFile('ERSSVEP_images.xlsx')
 table = xls_file.parse('ERSSVEP_images')
+apprSeries = table['Neg. Tõlgenduslause eesti keeles']
 
 # Set durartions
 fixDuration = 1.5  # fixation duration
@@ -104,7 +105,7 @@ valenceQ = 'Kuidas hindaksid nähtud pilti?'
 # DEFINE FUNCTIONS
 # region
 
-# pic = conditions[0]+'/'+all_files[0]
+# pic = picFolder[0]+'/'+all_files[0]
 #pic = 'ssvep_iaps/' + str(table.imageID[0]) + '.jpg'
 
 # and not event.getKeys('q')
@@ -178,13 +179,13 @@ while runExperiment:
 
     if ti == nrTrials:
         core.quit()
-    pic = conditions[0]+'/' + str(table.imageID[ti]) + '.jpg'
+    pic = picFolder[0]+'/' + str(table.imageID[ti]) + '.jpg'
 
     # Draw fixation
     draw_fix(win, fixation, fixDuration)
 
     # Draw appraisal text
-    appraisal_text.text = 'Insert appraisal text here...'
+    appraisal_text.text = apprSeries[ti]  
     draw_appraisal(win, appraisal_text, apprDuration)
 
     # Draw flickering picture
