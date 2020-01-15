@@ -15,7 +15,9 @@ import pandas as pd  # data structures
 import serial
 
 from numpy import pi, sin, random
+from numpy.random import randint
 from psychopy import locale_setup, gui, visual, core, data, event
+
 # endregion
 
 # Information about the experimental session
@@ -71,7 +73,7 @@ appraisal_text = visual.TextStim(
     win=win, name='appraisal_text',
     text='juku',
     font='Arial',
-    pos=(0, 0), height=1, wrapWidth=20, ori=0,
+    pos=(0, 0), height=1, wrapWidth=30, ori=0,
     color='white', colorSpace='rgb', opacity=1,
     languageStyle='LTR',
     depth=0.0)
@@ -79,8 +81,8 @@ appraisal_text = visual.TextStim(
 VAS = visual.RatingScale(
     win=win, marker='triangle', size=1.0,
     pos=[0.0, -0.4], low=0, high=100, precision=100,
-    showValue=False, scale=None,
-    markerStart='50')
+    showValue=False, scale=None, acceptPreText='Kliki skaalal',
+    acceptText='Salvestan', markerStart='50')
 
 VAS_text = visual.TextStim(
     win=win, name='appraisal_text',
@@ -97,12 +99,12 @@ VAS_text = visual.TextStim(
 xls_file = pd.ExcelFile('ERSSVEP_images.xlsx')
 table = xls_file.parse('ERSSVEP_images')
 apprSeries = table['Neg. Tõlgenduslause eesti keeles']
+picSeries = table['imageID']
 
 # Set durartions
 fixDuration = 1.5  # fixation duration
 apprDuration = 3  # text duration
 stimDuration = 3  # stim duration
-valenceQ = 'Kuidas hindaksid nähtud pilti?'
 
 # DEFINE FUNCTIONS
 # region
@@ -117,7 +119,7 @@ valenceQ = 'Kuidas hindaksid nähtud pilti?'
 
 def draw_ssvep(win, pic, duration):
     picStartTime = clock.getTime()
-    image = visual.ImageStim(win, image=pic, size=10)
+    image = visual.ImageStim(win, image=pic, size=30)
     while (clock.getTime() - picStartTime) < duration:
         if not event.getKeys('q'):
             image.opacity = .7 - (0.15*sin(2*pi*15*clock.getTime()))+0.15
@@ -154,7 +156,7 @@ def draw_appraisal(win, appraisal_text, duration):
 
 # ratings
 
-
+# mingil põhjusel läheb kinni, kui kohe nupule vajutada
 def draw_VAS(win, VAS, VAS_text):
     # Initialize components for Routine "VAS"
     VAS.reset()
@@ -173,7 +175,7 @@ def draw_VAS(win, VAS, VAS_text):
 # endregion
 
 # for sending the triggers
-# port = serial.Serial('COM3', baudrate=115200)
+# port = serial.Serial('COM3', baudrate=115200) #
 # if stimulus1.status = STARTED and not stimulus1_msg_sent:
 #     port.write(bytes(str(binary))) # send the message now
 #     stimulus1_msg_sent = True
@@ -182,22 +184,27 @@ def draw_VAS(win, VAS, VAS_text):
 #     win.callOnFlip(port.write, something) # send the message when the window is updated
 #     stimulus1_msg_sent = True
 
+# port.close()
+
 
 # This is the trial loop
 runExperiment = True
-nrTrials = 2
+nrTrials = 5
+trials = randint(1, 100, len(picSeries))
+
 ti = 0
 while runExperiment:
 
     if ti == nrTrials:
         core.quit()
-    pic = picFolder[0]+'/' + str(table.imageID[ti]) + '.jpg'
+    # pic = picFolder[0]+'/' + str(table.imageID[ti]) + '.jpg'
+    pic = picFolder[0]+'/' + str(picSeries[trials[ti]]) + '.jpg'
 
     # Draw fixation
     draw_fix(win, fixation, fixDuration)
 
     # Draw appraisal text
-    appraisal_text.text = apprSeries[ti]
+    appraisal_text.text = apprSeries[trials[ti]]
     draw_appraisal(win, appraisal_text, apprDuration)
 
     # Draw flickering picture
