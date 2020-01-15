@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
- 
+
 """
 SSVEP demo with visual.ImageStim
 """
@@ -18,8 +18,8 @@ from psychopy import core, event, visual
 
 # Information about the experimental session
 # psychopyVersion = '3.0.7'
-# expName = os.path.basename(__file__)  # filename of the script
-# print(expName)
+expName = os.path.basename(__file__)[1:-3]  # filename of the script
+
 # expInfo = {'participant': '', 'session': '001'}
 # dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 # if dlg.OK == False:
