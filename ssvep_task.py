@@ -4,7 +4,7 @@
 """
 SSVEP demo with visual.ImageStim
 """
-# Import the modules that we need in this script
+# IMPORT MODULES
 # region
 # future should make it possible to run the same code under Python 2
 # from __future__ import absolute_import, division
@@ -29,8 +29,10 @@ expName = os.path.basename(__file__)[1:-3] + '_' + data.getDateStr()
 # expInfo['expName'] = expName
 # expInfo['psychopyVersion'] = psychopyVersion
 
-# Find stimuli and create a list of all_files
+# FIND ALL FILES
 # region
+# Find stimuli and create a list of all_files
+
 
 # get the current directory
 dirpath = os.getcwd()
@@ -52,7 +54,8 @@ win = visual.Window(
 # Initiate clock to keep track of time
 clock = core.Clock()
 
-# Initialize components
+# INITIALIZE TASK COMPONENTS
+# region
 
 fixation = visual.ShapeStim(
     win=win, name='fixation', vertices='cross',
@@ -85,8 +88,8 @@ VAS_text = visual.TextStim(
     color='white', colorSpace='rgb', opacity=1,
     languageStyle='LTR',
     depth=0.0)
+# endregion
 
-VAS.scale = 'see ei ole skaala'
 # Import the condion file
 
 xls_file = pd.ExcelFile('ERSSVEP_images.xlsx')
@@ -98,7 +101,8 @@ apprDuration = 3  # text duration
 stimDuration = 3  # stim duration
 valenceQ = 'Kuidas hindaksid nähtud pilti?'
 
-# function to draw the pictures
+# DEFINE FUNCTIONS
+# region
 
 # pic = conditions[0]+'/'+all_files[0]
 #pic = 'ssvep_iaps/' + str(table.imageID[0]) + '.jpg'
@@ -163,9 +167,10 @@ def draw_VAS(win, VAS, VAS_text):
     # VAS.setAutoDraw(False)
     # VAS.getRating()
     # VAS.getRT()
+# endregion
 
 
-# This is she trial loop
+# This is the trial loop
 runExperiment = True
 nrTrials = 2
 ti = 0
