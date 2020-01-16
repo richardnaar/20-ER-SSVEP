@@ -16,30 +16,42 @@ import serial
 
 from numpy import pi, sin, random
 from numpy.random import randint
-from psychopy import locale_setup, gui, visual, core, data, event
+from psychopy import locale_setup, gui, visual, core, data, event, logging
 
 # endregion
+
+# get the current directory
+dirpath = os.getcwd()
 
 # Information about the experimental session
 # psychopyVersion = '3.0.7'
 # filename of the script
 expName = os.path.basename(__file__)[1:-3] + '_' + data.getDateStr()
 
-# expInfo = {'participant': '', 'session': '001'}
+expInfo = {'participant': '', 'session': '001'}
 # dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 # if dlg.OK == False:
 #     core.quit()  # user pressed cancel
-# expInfo['date'] = data.getDateStr()  # add a simple timestamp
-# expInfo['expName'] = expName
-# expInfo['psychopyVersion'] = psychopyVersion
+expInfo['date'] = data.getDateStr()  # add a simple timestamp
+expInfo['expName'] = expName
+
+# Data file name stem = absolute path + name; later add .psyexp, .csv, .log, etc
+filename = expInfo['participant'] + expName
+
+# An ExperimentHandler isn't essential but helps with data saving
+thisExp = data.ExperimentHandler(
+    name=expName, version='',
+    extraInfo=expInfo, runtimeInfo=None,
+    originPath=dirpath + '\\' + os.path.basename(__file__),
+    savePickle=True, saveWideText=True,
+    dataFileName=filename)
+# this outputs to the screen, not a file
+# logging.console.setLevel(logging.WARNING)
 
 # FIND ALL FILES
 # region
 # Find stimuli and create a list of all_files
 
-
-# get the current directory
-dirpath = os.getcwd()
 # print("current directory is : " + dirpath)
 
 # define the path to the pictures folder and find the list of files
@@ -101,8 +113,8 @@ appraisal_text = visual.TextStim(
     depth=0.0)
 
 VAS = visual.RatingScale(
-    win=win, marker='triangle', size=1.0,
-    pos=[0.0, -0.4], low=0, high=100, precision=100,
+    win=win, name = 'VAS', marker='triangle', size=1.0, # labels=(' ', ' '), 
+    pos=[0.0, -0.4], low=0, high=100, precision=100, skipKeys=None,
     showValue=False, scale=None, acceptPreText='Kliki skaalal',
     acceptText='Salvestan', markerStart='50')
 
@@ -126,7 +138,7 @@ picSeries = table['imageID']
 # Set durartions
 fixDuration = 1.5  # fixation duration
 apprDuration = 4  # text duration
-stimDuration = 6.5  # stim duration
+stimDuration = 2.5  # stim duration
 
 # DEFINE FUNCTIONS
 # region
@@ -136,8 +148,15 @@ stimDuration = 6.5  # stim duration
 
 # and not event.getKeys('q')
 
-# flickering picture
+# save data
+# def save_data(thisExp):
+#     # these shouldn't be strictly necessary (should auto-save)
+#     thisExp.saveAsWideText(filename+'.csv')
+#     thisExp.saveAsPickle(filename)
+#     # make sure everything is closed down
+#     thisExp.abort()  # or data files will save again on exit
 
+# flickering picture
 
 def draw_ssvep(win, pic, duration):
     picStartTime = clock.getTime()
@@ -183,8 +202,7 @@ def draw_appraisal(win, appraisal_text, duration):
 
 # ratings
 
-# mingil põhjusel läheb kinni, kui kohe nupule vajutada
-
+# mingil põhjusel läheb kinni, kui esimesele nupule vajutada
 
 def draw_VAS(win, VAS, VAS_text):
     # Initialize components for Routine "VAS"
@@ -201,11 +219,14 @@ def draw_VAS(win, VAS, VAS_text):
             core.quit()
     m.setVisible(False)
     # VAS.setAutoDraw(False)
+    # thisExp.addData('VAS', VAS.getRating())  # write average srate to the file
     # VAS.getRating()
     # VAS.getRT()
+    print(VAS.getRating())
+    core.wait(0.25)
 # endregion
 
-# for sending the triggers
+# for sending the biosemi triggers
 # port = serial.Serial('COM3', baudrate=115200) #
 # if stimulus1.status = STARTED and not stimulus1_msg_sent:
 #     port.write(bytes(str(binary))) # send the message now
@@ -216,7 +237,6 @@ def draw_VAS(win, VAS, VAS_text):
 #     stimulus1_msg_sent = True
 
 # port.close()
-
 
 # This is the TRIAL LOOP
 runExperiment = True
@@ -256,10 +276,16 @@ while runExperiment:
 
     # Draw QUESTION (2nd time)
     VAS_text.text = 'Insert your question #2 here...'
+    VAS.labels=('left2', 'right2')
     draw_VAS(win, VAS, VAS_text)
 
     ti += 1
 
+# # these shouldn't be strictly necessary (should auto-save)
+# thisExp.saveAsWideText(filename+'.csv')
+# thisExp.saveAsPickle(filename)
+# # make sure everything is closed down
+# thisExp.abort()  # or data files will save again on exit
 
 # close and quit
 win.close()
