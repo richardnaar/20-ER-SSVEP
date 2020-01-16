@@ -54,6 +54,11 @@ win = visual.Window(
     blendMode='avg', useFBO=True, monitor='mon2',
     units='deg')
 
+# Hide mouse
+win.setMouseVisible(False)
+
+m = event.Mouse(win=win)
+m.setVisible(False)
 
 # Initiate clock to keep track of time
 clock = core.Clock()
@@ -66,6 +71,23 @@ fixation = visual.ShapeStim(
     size=(1, 1),
     ori=0, pos=(0, 0),
     lineWidth=1, lineColor=[1, 1, 1], lineColorSpace='rgb',
+    fillColor=[1, 1, 1], fillColorSpace='rgb',
+    opacity=1, depth=0.0, interpolate=True)
+
+linew = 3
+line = visual.ShapeStim(
+    win=win, name='line',
+    ori=0, pos=(0, -3),
+    lineWidth=6, lineColor=[1, 1, 1], lineColorSpace='rgb',
+    vertices=((-linew, 0), (linew, 0)),
+    fillColor=[1, 1, 1], fillColorSpace='rgb',
+    opacity=1, depth=0.0, interpolate=True)
+
+line_moving = visual.ShapeStim(
+    win=win, name='line',
+    ori=0, pos=(0, -3),
+    lineWidth=6, lineColor=[1, 0, 0], lineColorSpace='rgb',
+    vertices=((-linew, 0), (linew, 0)),
     fillColor=[1, 1, 1], fillColorSpace='rgb',
     opacity=1, depth=0.0, interpolate=True)
 
@@ -103,8 +125,8 @@ picSeries = table['imageID']
 
 # Set durartions
 fixDuration = 1.5  # fixation duration
-apprDuration = 3  # text duration
-stimDuration = 3  # stim duration
+apprDuration = 4  # text duration
+stimDuration = 6.5  # stim duration
 
 # DEFINE FUNCTIONS
 # region
@@ -146,10 +168,15 @@ def draw_fix(win, fixation, duration):
 
 def draw_appraisal(win, appraisal_text, duration):
     apprStartTime = clock.getTime()  # core.Clock()
+    x = 0
     while (clock.getTime() - apprStartTime) < duration:
+        time_passed = clock.getTime() - apprStartTime
         if not event.getKeys('q'):
-            # appraisal_text.text = trialText
             appraisal_text.draw()
+            line.draw()
+            x = (time_passed/duration)*(linew*2)
+            line_moving.vertices = ((-linew, 0), (-linew+x, 0))
+            line_moving.draw()
             win.flip()
         else:
             core.quit()
@@ -157,11 +184,14 @@ def draw_appraisal(win, appraisal_text, duration):
 # ratings
 
 # mingil põhjusel läheb kinni, kui kohe nupule vajutada
+
+
 def draw_VAS(win, VAS, VAS_text):
     # Initialize components for Routine "VAS"
     VAS.reset()
     VASstartTime = clock.getTime()  # core.Clock()
     # VAS.setAutoDraw(True)
+    m.setVisible(True)
     while VAS.noResponse:
         if not event.getKeys('q'):
             VAS_text.draw()
@@ -169,6 +199,7 @@ def draw_VAS(win, VAS, VAS_text):
             win.flip()
         else:
             core.quit()
+    m.setVisible(False)
     # VAS.setAutoDraw(False)
     # VAS.getRating()
     # VAS.getRT()
@@ -187,7 +218,7 @@ def draw_VAS(win, VAS, VAS_text):
 # port.close()
 
 
-# This is the trial loop
+# This is the TRIAL LOOP
 runExperiment = True
 nrTrials = 5
 trials = randint(1, 100, len(picSeries))
@@ -195,23 +226,36 @@ trials = randint(1, 100, len(picSeries))
 ti = 0
 while runExperiment:
 
+    # hide the cursor
+    m.setVisible(False)
+
     if ti == nrTrials:
         core.quit()
-    # pic = picFolder[0]+'/' + str(table.imageID[ti]) + '.jpg'
+
     pic = picFolder[0]+'/' + str(picSeries[trials[ti]]) + '.jpg'
 
-    # Draw fixation
+    # Draw FIXATION (1st time)
     draw_fix(win, fixation, fixDuration)
 
-    # Draw appraisal text
+    # Draw flickering PICTURE (1st time)
+    draw_ssvep(win, pic, stimDuration)
+
+    # Draw QUESTION (1st time)
+    VAS_text.text = 'Insert your question #1 here...'
+    draw_VAS(win, VAS, VAS_text)
+
+    # Draw FIXATION (2nd time)
+    draw_fix(win, fixation, fixDuration)
+
+    # Draw APPRAISAL text
     appraisal_text.text = apprSeries[trials[ti]]
     draw_appraisal(win, appraisal_text, apprDuration)
 
-    # Draw flickering picture
+    # Draw flickering PICTURE (2nd time)
     draw_ssvep(win, pic, stimDuration)
 
-    # Draw question
-    VAS_text.text = 'Insert your question here...'
+    # Draw QUESTION (2nd time)
+    VAS_text.text = 'Insert your question #2 here...'
     draw_VAS(win, VAS, VAS_text)
 
     ti += 1
