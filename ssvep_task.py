@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-SSVEP task 15/01/2020
+SSVEP task 16/01/2020
 """
 # IMPORT MODULES
 # region
@@ -17,6 +17,7 @@ import serial
 from numpy import pi, sin, random
 from numpy.random import randint
 from psychopy import locale_setup, gui, visual, core, data, event, logging
+from numpy.random import random, randint, shuffle
 
 # endregion
 
@@ -42,7 +43,7 @@ filename = expInfo['participant'] + expName
 thisExp = data.ExperimentHandler(
     name=expName, version='',
     extraInfo=expInfo, runtimeInfo=None,
-    originPath=dirpath + '\\' + os.path.basename(__file__),
+    originPath=dirpath + '\\' + os.path.basename(__file__) + '\\data',
     savePickle=True, saveWideText=True,
     dataFileName=filename)
 # this outputs to the screen, not a file
@@ -67,8 +68,7 @@ win = visual.Window(
     units='deg')
 
 # Hide mouse
-win.setMouseVisible(False)
-
+# win.setMouseVisible(False)
 m = event.Mouse(win=win)
 m.setVisible(False)
 
@@ -222,7 +222,6 @@ def draw_VAS(win, VAS, VAS_text):
     # thisExp.addData('VAS', VAS.getRating())  # write average srate to the file
     # VAS.getRating()
     # VAS.getRT()
-    print(VAS.getRating())
     core.wait(0.25)
 # endregion
 
@@ -241,7 +240,8 @@ def draw_VAS(win, VAS, VAS_text):
 # This is the TRIAL LOOP
 runExperiment = True
 nrTrials = 5
-trials = randint(1, 100, len(picSeries))
+trials = list(range(1, len(picSeries)))
+shuffle(trials)
 
 ti = 0
 while runExperiment:
