@@ -27,7 +27,7 @@ dirpath = os.getcwd()
 # Information about the experimental session
 # psychopyVersion = '3.0.7'
 # filename of the script
-expName = os.path.basename(__file__)[1:-3] + '_' + data.getDateStr()
+expName = os.path.basename(__file__)[1:-3]  # + data.getDateStr()
 
 expInfo = {'participant': '', 'session': '001'}
 # dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
@@ -37,13 +37,15 @@ expInfo['date'] = data.getDateStr()  # add a simple timestamp
 expInfo['expName'] = expName
 
 # Data file name stem = absolute path + name; later add .psyexp, .csv, .log, etc
-filename = expInfo['participant'] + expName
+# filename = _thisDir + os.sep + u'data/%s_%s_%s' %(expInfo['participant'], expName, expInfo['date'])
+# filename = dirpath + '\\' + expInfo['participant'] + expName + expInfo['date']
+filename = dirpath + '\\data\\' + expInfo['participant'] + expName + '_' + expInfo['date']
 
 # An ExperimentHandler isn't essential but helps with data saving
 thisExp = data.ExperimentHandler(
     name=expName, version='',
     extraInfo=expInfo, runtimeInfo=None,
-    originPath=dirpath + '\\' + os.path.basename(__file__) + '\\data',
+    originPath=dirpath + '\\' + os.path.basename(__file__),
     savePickle=True, saveWideText=True,
     dataFileName=filename)
 # this outputs to the screen, not a file
@@ -204,7 +206,7 @@ def draw_appraisal(win, appraisal_text, duration):
 
 # mingil põhjusel läheb kinni, kui esimesele nupule vajutada
 
-def draw_VAS(win, VAS, VAS_text):
+def draw_VAS(win, VAS, VAS_text, colName):
     # Initialize components for Routine "VAS"
     VAS.reset()
     VASstartTime = clock.getTime()  # core.Clock()
@@ -219,7 +221,8 @@ def draw_VAS(win, VAS, VAS_text):
             core.quit()
     m.setVisible(False)
     # VAS.setAutoDraw(False)
-    # thisExp.addData('VAS', VAS.getRating())  # write average srate to the file
+    thisExp.addData(colName, VAS.getRating())  # write average srate to the file
+    thisExp.addData(colName+'_RT', VAS.getRT())
     # VAS.getRating()
     # VAS.getRT()
     core.wait(0.25)
@@ -239,8 +242,8 @@ def draw_VAS(win, VAS, VAS_text):
 
 # This is the TRIAL LOOP
 runExperiment = True
-nrTrials = 5
 trials = list(range(1, len(picSeries)))
+nTrials = len(trials)
 shuffle(trials)
 
 ti = 0
@@ -249,7 +252,7 @@ while runExperiment:
     # hide the cursor
     m.setVisible(False)
 
-    if ti == nrTrials:
+    if ti == nTrials:
         core.quit()
 
     pic = picFolder[0]+'/' + str(picSeries[trials[ti]]) + '.jpg'
@@ -262,7 +265,7 @@ while runExperiment:
 
     # Draw QUESTION (1st time)
     VAS_text.text = 'Insert your question #1 here...'
-    draw_VAS(win, VAS, VAS_text)
+    draw_VAS(win, VAS, VAS_text, 'Qestion_1')
 
     # Draw FIXATION (2nd time)
     draw_fix(win, fixation, fixDuration)
@@ -277,9 +280,11 @@ while runExperiment:
     # Draw QUESTION (2nd time)
     VAS_text.text = 'Insert your question #2 here...'
     VAS.labels=('left2', 'right2')
-    draw_VAS(win, VAS, VAS_text)
+    draw_VAS(win, VAS, VAS_text, 'Qestion_2')
 
     ti += 1
+    thisExp.nextEntry()
+    
 
 # # these shouldn't be strictly necessary (should auto-save)
 # thisExp.saveAsWideText(filename+'.csv')
