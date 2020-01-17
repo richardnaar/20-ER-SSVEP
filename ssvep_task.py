@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-SSVEP task 16/01/2020
+SSVEP task 17/01/2020
 """
 # IMPORT MODULES
 # region
