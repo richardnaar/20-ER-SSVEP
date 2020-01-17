@@ -14,12 +14,17 @@ import pandas as pd  # data structures
 
 import serial
 
-from numpy import pi, sin, random
+from numpy import pi, sin, random, zeros
 from numpy.random import randint
 from psychopy import locale_setup, gui, visual, core, data, event, logging
 from numpy.random import random, randint, shuffle
 
 # endregion
+
+# Set durartions
+fixDuration = 1.5  # fixation duration
+apprDuration = 4  # text duration
+stimDuration = 6.5  # stim duration
 
 # get the current directory
 dirpath = os.getcwd()
@@ -29,7 +34,7 @@ dirpath = os.getcwd()
 # filename of the script
 expName = os.path.basename(__file__)[1:-3]  # + data.getDateStr()
 
-expInfo = {'participant': '', 'session': '001'}
+expInfo = {'participant': 'rn', 'session': '001'}
 # dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 # if dlg.OK == False:
 #     core.quit()  # user pressed cancel
@@ -134,13 +139,13 @@ VAS_text = visual.TextStim(
 
 xls_file = pd.ExcelFile('ERSSVEP_images.xlsx')
 table = xls_file.parse('ERSSVEP_images')
-apprSeries = table['Neg. Tõlgenduslause eesti keeles']
+apprSeriesNeg = table['NEG Tõlgenduslause eesti keeles']
+apprSeriesNtr = table['NTR tõlgenduslause eesti keeles ']
+
+picConditon = table['emo']
 picSeries = table['imageID']
 
-# Set durartions
-fixDuration = 1.5  # fixation duration
-apprDuration = 4  # text duration
-stimDuration = 2.5  # stim duration
+# negntr = list( table["emo"].str.find('ntr') )
 
 # DEFINE FUNCTIONS
 # region
@@ -194,7 +199,7 @@ def draw_appraisal(win, appraisal_text, duration):
             win.flip()
         else:
             core.quit()
-    thisExp.addData('appraisal_txt', appraisal_text.text)
+    thisExp.addData('appraisalTxt', appraisal_text.text)
 # ratings
 
 # mingil põhjusel läheb kinni, kui esimesele nupule vajutada
@@ -233,9 +238,17 @@ def draw_VAS(win, VAS, VAS_text, colName):
 runExperiment = True
 trials = list(range(1, len(picSeries)))
 nTrials = len(trials)
+
+appraisalCondNeg = list(zeros(25)) + list(zeros(25)+1)
+appraisalCondNtr = list(zeros(25)) + list(zeros(25)+1)
+
 shuffle(trials)
+shuffle(appraisalCondNeg)
+shuffle(appraisalCondNtr)
 
 ti = 0
+apCounterNeg = 0
+apCounterNtr = 0
 while runExperiment:
 
     # hide the cursor
@@ -261,8 +274,31 @@ while runExperiment:
     # # Draw FIXATION (2nd time)
     # draw_fix(win, fixation, fixDuration)
 
+    # Preliminary randomization scheme
+
+    if picConditon[trials[ti]] == 'neg':
+        if appraisalCondNeg[apCounterNeg] == 0:
+            aCondition = 'neg'
+        else:
+            aCondition = 'ntr'
+        apCounterNeg += 1
+    else:
+        if appraisalCondNtr[apCounterNtr] == 0:
+            aCondition = 'neg'
+        else:
+            aCondition = 'ntr'
+        apCounterNtr += 1
+
+    
+    if  aCondition == 'neg':
+        appraisal_text.text = apprSeriesNeg[trials[ti]]
+    else:
+        appraisal_text.text = apprSeriesNtr[trials[ti]]
+
+    thisExp.addData('aValence', aCondition)
+    thisExp.addData('picValence', picConditon[trials[ti]])  
+
     # Draw APPRAISAL text
-    appraisal_text.text = apprSeries[trials[ti]]
     draw_appraisal(win, appraisal_text, apprDuration)
 
     # Draw flickering PICTURE (2nd time)
