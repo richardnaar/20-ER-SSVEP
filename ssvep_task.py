@@ -150,14 +150,6 @@ stimDuration = 2.5  # stim duration
 
 # and not event.getKeys('q')
 
-# save data
-# def save_data(thisExp):
-#     # these shouldn't be strictly necessary (should auto-save)
-#     thisExp.saveAsWideText(filename+'.csv')
-#     thisExp.saveAsPickle(filename)
-#     # make sure everything is closed down
-#     thisExp.abort()  # or data files will save again on exit
-
 # flickering picture
 
 def draw_ssvep(win, pic, duration, picName):
@@ -210,8 +202,7 @@ def draw_appraisal(win, appraisal_text, duration):
 def draw_VAS(win, VAS, VAS_text, colName):
     # Initialize components for Routine "VAS"
     VAS.reset()
-    VASstartTime = clock.getTime()  # core.Clock()
-    # VAS.setAutoDraw(True)
+    VASstartTime = clock.getTime()
     m.setVisible(True)
     while VAS.noResponse:
         if not event.getKeys('q'):
@@ -221,11 +212,8 @@ def draw_VAS(win, VAS, VAS_text, colName):
         else:
             core.quit()
     m.setVisible(False)
-    # VAS.setAutoDraw(False)
     thisExp.addData(colName, VAS.getRating())  # write average srate to the file
     thisExp.addData(colName+'_RT', VAS.getRT())
-    # VAS.getRating()
-    # VAS.getRT()
     core.wait(0.25)
 # endregion
 
