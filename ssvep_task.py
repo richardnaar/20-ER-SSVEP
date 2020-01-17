@@ -160,7 +160,7 @@ stimDuration = 2.5  # stim duration
 
 # flickering picture
 
-def draw_ssvep(win, pic, duration):
+def draw_ssvep(win, pic, duration, picName):
     picStartTime = clock.getTime()
     image = visual.ImageStim(win, image=pic, size=30)
     while (clock.getTime() - picStartTime) < duration:
@@ -171,6 +171,7 @@ def draw_ssvep(win, pic, duration):
             win.flip()
         else:
             core.quit()
+    thisExp.addData('pictureID', picName)
 
 # fixation
 
@@ -201,7 +202,7 @@ def draw_appraisal(win, appraisal_text, duration):
             win.flip()
         else:
             core.quit()
-
+    thisExp.addData('appraisal_txt', appraisal_text.text)
 # ratings
 
 # mingil põhjusel läheb kinni, kui esimesele nupule vajutada
@@ -255,27 +256,29 @@ while runExperiment:
     if ti == nTrials:
         core.quit()
 
-    pic = picFolder[0]+'/' + str(picSeries[trials[ti]]) + '.jpg'
+    picName = str(picSeries[trials[ti]])
+    pic = picFolder[0]+'/' + picName + '.jpg'
+    
 
     # Draw FIXATION (1st time)
     draw_fix(win, fixation, fixDuration)
 
     # Draw flickering PICTURE (1st time)
-    draw_ssvep(win, pic, stimDuration)
+    draw_ssvep(win, pic, stimDuration, picName)
 
     # Draw QUESTION (1st time)
     VAS_text.text = 'Insert your question #1 here...'
     draw_VAS(win, VAS, VAS_text, 'Qestion_1')
 
-    # Draw FIXATION (2nd time)
-    draw_fix(win, fixation, fixDuration)
+    # # Draw FIXATION (2nd time)
+    # draw_fix(win, fixation, fixDuration)
 
     # Draw APPRAISAL text
     appraisal_text.text = apprSeries[trials[ti]]
     draw_appraisal(win, appraisal_text, apprDuration)
 
     # Draw flickering PICTURE (2nd time)
-    draw_ssvep(win, pic, stimDuration)
+    draw_ssvep(win, pic, stimDuration, picName)
 
     # Draw QUESTION (2nd time)
     VAS_text.text = 'Insert your question #2 here...'
