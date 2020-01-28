@@ -1,9 +1,11 @@
 python
 .ipynb_checkpoints
 .vscode
+.gitignore
 data
 IAPS
 Muu
 Pictures
 ssvep_iaps
 UR_ssvep
+__pycache__

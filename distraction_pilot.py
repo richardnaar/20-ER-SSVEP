@@ -8,29 +8,49 @@ SSVEP task 17/01/2020
 # region
 # future should make it possible to run the same code under Python 2
 # from __future__ import absolute_import, division
+from psychopy import sound
+# from psychopy import prefs
+# prefs.hardware['audioLib'] = ['SoundPTB'] # do not change it for some reason
+# print(prefs.hardware)
+# sound.init(48000,buffer=128)
+# print('Using %s(with audio driver: %s) for sounds' %(sound.audioLib, sound.audioDriver))
 
+import psychtoolbox as ptb
 import os  # system and path functions
 import pandas as pd  # data structures
+import numpy as np
 
 import serial
 
 from numpy import pi, sin, random, zeros
 from numpy.random import randint
-from psychopy import locale_setup, gui, visual, core, data, event, logging
+from psychopy import locale_setup, gui, visual, core, data, event, logging, sound # parallel
 from numpy.random import random, randint, shuffle
+
+# paralleel-pordi seadistamine
+# port = parallel.ParallelPort(address=0xE010)
 
 # endregion
 
+# sound
+# mySound = sound.Sound('A', octave = 3, secs=0.6, sampleRate=44100, autoLog=True, loops=0, stereo=True)
+
+# sr 48000 instead of 44100 ... sound.backend_ptb.SoundPTB
+mySound = sound.Sound(
+    value='A', secs=0.2, octave=3, stereo=1, volume=
+    1.0, loops=0, sampleRate=48000, blockSize=128, 
+    preBuffer=-1, hamming=True, autoLog=True)
+
 # Set durartions
-fixDuration = 1.5  # fixation duration
-apprDuration = 4  # text duration
-stimDuration = 6.5  # stim duration
+fixDuration = random()+0.5  # fixation duration (will change on every iteration)
+stimDuration = 9  # stim duration
+iti_dur = 2
 
 # get the current directory
 dirpath = os.getcwd()
 print(dirpath)
 # Information about the experimental session
-# psychopyVersion = '3.0.7'
+# psychopyVersion = '3.2.4'
 # filename of the script
 expName = os.path.basename(__file__)[1:-3]  # + data.getDateStr()
 
@@ -79,6 +99,13 @@ win = visual.Window(
 m = event.Mouse(win=win)
 m.setVisible(False)
 
+expInfo['frameRate'] = win.getActualFrameRate()
+if expInfo['frameRate'] != None:
+    frameDur = 1.0 / round(expInfo['frameRate'])
+else:
+    frameDur = 1.0 / 60.0  # could not measure, so guess
+
+
 # Initiate clock to keep track of time
 clock = core.Clock()
 
@@ -92,47 +119,6 @@ fixation = visual.ShapeStim(
     lineWidth=1, lineColor=[1, 1, 1], lineColorSpace='rgb',
     fillColor=[1, 1, 1], fillColorSpace='rgb',
     opacity=1, depth=0.0, interpolate=True)
-
-linew = 3
-line = visual.ShapeStim(
-    win=win, name='line',
-    ori=0, pos=(0, -3),
-    lineWidth=6, lineColor=[1, 1, 1], lineColorSpace='rgb',
-    vertices=((-linew, 0), (linew, 0)),
-    fillColor=[1, 1, 1], fillColorSpace='rgb',
-    opacity=1, depth=0.0, interpolate=True)
-
-line_moving = visual.ShapeStim(
-    win=win, name='line',
-    ori=0, pos=(0, -3),
-    lineWidth=6, lineColor=[1, 0, 0], lineColorSpace='rgb',
-    vertices=((-linew, 0), (linew, 0)),
-    fillColor=[1, 1, 1], fillColorSpace='rgb',
-    opacity=1, depth=0.0, interpolate=True)
-
-appraisal_text = visual.TextStim(
-    win=win, name='appraisal_text',
-    text='juku',
-    font='Arial',
-    pos=(0, 0), height=1, wrapWidth=30, ori=0,
-    color='white', colorSpace='rgb', opacity=1,
-    languageStyle='LTR',
-    depth=0.0)
-
-VAS = visual.RatingScale(
-    win=win, name = 'VAS', marker='triangle', size=1.0, # labels=(' ', ' '), 
-    pos=[0.0, -0.4], low=0, high=100, precision=100, skipKeys=None,
-    showValue=False, scale=None, acceptPreText='Kliki skaalal',
-    acceptText='Salvestan', markerStart='50')
-
-VAS_text = visual.TextStim(
-    win=win, name='appraisal_text',
-    text='VAS text',
-    font='Arial',
-    pos=(0, 5), height=1, wrapWidth=None, ori=0,
-    color='white', colorSpace='rgb', opacity=1,
-    languageStyle='LTR',
-    depth=0.0)
 # endregion
 
 # Import the condion file
@@ -157,15 +143,22 @@ picSeries = table['imageID']
 
 # flickering picture
 
-def draw_ssvep(win, pic, duration, picName):
+def draw_ssvep(win, pic, duration, picName, pitch):
     picStartTime = clock.getTime()
     image = visual.ImageStim(win, image=pic, size=30)
+    soundPlayed = False
+    newVol = 1
     while (clock.getTime() - picStartTime) < duration:
         if not event.getKeys('q'):
             image.opacity = .7 - (0.15*sin(2*pi*15*clock.getTime()))+0.15
             # Draw an image
             image.draw()
             win.flip()
+            if (clock.getTime() - picStartTime) > duration/2 and not soundPlayed:
+                # nextFlip = win.getFutureFlipTime(clock='ptb')
+                mySound.setSound('A', octave = pitch)
+                mySound.play()  # when=nextFlipsync with screen refresh
+                soundPlayed = True
         else:
             core.quit()
     thisExp.addData('pictureID', picName)
@@ -184,42 +177,11 @@ def draw_fix(win, fixation, duration):
 
 # appraisal text
 
+def draw_iti(win, iti_dur):
+    iti_time = clock.getTime()
+    while (clock.getTime() - iti_time) < iti_dur:
+        win.flip()
 
-def draw_appraisal(win, appraisal_text, duration):
-    apprStartTime = clock.getTime()  # core.Clock()
-    x = 0
-    while (clock.getTime() - apprStartTime) < duration:
-        time_passed = clock.getTime() - apprStartTime
-        if not event.getKeys('q'):
-            appraisal_text.draw()
-            line.draw()
-            x = (time_passed/duration)*(linew*2)
-            line_moving.vertices = ((-linew, 0), (-linew+x, 0))
-            line_moving.draw()
-            win.flip()
-        else:
-            core.quit()
-    thisExp.addData('appraisalTxt', appraisal_text.text)
-# ratings
-
-# mingil põhjusel läheb kinni, kui esimesele nupule vajutada
-
-def draw_VAS(win, VAS, VAS_text, colName):
-    # Initialize components for Routine "VAS"
-    VAS.reset()
-    VASstartTime = clock.getTime()
-    m.setVisible(True)
-    while VAS.noResponse:
-        if not event.getKeys('q'):
-            VAS_text.draw()
-            VAS.draw()
-            win.flip()
-        else:
-            core.quit()
-    m.setVisible(False)
-    thisExp.addData(colName, VAS.getRating())  # write average srate to the file
-    thisExp.addData(colName+'_RT', VAS.getRT())
-    core.wait(0.25)
 # endregion
 
 # for sending the biosemi triggers
@@ -234,17 +196,24 @@ def draw_VAS(win, VAS, VAS_text, colName):
 
 # port.close()
 
+# Andero saadetud
+# if frameN == 30:
+#     port.setData(int(trialID))
+# if frameN == 33:
+#     port.setData(0)
+
 # This is the TRIAL LOOP
 runExperiment = True
 trials = list(range(1, len(picSeries)))
 nTrials = len(trials)
 
-appraisalCondNeg = list(zeros(25)) + list(zeros(25)+1)
+distrCondNeg = list(zeros(25)) + list(zeros(25)+1)
 appraisalCondNtr = list(zeros(25)) + list(zeros(25)+1)
 
 shuffle(trials)
-shuffle(appraisalCondNeg)
+shuffle(distrCondNeg)
 shuffle(appraisalCondNtr)
+# pitchList = [3,5]
 
 ti = 0
 apCounterNeg = 0
@@ -253,7 +222,7 @@ while runExperiment:
 
     # hide the cursor
     m.setVisible(False)
-
+    
     if ti == nTrials:
         core.quit()
 
@@ -262,52 +231,35 @@ while runExperiment:
     
 
     # Draw FIXATION (1st time)
+    fixDuration = random() + 0.5
     draw_fix(win, fixation, fixDuration)
-
-    # Draw flickering PICTURE (1st time)
-    draw_ssvep(win, pic, stimDuration, picName)
-
-    # Draw QUESTION (1st time)
-    VAS_text.text = 'Insert your question #1 here...'
-    draw_VAS(win, VAS, VAS_text, 'Qestion_1')
-
-    # # Draw FIXATION (2nd time)
-    # draw_fix(win, fixation, fixDuration)
 
     # Preliminary randomization scheme
 
     if picConditon[trials[ti]] == 'neg':
-        if appraisalCondNeg[apCounterNeg] == 0:
-            aCondition = 'neg'
+        if distrCondNeg[apCounterNeg] == 0:
+            distrCond = 'distr'
         else:
-            aCondition = 'ntr'
+            distrCond = 'no-distr'
+            tone = 2
         apCounterNeg += 1
     else:
-        if appraisalCondNtr[apCounterNtr] == 0:
-            aCondition = 'neg'
+        if distrCondNeg[apCounterNtr] == 0:
+            distrCond = 'distr'
         else:
-            aCondition = 'ntr'
+            distrCond= 'no-distr'
         apCounterNtr += 1
 
-    
-    if  aCondition == 'neg':
-        appraisal_text.text = apprSeriesNeg[trials[ti]]
+    if distrCond == 'distr':
+        pitch = 5
     else:
-        appraisal_text.text = apprSeriesNtr[trials[ti]]
+        pitch = 3
+    
+    # Draw flickering PICTURE
+    draw_ssvep(win, pic, stimDuration, picName, pitch)
 
-    thisExp.addData('aValence', aCondition)
-    thisExp.addData('picValence', picConditon[trials[ti]])  
-
-    # Draw APPRAISAL text
-    draw_appraisal(win, appraisal_text, apprDuration)
-
-    # Draw flickering PICTURE (2nd time)
-    draw_ssvep(win, pic, stimDuration, picName)
-
-    # Draw QUESTION (2nd time)
-    VAS_text.text = 'Insert your question #2 here...'
-    VAS.labels=('left2', 'right2')
-    draw_VAS(win, VAS, VAS_text, 'Qestion_2')
+    # ITI
+    draw_iti(win, iti_dur)
 
     ti += 1
     thisExp.nextEntry()
