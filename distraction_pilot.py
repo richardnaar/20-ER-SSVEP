@@ -24,7 +24,7 @@ import serial
 
 from numpy import pi, sin, random, zeros
 from numpy.random import randint
-from psychopy import locale_setup, gui, visual, core, data, event, logging, sound # parallel
+from psychopy import locale_setup, gui, visual, core, data, event, logging, sound
 from numpy.random import random, randint, shuffle
 
 # paralleel-pordi seadistamine
@@ -41,20 +41,15 @@ mySound = sound.Sound(
     1.0, loops=0, sampleRate=48000, blockSize=128, 
     preBuffer=-1, hamming=True, autoLog=True)
 
-# Set durartions
-fixDuration = random()+0.5  # fixation duration (will change on every iteration)
-stimDuration = 9  # stim duration
-iti_dur = 2
-
 # get the current directory
 dirpath = os.getcwd()
 print(dirpath)
 # Information about the experimental session
-# psychopyVersion = '3.2.4'
+psychopyVersion = '3.2.4'
 # filename of the script
-expName = os.path.basename(__file__)[1:-3]  # + data.getDateStr()
+expName = os.path.basename(__file__) # + data.getDateStr()
 
-expInfo = {'participant': 'rn', 'session': '001'}
+expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'square': '0', 'testMonkey': '1'}
 # dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 # if dlg.OK == False:
 #     core.quit()  # user pressed cancel
@@ -64,7 +59,7 @@ expInfo['expName'] = expName
 # Data file name stem = absolute path + name; later add .psyexp, .csv, .log, etc
 # filename = _thisDir + os.sep + u'data/%s_%s_%s' %(expInfo['participant'], expName, expInfo['date'])
 # filename = dirpath + '\\' + expInfo['participant'] + expName + expInfo['date']
-filename = dirpath + '\\data\\' + expInfo['participant'] + expName + '_' + expInfo['date']
+filename = dirpath + '\\data\\' + expInfo['participant'] + '_' + expName + '_' + expInfo['date']
 
 # An ExperimentHandler isn't essential but helps with data saving
 thisExp = data.ExperimentHandler(
@@ -75,6 +70,25 @@ thisExp = data.ExperimentHandler(
     dataFileName=filename)
 # this outputs to the screen, not a file
 # logging.console.setLevel(logging.WARNING)
+
+
+# Set durartions
+if expInfo['testMonkey'] == '1':
+    fixDuration = 0.2  # fixation duration (will change on every iteration)
+    stimDuration = 0.6  # stim duration
+    iti_dur = 0.1
+    expInfo['participant'] = 'Monkey'
+else:
+    fixDuration = random()+0.5  # fixation duration (will change on every iteration)
+    stimDuration = 13  # stim duration
+    iti_dur = 2
+
+expInfo['stimDuration'] = stimDuration
+expInfo['itiDuration'] = iti_dur
+
+if expInfo['EEG'] == '1':
+    from psychopy import parallel
+    port = parallel.ParallelPort(address=0xE010)
 
 # FIND ALL FILES
 # region
@@ -90,7 +104,7 @@ picFolder = ['ssvep_iaps']
 
 # Setup the Window
 win = visual.Window(
-    size=(1920, 1200), fullscr=True, screen=0, color='grey',
+    size=(1920, 1200), fullscr=True, screen=0, color='black',
     blendMode='avg', useFBO=True, monitor='mon2',
     units='deg')
 
@@ -119,6 +133,30 @@ fixation = visual.ShapeStim(
     lineWidth=1, lineColor=[1, 1, 1], lineColorSpace='rgb',
     fillColor=[1, 1, 1], fillColorSpace='rgb',
     opacity=1, depth=0.0, interpolate=True)
+
+# gabor = visual.GratingStim(
+#     win=win, name='grating',
+#     tex='sin', mask=None, contrast = 1,
+#     ori=90, pos=(0, 0), size=(30, 30), sf=2,
+#     phase=0.0, color=[1,1,1], colorSpace='rgb', opacity=0.25,blendmode='avg',
+#     texRes=128, interpolate=True, depth=0.0)
+
+background = visual.Rect(
+    win=win,units='deg', 
+    width=(30, 30)[0], height=(30, 30)[1],
+    ori=0, pos=(0, 0),
+    lineWidth=0, lineColor=[1,1,1], lineColorSpace='rgb',
+    fillColor=[1,1,1], fillColorSpace='rgb',
+    opacity=1, depth=0.0, interpolate=True)
+
+square = visual.Rect(
+    win=win,units='deg', 
+    width=(25, 25)[0], height=(25, 25)[1],
+    ori=0, pos=(0, 0),
+    lineWidth=0, lineColor=[1,1,1], lineColorSpace='rgb',
+    fillColor=[-1,-1,-1], fillColorSpace='rgb',
+    opacity=1, depth=0.0, interpolate=True)
+
 # endregion
 
 # Import the condion file
@@ -143,16 +181,42 @@ picSeries = table['imageID']
 
 # flickering picture
 
-def draw_ssvep(win, pic, duration, picName, pitch):
+A = 0.20 # 0.3 # can't be larger than 0.5 (min = 0.5-0.5 and max = 0.5+0.5)
+f = 15 # in Hz
+theta = pi/2 # phase offset
+# save these parameters to the file
+expInfo['flickeringAmplitude'] = A
+expInfo['frequency'] = f
+expInfo['phaseOffset'] = theta
+
+def sendTrigger(time, trigN):
+    if time < 0.02 and not triggerOut:
+        port.setData(trigN)
+    elif not triggerOut:
+        port.setData(0)
+        triggerOut = True
+
+# window, picture (cd/folder/name.jpg), duration, picture name (for data), pitch (octave), amplitude, frequecy, phase offset
+def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta):
     picStartTime = clock.getTime()
-    image = visual.ImageStim(win, image=pic, size=30)
+    image = visual.ImageStim(win, image=pic, size=25)
     soundPlayed = False
     newVol = 1
     while (clock.getTime() - picStartTime) < duration:
         if not event.getKeys('q'):
-            image.opacity = .7 - (0.15*sin(2*pi*15*clock.getTime()))+0.15
-            # Draw an image
+            if expInfo['square'] == '0':
+                image.opacity = (1-A) + ( A*sin(2*pi*f* clock.getTime() +  theta) )
+                # image.opacity = .7 - (0.15*sin(2*pi*15*clock.getTime()))+0.15
+                # gabor.contrast = .7 - (0.15*sin(2*pi*6*clock.getTime()))+0.15
+            else:
+                col = A*sin(2*pi*15*clock.getTime())
+                background.fillColor = [col,col,col]
+                background.draw()
+                square.draw()
+             # Draw an image
+            sendTrigger(picStartTime, 1)
             image.draw()
+            # gabor.draw()q
             win.flip()
             if (clock.getTime() - picStartTime) > duration/2 and not soundPlayed:
                 # nextFlip = win.getFutureFlipTime(clock='ptb')
@@ -161,7 +225,6 @@ def draw_ssvep(win, pic, duration, picName, pitch):
                 soundPlayed = True
         else:
             core.quit()
-    thisExp.addData('pictureID', picName)
 
 # fixation
 
@@ -170,6 +233,11 @@ def draw_fix(win, fixation, duration):
     fixStartTime = clock.getTime()  # core.Clock()
     while (clock.getTime() - fixStartTime) < duration:
         if not event.getKeys('q'):
+            if expInfo['square'] == '1':
+                col = 0.25*sin(2*pi*15*clock.getTime())
+                background.fillColor = [col,col,col]
+                background.draw()
+                square.draw()
             fixation.draw()
             win.flip()
         else:
@@ -180,8 +248,13 @@ def draw_fix(win, fixation, duration):
 def draw_iti(win, iti_dur):
     iti_time = clock.getTime()
     while (clock.getTime() - iti_time) < iti_dur:
+        if expInfo['square'] == '1':
+            col = 0.25*sin(2*pi*15*clock.getTime())
+            background.fillColor = [col,col,col]
+            background.draw()
+            square.draw()
         win.flip()
-
+      
 # endregion
 
 # for sending the biosemi triggers
@@ -204,7 +277,7 @@ def draw_iti(win, iti_dur):
 
 # This is the TRIAL LOOP
 runExperiment = True
-trials = list(range(1, len(picSeries)))
+trials = list(range(0, len(picSeries)))
 nTrials = len(trials)
 
 distrCondNeg = list(zeros(25)) + list(zeros(25)+1)
@@ -215,26 +288,34 @@ shuffle(distrCondNeg)
 shuffle(appraisalCondNtr)
 # pitchList = [3,5]
 
+
 ti = 0
 apCounterNeg = 0
 apCounterNtr = 0
 while runExperiment:
+    if ti == nTrials:
+        win.close()
+        core.quit()
+
+    expInfo['globalTime'] = clock.getTime()
 
     # hide the cursor
     m.setVisible(False)
     
-    if ti == nTrials:
-        core.quit()
-
+    # Picture
     picName = str(picSeries[trials[ti]])
     pic = picFolder[0]+'/' + picName + '.jpg'
-    
 
-    # Draw FIXATION (1st time)
-    fixDuration = random() + 0.5
+
+    # Draw FIXATION
+    if expInfo['testMonkey'] == '0':
+        fixDuration = random() + 0.5
+    else:
+        fixDuration = fixDuration
+
     draw_fix(win, fixation, fixDuration)
 
-    # Preliminary randomization scheme
+    # Preliminary RANDOMIZATION scheme
 
     if picConditon[trials[ti]] == 'neg':
         if distrCondNeg[apCounterNeg] == 0:
@@ -250,19 +331,26 @@ while runExperiment:
             distrCond= 'no-distr'
         apCounterNtr += 1
 
+    # define the pitch according to the distractor condition
     if distrCond == 'distr':
         pitch = 5
     else:
         pitch = 3
     
+    # save that information on each trial
+    thisExp.addData('distraction', distrCond)
+    thisExp.addData('valence', picConditon[trials[ti]])
+    thisExp.addData('pictureID', picName)
+    expInfo['fixDuration'] = fixDuration
+
     # Draw flickering PICTURE
-    draw_ssvep(win, pic, stimDuration, picName, pitch)
+    draw_ssvep(win, pic, stimDuration, picName, pitch,A,f,theta)
 
     # ITI
     draw_iti(win, iti_dur)
 
-    ti += 1
     thisExp.nextEntry()
+    ti += 1
     
 
 # # these shouldn't be strictly necessary (should auto-save)
