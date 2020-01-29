@@ -189,12 +189,14 @@ expInfo['flickeringAmplitude'] = A
 expInfo['frequency'] = f
 expInfo['phaseOffset'] = theta
 
-def sendTrigger(time, trigN):
-    if time < 0.02 and not triggerOut:
-        port.setData(trigN)
-    elif not triggerOut:
-        port.setData(0)
-        triggerOut = True
+triggerOut = False
+def sendTrigger(time, trigN, triggerOut, EEG):
+    if EEG == '1':
+        if time < 0.02 and not triggerOut:
+            port.setData(trigN)
+        elif not triggerOut:
+            port.setData(0)
+            triggerOut = True
 
 # window, picture (cd/folder/name.jpg), duration, picture name (for data), pitch (octave), amplitude, frequecy, phase offset
 def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta):
@@ -214,7 +216,7 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta):
                 background.draw()
                 square.draw()
              # Draw an image
-            sendTrigger(picStartTime, 1)
+            sendTrigger(picStartTime, 1, triggerOut, expInfo['EEG'])
             image.draw()
             # gabor.draw()q
             win.flip()

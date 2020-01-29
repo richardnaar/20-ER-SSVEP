@@ -236,7 +236,7 @@ def draw_VAS(win, VAS, VAS_text, colName):
 
 # This is the TRIAL LOOP
 runExperiment = True
-trials = list(range(1, len(picSeries)))
+trials = list(range(0, len(picSeries)))
 nTrials = len(trials)
 
 appraisalCondNeg = list(zeros(25)) + list(zeros(25)+1)
