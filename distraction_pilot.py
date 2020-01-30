@@ -88,7 +88,7 @@ expInfo['itiDuration'] = iti_dur
 
 if expInfo['EEG'] == '1':
     from psychopy import parallel
-    port = parallel.ParallelPort(address=0xE010)
+    port = parallel.ParallelPort(address=0x378)
 
 # FIND ALL FILES
 # region
