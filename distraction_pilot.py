@@ -2,10 +2,14 @@
 # -*- coding: utf-8 -*-
 
 """
-SSVEP task 17/01/2020
+SSVEP task 30/01/2020
+# quit: press "q"
+# monitor setting (e.g. mon2 to testMonitor)
+# set up a iaps folder (ssvep_iaps)
+# remove indexes after file names (eg 6570.1.jpg to 6570.jpg)
 """
 # IMPORT MODULES
-# region
+# regionde
 # future should make it possible to run the same code under Python 2
 # from __future__ import absolute_import, division
 from psychopy import sound
@@ -189,44 +193,50 @@ expInfo['flickeringAmplitude'] = A
 expInfo['frequency'] = f
 expInfo['phaseOffset'] = theta
 
-triggerOut = False
-def sendTrigger(time, trigN, triggerOut, EEG):
+def sendTrigger(time, trigN, EEG):
+    stopSending = 0
     if EEG == '1':
-        if time < 0.02 and not triggerOut:
+        if time < 0.1:
             port.setData(trigN)
-        elif not triggerOut:
+        elif stopSending == 0:
             port.setData(0)
-            triggerOut = True
+            stopSending = 1
 
 # window, picture (cd/folder/name.jpg), duration, picture name (for data), pitch (octave), amplitude, frequecy, phase offset
 def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta):
+#    image = visual.ImageStim(win, image=pic, size=25)
     picStartTime = clock.getTime()
-    image = visual.ImageStim(win, image=pic, size=25)
     soundPlayed = False
-    newVol = 1
-    while (clock.getTime() - picStartTime) < duration:
+    timeC = 0
+    time = clock.getTime() - picStartTime
+    while (time) < duration:
+        print(duration)
         if not event.getKeys('q'):
             if expInfo['square'] == '0':
-                image.opacity = (1-A) + ( A*sin(2*pi*f* clock.getTime() +  theta) )
-                # image.opacity = .7 - (0.15*sin(2*pi*15*clock.getTime()))+0.15
-                # gabor.contrast = .7 - (0.15*sin(2*pi*6*clock.getTime()))+0.15
+                image.opacity = (1-A) + ( A*sin(2*pi*f* time +  theta) )
             else:
                 col = A*sin(2*pi*15*clock.getTime())
                 background.fillColor = [col,col,col]
                 background.draw()
                 square.draw()
              # Draw an image
-            sendTrigger(picStartTime, 1, triggerOut, expInfo['EEG'])
+            sendTrigger(time, 1, expInfo['EEG'])
             image.draw()
-            # gabor.draw()q
+            # gabor.draw()
+            if timeC == 0:
+                duration = duration + (clock.getTime() - picStartTime)
+                # print(duration)
+                timeC += 1
             win.flip()
             if (clock.getTime() - picStartTime) > duration/2 and not soundPlayed:
                 # nextFlip = win.getFutureFlipTime(clock='ptb')
                 mySound.setSound('A', octave = pitch)
                 mySound.play()  # when=nextFlipsync with screen refresh
                 soundPlayed = True
+            time = clock.getTime() - picStartTime
         else:
             core.quit()
+
 
 # fixation
 
@@ -307,7 +317,7 @@ while runExperiment:
     # Picture
     picName = str(picSeries[trials[ti]])
     pic = picFolder[0]+'/' + picName + '.jpg'
-
+    image = visual.ImageStim(win, image=pic, size=25)
 
     # Draw FIXATION
     if expInfo['testMonkey'] == '0':
@@ -349,7 +359,7 @@ while runExperiment:
     draw_ssvep(win, pic, stimDuration, picName, pitch,A,f,theta)
 
     # ITI
-    draw_iti(win, iti_dur)
+    draw_iti(win, iti_dur)qq
 
     thisExp.nextEntry()
     ti += 1
