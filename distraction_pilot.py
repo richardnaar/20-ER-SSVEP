@@ -52,7 +52,7 @@ psychopyVersion = '3.2.4'
 # filename of the script
 expName = os.path.basename(__file__) # + data.getDateStr()
 
-expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '0', 'stimFrequency': '37.5','square': '0', 'testMonkey': '0', 'pauseAfterEvery': '20'}
+expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '0', 'stimFrequency': '15','square': '1', 'testMonkey': '0', 'pauseAfterEvery': '20'}
 # dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 # if dlg.OK == False:
 #     core.quit()  # user pressed cancel
@@ -82,7 +82,7 @@ if expInfo['testMonkey'] == '1':
     iti_dur = 0.1
     expInfo['participant'] = 'Monkey'
 else:
-    fixDuration = random()+0.5  # fixation duration (will change on every iteration)
+    fixDuration = 4 # just the first iti, later will change on trial (random()+0.5)
     stimDuration = 13  # stim duration
     iti_dur = 2
 
@@ -112,8 +112,8 @@ picFolder = ['ssvep_iaps']
 
 # Setup the Window
 win = visual.Window(
-    size=(1536, 864), fullscr=True, screen=0, color='black', #size=(1920, 1200), 1536, 864, (1024, 768)
-    blendMode='avg', useFBO=True, monitor='mon2',
+    size=(1920, 1080), fullscr=True, screen=0, color='black', #size=(1920, 1200), 1920, 1080, 1536, 864, (1024, 768)
+    blendMode='avg', useFBO=True, monitor='testMonitor',
     units='deg')
 
 # Hide mouse
@@ -137,7 +137,7 @@ clock = core.Clock()
 
 pause_text = 'See on paus. Jätkamiseks vajuta palun hiireklahvi . . .'
 
-start_text = 'Palun oota kuni eksperimentaator käivitab mõõtmise..."
+start_text = 'Palun oota kuni eksperimentaator käivitab mõõtmise . . .'
 
 
 text = visual.TextStim(win=win,
@@ -165,7 +165,7 @@ fixation = visual.ShapeStim(
 
 background = visual.Rect(
     win=win,units='deg', 
-    width=(30, 30)[0], height=(30, 30)[1],
+    width=(25, 25)[0], height=(20, 20)[1],
     ori=0, pos=(0, 0),
     lineWidth=0, lineColor=[1,1,1], lineColorSpace='rgb',
     fillColor=[1,1,1], fillColorSpace='rgb',
@@ -173,7 +173,7 @@ background = visual.Rect(
 
 square = visual.Rect(
     win=win,units='deg', 
-    width=(25, 25)[0], height=(25, 25)[1],
+    width=(20, 20)[0], height=(15, 15)[1],
     ori=0, pos=(0, 0),
     lineWidth=0, lineColor=[1,1,1], lineColorSpace='rgb',
     fillColor=[-1,-1,-1], fillColorSpace='rgb',
@@ -221,7 +221,7 @@ expInfo['phaseOffset'] = theta
 def sendTrigger(trigStart,trigN, EEG):
     trigTime = clock.getTime() - trigStart 
     if EEG == '1':
-        if trigTime < 0.25:
+        if trigTime < 0.025:
             port.setData(trigN)
         else:
             port.setData(0)
@@ -231,6 +231,9 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
     # print(ti-picCount)
     # print('pic_'+ str(trigNum))
 #    image = visual.ImageStim(win, image=pic, size=25)
+    
+    # units = 'deg', size = (34, 34)
+
     picStartTime = clock.getTime() # clock.getTime()
     # picStartTime = win.getFutureFlipTime(clock='ptb')
     soundPlayed = False
@@ -240,12 +243,12 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
 
         if not event.getKeys('q'):
             if expInfo['square'] == '0':
-                time = win.getFutureFlipTime() - picStartTime
+                time = win.getFutureFlipTime(clock='ptb') - picStartTime
                 # image.opacity = (1-A) + ( A*sin(2*pi*f* time +  theta) )
                 images[ti-picCount].opacity = (1-A) + ( A*sin(2*pi*f* time +  theta) )
             else:
-                time = win.getFutureFlipTime() - picStartTime
-                col = A*sin(2*pi*15*time)
+                time = win.getFutureFlipTime(clock='ptb') - picStartTime
+                col = 0.25*sin(2*pi*f*time)
                 background.fillColor = [col,col,col]
                 background.draw()
                 square.draw()
@@ -257,7 +260,7 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
             # image.draw()
             # gabor.draw()
             
-            # selle asemele saaks kasutada win.getFutureFlipTime()
+            # selle asemele saaks kasutada win.getFutureFlipTime(clock='ptb')
             if timeC == 0:
                 duration = duration + (clock.getTime() - picStartTime) #
                 # print(duration)
@@ -282,9 +285,10 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
 
             # update time    
         else:
-            port.setData(0)
+            if expInfo['EEG'] == '1':
+                port.setData(0)
             core.quit()            
-    time = clock.getTime() - picStartTime
+        time = clock.getTime() - picStartTime
 
 
 # fixation
@@ -292,13 +296,13 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
 
 def draw_fix(win, fixation, duration, trigNum):
     # print('fix_'+ str(trigNum))
-    fixStartTime = clock.getTime() # win.getFutureFlipTime()  # core.Clock()
+    fixStartTime = clock.getTime() # win.getFutureFlipTime(clock='ptb')  # core.Clock()
     time = clock.getTime() - fixStartTime
     while (time) < duration:
         if not event.getKeys('q'):
             if expInfo['square'] == '1':
-                time = clock.getTime() - fixStartTime
-                col = 0.25*sin(2*pi*15*time())
+                time = win.getFutureFlipTime(clock='ptb') - fixStartTime
+                col = 0.25*sin(2*pi*f*time)
                 background.fillColor = [col,col,col]
                 background.draw()
                 square.draw()
@@ -307,19 +311,20 @@ def draw_fix(win, fixation, duration, trigNum):
             sendTrigger(fixStartTime, trigNum, expInfo['EEG'])
             win.flip()
         else:
-            port.setData(0)
+            if expInfo['EEG'] == '1':
+                port.setData(0)
             core.quit()
         time = clock.getTime() - fixStartTime
 # appraisal text
 
 def draw_iti(win, iti_dur, trigNum):
     # print('iti_'+str(trigNum))
-    iti_time = clock.getTime()# win.getFutureFlipTime()
+    iti_time = clock.getTime()# win.getFutureFlipTime(clock='ptb')
     time = clock.getTime() - iti_time
     while (time) < iti_dur:
         if expInfo['square'] == '1':
-            time = win.getFutureFlipTime() - fixStartTime
-            col = 0.25*sin(2*pi*15*time)
+            time = win.getFutureFlipTime(clock='ptb') - iti_time
+            col = 0.25*sin(2*pi*f*time)
             background.fillColor = [col,col,col]
             background.draw()
             square.draw()
@@ -330,7 +335,7 @@ def draw_iti(win, iti_dur, trigNum):
 
 
 def draw_text(txt, pause_dur):
-    pause_time = clock.getTime() # win.getFutureFlipTime()
+    pause_time = clock.getTime() # win.getFutureFlipTime(clock='ptb')
     while (clock.getTime() - pause_time) < pause_dur:
         buttons = mouse.getPressed()
         theseKeys = event.getKeys(keyList=['q', 'space'])
@@ -341,7 +346,8 @@ def draw_text(txt, pause_dur):
         elif sum(buttons) > 0:
             break
         elif theseKeys[0] == 'q':
-            port.setData(0)
+            if expInfo['EEG'] == '1':
+                port.setData(0)
             core.quit()
 # endregion
 
@@ -379,7 +385,9 @@ shuffle(appraisalCondNtr)
 images = []
 
 for file in trials[0:pauseAfterEvery]:
-    images.append(visual.ImageStim(win=win, image=  pic_dir + '\\' + str(picSeries[file]) + '.jpg'))
+    #images.append(visual.ImageStim(win=win, image=  pic_dir + '\\' + str(picSeries[file]) + '.jpg'))
+    images.append(visual.ImageStim(win=win, image=  pic_dir + '\\' + str(picSeries[file]) + '.jpg', units = 'deg', size = (20,15)))
+    
 
 # start text
 draw_text(start_text, float('inf'))
@@ -392,7 +400,8 @@ while runExperiment:
     trialDec =  0
 
     if ti == nTrials:
-        port.setData(0)
+        if expInfo['EEG'] == '1':
+            port.setData(0)
         win.close()
         core.quit()
 
@@ -457,7 +466,7 @@ while runExperiment:
     draw_iti(win, iti_dur, trigNum)
 
     # PAUSE (preloading next set of N (pauseAfterEvery) images to achive better timing)
-    pausStart = clock.getTime() # win.getFutureFlipTime()
+    pauseStart = clock.getTime() # win.getFutureFlipTime(clock='ptb')
     if (ti+1)%pauseAfterEvery == 0:
         trigNum += 1000
         # print('pause_'+str(trigNum)) 
@@ -478,7 +487,7 @@ while runExperiment:
             end = nTrials
 
         for file in trials[start:end]:
-            images.append(visual.ImageStim(win=win, image=  pic_dir + '\\' + str(picSeries[file]) + '.jpg'))
+            images.append(visual.ImageStim(win=win, image=  pic_dir + '\\' + str(picSeries[file]) + '.jpg', units = 'deg', size = (20,15)))
 
     thisExp.nextEntry()
     ti += 1
