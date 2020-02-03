@@ -223,13 +223,13 @@ def sendTrigger(trigStart,trigN, EEG):
             port.setData(trigN)
         else:
             port.setData(0)
-            
+
 # window, picture (cd/folder/name.jpg), duration, picture name (for data), pitch (octave), amplitude, frequecy, phase offset
 def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
     # print(ti-picCount)
     # print('pic_'+ str(trigNum))
 #    image = visual.ImageStim(win, image=pic, size=25)
-    picStartTime = win.getFutureFlipTime() # clock.getTime()
+    picStartTime = clock.getTime() # clock.getTime()
     # picStartTime = win.getFutureFlipTime(clock='ptb')
     soundPlayed = False
     timeC = 0
@@ -256,10 +256,10 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
             # gabor.draw()
             
             # selle asemele saaks kasutada win.getFutureFlipTime()
-            #if timeC == 0:
-            #    duration = duration + (clock.getTime() - picStartTime) #
-            #    # print(duration)
-            #    timeC += 1
+            if timeC == 0:
+                duration = duration + (clock.getTime() - picStartTime) #
+                # print(duration)
+                timeC += 1
             # send the trigger and flip
             sendTrigger(picStartTime, trigNum, expInfo['EEG'])
             win.flip()
@@ -288,7 +288,7 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
 
 def draw_fix(win, fixation, duration, trigNum):
     # print('fix_'+ str(trigNum))
-    fixStartTime = win.getFutureFlipTime()  # core.Clock()
+    fixStartTime = clock.getTime() # win.getFutureFlipTime()  # core.Clock()
     time = clock.getTime() - fixStartTime
     while (time) < duration:
         if not event.getKeys('q'):
@@ -309,7 +309,7 @@ def draw_fix(win, fixation, duration, trigNum):
 
 def draw_iti(win, iti_dur, trigNum):
     # print('iti_'+str(trigNum))
-    iti_time = win.getFutureFlipTime()
+    iti_time = clock.getTime()# win.getFutureFlipTime()
     time = clock.getTime() - iti_time
     while (time) < iti_dur:
         if expInfo['square'] == '1':
@@ -325,7 +325,7 @@ def draw_iti(win, iti_dur, trigNum):
 
 
 def draw_text(txt, pause_dur):
-    pause_time = win.getFutureFlipTime()
+    pause_time = clock.getTime() # win.getFutureFlipTime()
     while (clock.getTime() - pause_time) < pause_dur:
         buttons = mouse.getPressed()
         theseKeys = event.getKeys(keyList=['q', 'space'])
@@ -447,7 +447,7 @@ while runExperiment:
     draw_iti(win, iti_dur, trigNum)
 
     # PAUSE (preloading next set of N (pauseAfterEvery) images to achive better timing)
-    pausStart = win.getFutureFlipTime()
+    pausStart = clock.getTime() # win.getFutureFlipTime()
     if (ti+1)%pauseAfterEvery == 0:
         trigNum += 1000
         # print('pause_'+str(trigNum)) 
