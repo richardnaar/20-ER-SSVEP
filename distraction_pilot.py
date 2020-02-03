@@ -386,8 +386,10 @@ images = []
 
 for file in trials[0:pauseAfterEvery]:
     #images.append(visual.ImageStim(win=win, image=  pic_dir + '\\' + str(picSeries[file]) + '.jpg'))
-    images.append(visual.ImageStim(win=win, image=  pic_dir + '\\' + str(picSeries[file]) + '.jpg', units = 'deg', size = (20,15)))
-    
+    if expInfo['square'] == '0':
+        images.append(visual.ImageStim(win=win, image=  pic_dir + '\\' + str(picSeries[file]) + '.jpg', units = 'deg', size = (20,15)))
+    else:
+        images.append(visual.ImageStim(win=win, image=  pic_dir + '\\' + str(picSeries[file]) + '.jpg', units = 'deg', size = (25,20)))
 
 # start text
 draw_text(start_text, float('inf'))
