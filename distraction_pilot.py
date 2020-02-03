@@ -52,7 +52,7 @@ psychopyVersion = '3.2.4'
 # filename of the script
 expName = os.path.basename(__file__) # + data.getDateStr()
 
-expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '0', 'square': '0', 'testMonkey': '0', 'pauseAfterEvery': '20'}
+expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '0', 'stimFrequency': '37.5','square': '0', 'testMonkey': '0', 'pauseAfterEvery': '20'}
 # dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 # if dlg.OK == False:
 #     core.quit()  # user pressed cancel
@@ -137,6 +137,9 @@ clock = core.Clock()
 
 pause_text = 'See on paus. Jätkamiseks vajuta palun hiireklahvi . . .'
 
+start_text = 'Palun oota kuni eksperimentaator käivitab mõõtmise..."
+
+
 text = visual.TextStim(win=win,
     text='insert txt here',
     font='Arial',
@@ -208,18 +211,17 @@ picSeries = table['imageID']
 # flickering picture
 
 A = 0.20 # 0.3 # can't be larger than 0.5 (min = 0.5-0.5 and max = 0.5+0.5)
-f = 15 # in Hz
+f = float(expInfo['stimFrequency']) # in Hz
 theta = pi/2 # phase offset
 pauseAfterEvery = int(expInfo['pauseAfterEvery']) 
 # save these parameters to the file
 expInfo['flickeringAmplitude'] = A
-expInfo['frequency'] = f
 expInfo['phaseOffset'] = theta
 
 def sendTrigger(trigStart,trigN, EEG):
     trigTime = clock.getTime() - trigStart 
     if EEG == '1':
-        if trigTime < 0.1:
+        if trigTime < 0.25:
             port.setData(trigN)
         else:
             port.setData(0)
@@ -261,7 +263,8 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
                 # print(duration)
                 timeC += 1
             # send the trigger and flip
-            sendTrigger(picStartTime, trigNum, expInfo['EEG'])
+            if not soundPlayed:
+                sendTrigger(picStartTime, trigNum, expInfo['EEG'])
             win.flip()
 
             # play sound half way through
@@ -269,7 +272,7 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
                 mySound.setSound('A', octave = pitch)
                 trigNum += 100
                 # print('sound_'+ str(trigNum))
-                soundTime = clock.getTime() - picStartTime
+                soundTime = clock.getTime()
                 # send the trigger and play
                 sendTrigger(soundTime, trigNum, expInfo['EEG'])
                 mySound.play()
@@ -279,7 +282,8 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
 
             # update time    
         else:
-            core.quit()
+            port.setData(0)
+            core.quit()            
     time = clock.getTime() - picStartTime
 
 
@@ -303,6 +307,7 @@ def draw_fix(win, fixation, duration, trigNum):
             sendTrigger(fixStartTime, trigNum, expInfo['EEG'])
             win.flip()
         else:
+            port.setData(0)
             core.quit()
         time = clock.getTime() - fixStartTime
 # appraisal text
@@ -336,6 +341,7 @@ def draw_text(txt, pause_dur):
         elif sum(buttons) > 0:
             break
         elif theseKeys[0] == 'q':
+            port.setData(0)
             core.quit()
 # endregion
 
@@ -365,15 +371,18 @@ nTrials = len(trials)
 distrCondNeg = list(zeros(25)) + list(zeros(25)+1)
 appraisalCondNtr = list(zeros(25)) + list(zeros(25)+1)
 
-# shuffle(trials)
-# shuffle(distrCondNeg)
-# shuffle(appraisalCondNtr)
+shuffle(trials)
+shuffle(distrCondNeg)
+shuffle(appraisalCondNtr)
 # pitchList = [3,5]
 
 images = []
 
 for file in trials[0:pauseAfterEvery]:
     images.append(visual.ImageStim(win=win, image=  pic_dir + '\\' + str(picSeries[file]) + '.jpg'))
+
+# start text
+draw_text(start_text, float('inf'))
 
 picCount = 0
 ti = 0
@@ -383,6 +392,7 @@ while runExperiment:
     trialDec =  0
 
     if ti == nTrials:
+        port.setData(0)
         win.close()
         core.quit()
 
@@ -472,8 +482,6 @@ while runExperiment:
 
     thisExp.nextEntry()
     ti += 1
-    
-    # pause
     
 
 # # these shouldn't be strictly necessary (should auto-save)
