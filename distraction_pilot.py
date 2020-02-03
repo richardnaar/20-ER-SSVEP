@@ -2,11 +2,13 @@
 # -*- coding: utf-8 -*-
 
 """
-SSVEP task 30/01/2020
+SSVEP task 31/01/2020
 # quit: press "q"
 # monitor setting (e.g. mon2 to testMonitor)
 # set up a iaps folder (ssvep_iaps)
 # remove indexes after file names (eg 6570.1.jpg to 6570.jpg)
+# nb - check randomization
+# distraction vs non-distraction and high vs low 
 """
 # IMPORT MODULES
 # regionde
@@ -50,7 +52,7 @@ psychopyVersion = '3.2.4'
 # filename of the script
 expName = os.path.basename(__file__) # + data.getDateStr()
 
-expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'square': '0', 'testMonkey': '1', 'pauseAfterEvery': '20'}
+expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '1', 'square': '0', 'testMonkey': '1', 'pauseAfterEvery': '20'}
 # dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 # if dlg.OK == False:
 #     core.quit()  # user pressed cancel
@@ -89,7 +91,10 @@ expInfo['itiDuration'] = iti_dur
 
 if expInfo['EEG'] == '1':
     from psychopy import parallel
-    port = parallel.ParallelPort(address=0xe010)
+    expInfo['Chemicum'] == '1':
+        port = parallel.ParallelPort(address=0x378)
+    else:
+        port = parallel.ParallelPort(address=0xe010)
     trigNum = 0
 
 # FIND ALL FILES
@@ -242,7 +247,7 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
                 square.draw()
 
             # Draw an image
-            sendTrigger(time, 1, expInfo['EEG'])
+
             # images.pop().draw()
             images[ti-picCount].draw()
             # image.draw()
@@ -253,7 +258,8 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
                 duration = duration + (clock.getTime() - picStartTime) #
                 # print(duration)
                 timeC += 1
-            
+            # send the trigger and flip
+            sendTrigger(time, trigNum, expInfo['EEG'])
             win.flip()
 
             # play sound half way through
@@ -261,7 +267,9 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
                 mySound.setSound('A', octave = pitch)
                 trigNum += 100
                 # print('sound_'+ str(trigNum))
-
+                
+                # send the trigger and play
+                sendTrigger(time, trigNum, expInfo['EEG'])
                 mySound.play()
                 soundPlayed = True
 
@@ -274,7 +282,7 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
 # fixation
 
 
-def draw_fix(win, fixation, duration):
+def draw_fix(win, fixation, duration, trigNum):
     # print('fix_'+ str(trigNum))
     fixStartTime = clock.getTime()  # core.Clock()
     while (clock.getTime() - fixStartTime) < duration:
@@ -285,13 +293,15 @@ def draw_fix(win, fixation, duration):
                 background.draw()
                 square.draw()
             fixation.draw()
+            # send the trigger and flip
+            sendTrigger(time, trigNum, expInfo['EEG'])
             win.flip()
         else:
             core.quit()
 
 # appraisal text
 
-def draw_iti(win, iti_dur):
+def draw_iti(win, iti_dur, trigNum):
     # print('iti_'+str(trigNum))
     iti_time = clock.getTime()
     while (clock.getTime() - iti_time) < iti_dur:
@@ -300,6 +310,8 @@ def draw_iti(win, iti_dur):
             background.fillColor = [col,col,col]
             background.draw()
             square.draw()
+        # send the trigger and flip
+        sendTrigger(time, trigNum, expInfo['EEG'])
         win.flip()
 
 
@@ -430,7 +442,9 @@ while runExperiment:
     # PAUSE (preloading next set of N (pauseAfterEvery) images to achive better timing)
     if (ti+1)%pauseAfterEvery == 0:
         trigNum += 1000
-        print('pause_'+str(trigNum)) 
+        # print('pause_'+str(trigNum)) 
+        # send the trigger and pause
+        sendTrigger(time, trigNum, expInfo['EEG'])
 
         if expInfo['testMonkey'] == '0':
             draw_text(pause_text, float('inf'))
