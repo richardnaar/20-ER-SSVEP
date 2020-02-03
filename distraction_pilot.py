@@ -95,6 +95,7 @@ if expInfo['EEG'] == '1':
         port = parallel.ParallelPort(address=0x378)
     else:
         port = parallel.ParallelPort(address=0xe010)
+        port.setData(0)
     trigNum = 0
 
 # FIND ALL FILES
@@ -216,15 +217,13 @@ expInfo['frequency'] = f
 expInfo['phaseOffset'] = theta
 
 def sendTrigger(trigStart,trigN, EEG):
-    stopSending = 0
     trigTime = clock.getTime() - trigStart 
     if EEG == '1':
         if trigTime < 0.1:
             port.setData(trigN)
-        elif stopSending == 0:
+        else:
             port.setData(0)
-            stopSending = 1
-
+            
 # window, picture (cd/folder/name.jpg), duration, picture name (for data), pitch (octave), amplitude, frequecy, phase offset
 def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
     # print(ti-picCount)
@@ -448,11 +447,13 @@ while runExperiment:
     draw_iti(win, iti_dur, trigNum)
 
     # PAUSE (preloading next set of N (pauseAfterEvery) images to achive better timing)
+    pausStart = win.getFutureFlipTime()
     if (ti+1)%pauseAfterEvery == 0:
         trigNum += 1000
         # print('pause_'+str(trigNum)) 
         # send the trigger and pause
-        sendTrigger(win.getFutureFlipTime(), trigNum, expInfo['EEG'])
+
+        sendTrigger(pauseStart, trigNum, expInfo['EEG'])
 
         if expInfo['testMonkey'] == '0':
             draw_text(pause_text, float('inf'))
