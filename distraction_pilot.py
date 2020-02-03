@@ -275,7 +275,7 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
                 sendTrigger(soundTime, trigNum, expInfo['EEG'])
                 mySound.play()
                 soundPlayed = True
-            else:
+            elif soundPlayed:
                 sendTrigger(soundTime, trigNum, expInfo['EEG'])
 
             # update time    
