@@ -52,7 +52,7 @@ psychopyVersion = '3.2.4'
 # filename of the script
 expName = os.path.basename(__file__) # + data.getDateStr()
 
-expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '1', 'square': '0', 'testMonkey': '1', 'pauseAfterEvery': '20'}
+expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '0', 'square': '0', 'testMonkey': '0', 'pauseAfterEvery': '20'}
 # dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 # if dlg.OK == False:
 #     core.quit()  # user pressed cancel
@@ -91,7 +91,7 @@ expInfo['itiDuration'] = iti_dur
 
 if expInfo['EEG'] == '1':
     from psychopy import parallel
-    expInfo['Chemicum'] == '1':
+    if expInfo['Chemicum'] == '1':
         port = parallel.ParallelPort(address=0x378)
     else:
         port = parallel.ParallelPort(address=0xe010)
@@ -111,7 +111,7 @@ picFolder = ['ssvep_iaps']
 
 # Setup the Window
 win = visual.Window(
-    size=(1920, 1200), fullscr=True, screen=0, color='black', #size=(1920, 1200),
+    size=(1536, 864), fullscr=True, screen=0, color='black', #size=(1920, 1200), 1536, 864
     blendMode='avg', useFBO=True, monitor='mon2',
     units='deg')
 
@@ -285,7 +285,8 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
 def draw_fix(win, fixation, duration, trigNum):
     # print('fix_'+ str(trigNum))
     fixStartTime = clock.getTime()  # core.Clock()
-    while (clock.getTime() - fixStartTime) < duration:
+    time = clock.getTime() - fixStartTime
+    while (time) < duration:
         if not event.getKeys('q'):
             if expInfo['square'] == '1':
                 col = 0.25*sin(2*pi*15*clock.getTime())
@@ -298,13 +299,14 @@ def draw_fix(win, fixation, duration, trigNum):
             win.flip()
         else:
             core.quit()
-
+        time = clock.getTime() - fixStartTime
 # appraisal text
 
 def draw_iti(win, iti_dur, trigNum):
     # print('iti_'+str(trigNum))
     iti_time = clock.getTime()
-    while (clock.getTime() - iti_time) < iti_dur:
+    time = clock.getTime() - iti_time
+    while (time) < iti_dur:
         if expInfo['square'] == '1':
             col = 0.25*sin(2*pi*15*clock.getTime())
             background.fillColor = [col,col,col]
@@ -313,11 +315,13 @@ def draw_iti(win, iti_dur, trigNum):
         # send the trigger and flip
         sendTrigger(time, trigNum, expInfo['EEG'])
         win.flip()
+        time = clock.getTime() - iti_time
 
 
 def draw_text(txt, pause_dur):
     pause_time = clock.getTime()
-    while (clock.getTime() - pause_time) < pause_dur:
+    time = clock.getTime() - pause_time
+    while (time) < pause_dur:
         buttons = mouse.getPressed()
         theseKeys = event.getKeys(keyList=['q', 'space'])
         if len(theseKeys) == 0 and sum(buttons) == 0:
@@ -328,7 +332,7 @@ def draw_text(txt, pause_dur):
             break
         elif theseKeys[0] == 'q':
             core.quit()
-
+        time = clock.getTime() - pause_time
 
 # endregion
 
@@ -422,7 +426,7 @@ while runExperiment:
         fixDuration = fixDuration
 
     trigNum += 1000
-    draw_fix(win, fixation, fixDuration)
+    draw_fix(win, fixation, fixDuration, trigNum)
 
     # save that information on each trial
     thisExp.addData('distraction', distrCond)
@@ -437,7 +441,7 @@ while runExperiment:
 
     # ITI
     trigNum += 1000
-    draw_iti(win, iti_dur)
+    draw_iti(win, iti_dur, trigNum)
 
     # PAUSE (preloading next set of N (pauseAfterEvery) images to achive better timing)
     if (ti+1)%pauseAfterEvery == 0:
