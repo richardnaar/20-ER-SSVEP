@@ -215,10 +215,12 @@ expInfo['flickeringAmplitude'] = A
 expInfo['frequency'] = f
 expInfo['phaseOffset'] = theta
 
-def sendTrigger(time, trigN, EEG):
+def sendTrigger(trigN, EEG):
     stopSending = 0
+    trigStart = clock.getTime()
+    trigTime = clock.getTime() - trigStart 
     if EEG == '1':
-        if time < 0.1:
+        if trigTime < 0.1:
             port.setData(trigN)
         elif stopSending == 0:
             port.setData(0)
@@ -229,7 +231,7 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
     # print(ti-picCount)
     # print('pic_'+ str(trigNum))
 #    image = visual.ImageStim(win, image=pic, size=25)
-    picStartTime = clock.getTime()
+    picStartTime = win.getFutureFlipTime() # clock.getTime()
     # picStartTime = win.getFutureFlipTime(clock='ptb')
     soundPlayed = False
     timeC = 0
@@ -238,10 +240,12 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
 
         if not event.getKeys('q'):
             if expInfo['square'] == '0':
+                time = win.getFutureFlipTime() - picStartTime
                 # image.opacity = (1-A) + ( A*sin(2*pi*f* time +  theta) )
                 images[ti-picCount].opacity = (1-A) + ( A*sin(2*pi*f* time +  theta) )
             else:
-                col = A*sin(2*pi*15*clock.getTime())
+                time = win.getFutureFlipTime() - picStartTime
+                col = A*sin(2*pi*15*time)
                 background.fillColor = [col,col,col]
                 background.draw()
                 square.draw()
@@ -254,12 +258,12 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
             # gabor.draw()
             
             # selle asemele saaks kasutada win.getFutureFlipTime()
-            if timeC == 0:
-                duration = duration + (clock.getTime() - picStartTime) #
-                # print(duration)
-                timeC += 1
+            #if timeC == 0:
+            #    duration = duration + (clock.getTime() - picStartTime) #
+            #    # print(duration)
+            #    timeC += 1
             # send the trigger and flip
-            sendTrigger(time, trigNum, expInfo['EEG'])
+            sendTrigger(trigNum, expInfo['EEG'])
             win.flip()
 
             # play sound half way through
@@ -269,14 +273,14 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
                 # print('sound_'+ str(trigNum))
                 
                 # send the trigger and play
-                sendTrigger(time, trigNum, expInfo['EEG'])
+                sendTrigger(trigNum, expInfo['EEG'])
                 mySound.play()
                 soundPlayed = True
 
             # update time    
-            time = clock.getTime() - picStartTime
         else:
             core.quit()
+    time = clock.getTime() - picStartTime
 
 
 # fixation
@@ -284,18 +288,19 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
 
 def draw_fix(win, fixation, duration, trigNum):
     # print('fix_'+ str(trigNum))
-    fixStartTime = clock.getTime()  # core.Clock()
+    fixStartTime = win.getFutureFlipTime()  # core.Clock()
     time = clock.getTime() - fixStartTime
     while (time) < duration:
         if not event.getKeys('q'):
             if expInfo['square'] == '1':
-                col = 0.25*sin(2*pi*15*clock.getTime())
+                time = clock.getTime() - fixStartTime
+                col = 0.25*sin(2*pi*15*time())
                 background.fillColor = [col,col,col]
                 background.draw()
                 square.draw()
             fixation.draw()
             # send the trigger and flip
-            sendTrigger(time, trigNum, expInfo['EEG'])
+            sendTrigger(trigNum, expInfo['EEG'])
             win.flip()
         else:
             core.quit()
@@ -308,20 +313,20 @@ def draw_iti(win, iti_dur, trigNum):
     time = clock.getTime() - iti_time
     while (time) < iti_dur:
         if expInfo['square'] == '1':
-            col = 0.25*sin(2*pi*15*clock.getTime())
+            time = win.getFutureFlipTime() - fixStartTime
+            col = 0.25*sin(2*pi*15*time)
             background.fillColor = [col,col,col]
             background.draw()
             square.draw()
         # send the trigger and flip
-        sendTrigger(time, trigNum, expInfo['EEG'])
+        sendTrigger(trigNum, expInfo['EEG'])
         win.flip()
         time = clock.getTime() - iti_time
 
 
 def draw_text(txt, pause_dur):
-    pause_time = clock.getTime()
-    time = clock.getTime() - pause_time
-    while (time) < pause_dur:
+    pause_time = win.getFutureFlipTime()
+    while (clock.getTime() - pause_time) < pause_dur:
         buttons = mouse.getPressed()
         theseKeys = event.getKeys(keyList=['q', 'space'])
         if len(theseKeys) == 0 and sum(buttons) == 0:
@@ -332,8 +337,6 @@ def draw_text(txt, pause_dur):
             break
         elif theseKeys[0] == 'q':
             core.quit()
-        time = clock.getTime() - pause_time
-
 # endregion
 
 # for sending the biosemi triggers
@@ -448,7 +451,7 @@ while runExperiment:
         trigNum += 1000
         # print('pause_'+str(trigNum)) 
         # send the trigger and pause
-        sendTrigger(time, trigNum, expInfo['EEG'])
+        sendTrigger(trigNum, expInfo['EEG'])
 
         if expInfo['testMonkey'] == '0':
             draw_text(pause_text, float('inf'))
