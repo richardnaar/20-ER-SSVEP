@@ -273,7 +273,7 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
             # play sound half way through
             if (clock.getTime() - picStartTime) > duration/2 and not soundPlayed:
                 mySound.setSound('A', octave = pitch)
-                trigNum += 100
+                trigNum += 10
                 print('sound_'+ str(trigNum))
                 soundTime = clock.getTime()
                 # send the trigger and play
@@ -438,10 +438,10 @@ while runExperiment:
     # define the pitch according to the distractor condition
     if distrCond == 'distr':
         pitch = 5
-        trigNum += 10
+        trigNum += 3
     else:
         pitch = 3
-        trigNum += 20
+        trigNum += 6
 
     # Draw FIXATION
     if expInfo['testMonkey'] == '0':
@@ -449,7 +449,7 @@ while runExperiment:
     else:
         fixDuration = fixDuration
 
-    trigNum += 100
+    trigNum += 10
     draw_fix(win, fixation, fixDuration, trigNum)
 
     # save that information on each trial
@@ -459,18 +459,18 @@ while runExperiment:
     expInfo['fixDuration'] = fixDuration
 
     # Draw flickering PICTURE
-    trigNum += 100
+    trigNum += 10
     draw_ssvep(win, pic, stimDuration, picName, pitch,A,f,theta, ti, trigNum)
     # trigNum += 100 # sound 
 
     # ITI
-    trigNum += 200
+    trigNum += 20
     draw_iti(win, iti_dur, trigNum)
 
     # PAUSE (preloading next set of N (pauseAfterEvery) images to achive better timing)
     pauseStart = clock.getTime() # win.getFutureFlipTime(clock='ptb')
     if (ti+1)%pauseAfterEvery == 0:
-        trigNum += 100
+        trigNum += 10
         print('pause_'+str(trigNum)) 
         # send the trigger and pause
 
