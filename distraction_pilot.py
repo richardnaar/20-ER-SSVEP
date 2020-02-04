@@ -52,7 +52,7 @@ psychopyVersion = '3.2.4'
 # filename of the script
 expName = os.path.basename(__file__) # + data.getDateStr()
 
-expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '0', 'stimFrequency': '15','square': '1', 'testMonkey': '0', 'pauseAfterEvery': '20'}
+expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '0', 'stimFrequency': '15','square': '0', 'testMonkey': '1', 'pauseAfterEvery': '20'}
 # dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 # if dlg.OK == False:
 #     core.quit()  # user pressed cancel
@@ -229,7 +229,7 @@ def sendTrigger(trigStart,trigN, EEG):
 # window, picture (cd/folder/name.jpg), duration, picture name (for data), pitch (octave), amplitude, frequecy, phase offset
 def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
     # print(ti-picCount)
-    # print('pic_'+ str(trigNum))
+    print('pic_'+ str(trigNum))
 #    image = visual.ImageStim(win, image=pic, size=25)
     
     # units = 'deg', size = (34, 34)
@@ -274,7 +274,7 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
             if (clock.getTime() - picStartTime) > duration/2 and not soundPlayed:
                 mySound.setSound('A', octave = pitch)
                 trigNum += 100
-                # print('sound_'+ str(trigNum))
+                print('sound_'+ str(trigNum))
                 soundTime = clock.getTime()
                 # send the trigger and play
                 sendTrigger(soundTime, trigNum, expInfo['EEG'])
@@ -295,7 +295,7 @@ def draw_ssvep(win, pic, duration, picName, pitch, A, f, theta, ti, trigNum):
 
 
 def draw_fix(win, fixation, duration, trigNum):
-    # print('fix_'+ str(trigNum))
+    print('fix_'+ str(trigNum))
     fixStartTime = clock.getTime() # win.getFutureFlipTime(clock='ptb')  # core.Clock()
     time = clock.getTime() - fixStartTime
     while (time) < duration:
@@ -318,7 +318,7 @@ def draw_fix(win, fixation, duration, trigNum):
 # appraisal text
 
 def draw_iti(win, iti_dur, trigNum):
-    # print('iti_'+str(trigNum))
+    print('iti_'+str(trigNum))
     iti_time = clock.getTime()# win.getFutureFlipTime(clock='ptb')
     time = clock.getTime() - iti_time
     while (time) < iti_dur:
@@ -449,7 +449,7 @@ while runExperiment:
     else:
         fixDuration = fixDuration
 
-    trigNum += 1000
+    trigNum += 100
     draw_fix(win, fixation, fixDuration, trigNum)
 
     # save that information on each trial
@@ -459,19 +459,19 @@ while runExperiment:
     expInfo['fixDuration'] = fixDuration
 
     # Draw flickering PICTURE
-    trigNum += 1000
+    trigNum += 100
     draw_ssvep(win, pic, stimDuration, picName, pitch,A,f,theta, ti, trigNum)
     # trigNum += 100 # sound 
 
     # ITI
-    trigNum += 1000
+    trigNum += 200
     draw_iti(win, iti_dur, trigNum)
 
     # PAUSE (preloading next set of N (pauseAfterEvery) images to achive better timing)
     pauseStart = clock.getTime() # win.getFutureFlipTime(clock='ptb')
     if (ti+1)%pauseAfterEvery == 0:
-        trigNum += 1000
-        # print('pause_'+str(trigNum)) 
+        trigNum += 100
+        print('pause_'+str(trigNum)) 
         # send the trigger and pause
 
         sendTrigger(pauseStart, trigNum, expInfo['EEG'])
