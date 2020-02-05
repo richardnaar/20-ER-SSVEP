@@ -9,6 +9,7 @@ remove indexes after file names (eg 6570.1.jpg to 6570.jpg)
 nb - check randomization (find shuffle)
 counterbalance high and low between conditions (currently: high == distraction)
 viewing angle: 34x28 (Hajcak jt 2013)
+remember: LCM if square 
 comment in: draw_text(pause_text, float('inf'))
 """
 
@@ -412,7 +413,7 @@ while runExperiment:
 
     # Draw FIXATION
     if expInfo['testMonkey'] == '0':
-        fixDuration = 1 # random() + 0.5
+        fixDuration = random() + 0.5
     else:
         fixDuration = fixDuration
 
