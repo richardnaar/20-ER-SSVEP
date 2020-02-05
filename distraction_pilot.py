@@ -41,7 +41,7 @@ psychopyVersion = '3.2.4'
 # filename of the script
 expName = os.path.basename(__file__) # + data.getDateStr()
 
-expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '0', 'stimFrequency': '15','square': '0', 'testMonkey': '1', 'pauseAfterEvery': '20'}
+expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '0', 'stimFrequency': '15','square': '1', 'testMonkey': '1', 'pauseAfterEvery': '20'}
 # dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 # if dlg.OK == False:
 #     core.quit()  # user pressed cancel
@@ -70,7 +70,7 @@ if expInfo['testMonkey'] == '1':
     fixDuration = 4  # fixation duration (will change on every iteration)
     stimDuration = 12.5  # stim duration
     iti_dur = 2
-    soundStart = stimDuration/2
+    soundStart = 6.5
     expInfo['participant'] = 'Monkey'
 else:
     fixDuration = 4 # just the first iti, later will change on trial (random()+0.5)
@@ -138,6 +138,16 @@ clock = core.Clock()
 
 # region INITIALIZE TASK COMPONENTS
 
+#
+if expInfo['square'] == '0':
+    horiz = 34*0.7
+    vert = 28*0.7
+    picSize = (horiz,vert)
+else:
+    horiz = (34*0.7)-5
+    vert = (28*0.7)-5
+    picSize = (horiz,vert)
+
 pause_text = 'See on paus. Jätkamiseks vajuta palun hiireklahvi . . .'
 
 start_text = 'Palun oota kuni eksperimentaator käivitab mõõtmise . . . \n\n Programmi sulgemiseks vajuta: "q"'
@@ -163,7 +173,7 @@ fixation = visual.ShapeStim(
 
 background = visual.Rect(
     win=win,units='deg', 
-    width=(25, 25)[0], height=(20, 20)[1],
+    width=(horiz+5, horiz+5)[0], height=(vert+5, vert+5)[1],
     ori=0, pos=(0, 0),
     lineWidth=0, lineColor=[1,1,1], lineColorSpace='rgb',
     fillColor=[1,1,1], fillColorSpace='rgb',
@@ -171,7 +181,7 @@ background = visual.Rect(
 
 square = visual.Rect(
     win=win,units='deg', 
-    width=(20, 20)[0], height=(15, 15)[1],
+    width=(horiz, horiz)[0], height=(vert, vert)[1],
     ori=0, pos=(0, 0),
     lineWidth=0, lineColor=[1,1,1], lineColorSpace='rgb',
     fillColor=[-1,-1,-1], fillColorSpace='rgb',
@@ -223,7 +233,7 @@ def draw_ssvep(win, duration, pitch, A, f, theta, ti, trigNum):
                 images[ti-picCount].opacity = (1-A) + ( A*sin(2*pi*f* time +  theta) )
             else:
                 time = win.getFutureFlipTime(clock='ptb') - picStartTime
-                col = 0.25*sin(2*pi*f*time)
+                col = A*sin(2*pi*f*time)
                 background.fillColor = [col,col,col]
                 background.draw()
                 square.draw()
@@ -349,9 +359,8 @@ shuffle(appraisalCondNtr)
 
 images = []
 for file in trials[0:pauseAfterEvery]:
-    images.append(visual.ImageStim(win=win, image=  pic_dir + '\\' + str(picSeries[file]) + '.jpg', units = 'deg', size = (25,20), name=str(picSeries[file])))
-    if expInfo['square'] == '1':
-        images[-1].size = (20,15)
+    images.append(visual.ImageStim(win=win, image=  pic_dir + '\\' + str(picSeries[file]) + '.jpg', units = 'deg', size = picSize, name=str(picSeries[file])))
+
 #endregion
 
 # region THIS IS THE TRIAL LOOP
@@ -449,9 +458,7 @@ while runExperiment:
             end = nTrials
         # PRELOAD PICTURES FOR EACH BLOCK    
         for file in trials[start:end]:
-            images.append(visual.ImageStim(win=win, image=  pic_dir + '\\' + str(picSeries[file]) + '.jpg', units = 'deg', size = (25,20), name=str(picSeries[file])))
-            if expInfo['square'] == '1':
-                images[-1].size = (20,15)
+            images.append(visual.ImageStim(win=win, image=  pic_dir + '\\' + str(picSeries[file]) + '.jpg', units = 'deg', size = picSize, name=str(picSeries[file])))
 
     thisExp.nextEntry()
     ti += 1
