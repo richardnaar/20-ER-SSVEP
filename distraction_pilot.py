@@ -67,13 +67,13 @@ thisExp = data.ExperimentHandler(
 
 # Set durartions
 if expInfo['testMonkey'] == '1':
-    fixDuration = 4  # fixation duration (will change on every iteration)
-    stimDuration = 12.5  # stim duration
-    iti_dur = 2
-    soundStart = 6.5
+    fixDuration = 0.1 # 4  # fixation duration (will change on every iteration)
+    stimDuration = 0.1# 12.5  # stim duration
+    iti_dur = 0.1#2
+    soundStart = 0 # 6.5
     expInfo['participant'] = 'Monkey'
 else:
-    fixDuration = 4 # just the first iti, later will change on trial (random()+0.5)
+    fixDuration = 4 # just the first iti, later will change on every trial (random()+0.5)
     stimDuration = 12.5  # stim duration
     iti_dur = 2
     soundStart = 6.5
@@ -126,11 +126,12 @@ m.setVisible(False)
 mouse = event.Mouse(win=win)
 
 expInfo['frameRate'] = win.getActualFrameRate()
+print(expInfo['frameRate'])
 if expInfo['frameRate'] != None:
-    frameDur = 1.0 / round(expInfo['frameRate']) # save data
+    frameDur = round(expInfo['frameRate']) # save data
 else:
-    frameDur = 1.0 / 60.0  # could not measure, so guess
-
+    frameDur = 'NaN'  # could not measure, so guess
+print('the monitor refreshrate is: '+ str(frameDur))
 
 # Initiate clock to keep track of time
 clock = core.Clock()
@@ -430,7 +431,8 @@ while runExperiment:
     thisExp.addData('distraction', distrCond)
     thisExp.addData('valence', picConditon[trials[ti]])
     thisExp.addData('pictureID', picName)
-    expInfo['fixDuration'] = fixDuration
+    thisExp.addData('fixDuration', fixDuration)
+    thisExp.addData('triaslN', ti+1)
 
     # ITI
     trigNum += 20
@@ -451,8 +453,8 @@ while runExperiment:
 
         picCount += pauseAfterEvery
         images = [] 
-        start = ti
-        end = ti+pauseAfterEvery
+        start = ti+1
+        end = start+pauseAfterEvery
 
         if end > nTrials:
             end = nTrials
