@@ -68,7 +68,7 @@ thisExp = data.ExperimentHandler(
 
 # Set durartions
 if expInfo['testMonkey'] == '1':
-    fixDuration = 4  # fixation duration (will change on every iteration)
+    fixDuration = 1  # fixation duration (will change on every iteration)
     stimDuration = 12.6  # stim duration
     iti_dur = 2
     soundStart = 6.5
@@ -231,7 +231,7 @@ def draw_ssvep(win, duration, pitch, A, f, theta, ti, trigNum):
 
         if not event.getKeys('q'):
             if expInfo['square'] == '0':
-                time = win.getFutureFlipTime(clock='ptb') - picStartTime
+                time = clock.getTime() - picStartTime # win.getFutureFlipTime(clock='ptb')
                 images[ti-picCount].opacity = (1-A) + ( A*sin(2*pi*f* time +  theta) )
             else:
                 time = win.getFutureFlipTime(clock='ptb') - picStartTime
@@ -244,11 +244,11 @@ def draw_ssvep(win, duration, pitch, A, f, theta, ti, trigNum):
 
             images[ti-picCount].draw()
             
-            # not sure if this is really necessary
-            if timeC == 0:
-                duration = duration + (clock.getTime() - picStartTime) #
-                # print(duration)
-                timeC += 1
+            # # not sure if this is really necessary
+            # if timeC == 0:
+            #     duration = duration + (clock.getTime() - picStartTime) #
+            #     # print(duration)
+            #     timeC += 1
 
             # send the trigger and flip
             if not soundPlayed:
@@ -283,7 +283,7 @@ def draw_fix(win, fixation, duration, trigNum):
     while (time) < duration:
         if not event.getKeys('q'):
             if expInfo['square'] == '1':
-                time = win.getFutureFlipTime(clock='ptb') - fixStartTime
+                time = clock.getTime() - fixStartTime #win.getFutureFlipTime(clock='ptb')
                 col = A*sin(2*pi*f*time)
                 background.fillColor = [col,col,col]
                 background.draw()
@@ -305,7 +305,7 @@ def draw_iti(win, iti_dur, trigNum):
     time = clock.getTime() - iti_time
     while (time) < iti_dur:
         if expInfo['square'] == '1':
-            time = win.getFutureFlipTime(clock='ptb') - iti_time
+            time = clock.getTime() - iti_time # win.getFutureFlipTime(clock='ptb') 
             col = A*sin(2*pi*f*time)
             background.fillColor = [col,col,col]
             background.draw()
