@@ -412,7 +412,7 @@ while runExperiment:
 
     # Draw FIXATION
     if expInfo['testMonkey'] == '0':
-        fixDuration = random() + 0.5
+        fixDuration = 1 # random() + 0.5
     else:
         fixDuration = fixDuration
 
