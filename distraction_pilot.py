@@ -8,6 +8,7 @@ SSVEP task 04/02/2020
 # remove indexes after file names (eg 6570.1.jpg to 6570.jpg)
 # nb - check randomization (find shuffle)
 # counterbalance high and low between conditions (currently: high == distraction)
+# viewing angle: 34x28 (Hajcak jt 2013)
 """
 
 # region IMPORT MODULES
@@ -66,14 +67,16 @@ thisExp = data.ExperimentHandler(
 
 # Set durartions
 if expInfo['testMonkey'] == '1':
-    fixDuration = 0.2  # fixation duration (will change on every iteration)
-    stimDuration = 0.6  # stim duration
-    iti_dur = 0.1
+    fixDuration = 4  # fixation duration (will change on every iteration)
+    stimDuration = 12.5  # stim duration
+    iti_dur = 2
+    soundStart = stimDuration/2
     expInfo['participant'] = 'Monkey'
 else:
     fixDuration = 4 # just the first iti, later will change on trial (random()+0.5)
-    stimDuration = 13  # stim duration
+    stimDuration = 12.5  # stim duration
     iti_dur = 2
+    soundStart = 6.5
 
 expInfo['stimDuration'] = stimDuration # save data
 expInfo['itiDuration'] = iti_dur # save data
@@ -137,7 +140,7 @@ clock = core.Clock()
 
 pause_text = 'See on paus. Jätkamiseks vajuta palun hiireklahvi . . .'
 
-start_text = 'Palun oota kuni eksperimentaator käivitab mõõtmise . . . \n\n Press "q" to quit'
+start_text = 'Palun oota kuni eksperimentaator käivitab mõõtmise . . . \n\n Programmi sulgemiseks vajuta: "q"'
 
 goodbye_text = 'Katse on lõppenud. Programmi sulgemiseks vajuta palun hiireklahvi . . . '
 
@@ -241,7 +244,7 @@ def draw_ssvep(win, duration, pitch, A, f, theta, ti, trigNum):
             win.flip()
 
             # play sound half way through
-            if (clock.getTime() - picStartTime) > duration/2 and not soundPlayed:
+            if (clock.getTime() - picStartTime) > soundStart and not soundPlayed:
                 mySound.setSound('A', octave = pitch)
                 trigNum += 10
                 # print('sound_'+ str(trigNum))
