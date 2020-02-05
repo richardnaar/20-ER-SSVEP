@@ -3,12 +3,13 @@
 
 """
 SSVEP task 04/02/2020
-# monitor setting (e.g. mon2 to testMonitor)
-# set up a iaps folder (ssvep_iaps)
-# remove indexes after file names (eg 6570.1.jpg to 6570.jpg)
-# nb - check randomization (find shuffle)
-# counterbalance high and low between conditions (currently: high == distraction)
-# viewing angle: 34x28 (Hajcak jt 2013)
+monitor setting (e.g. mon2 to testMonitor)
+set up a iaps folder (ssvep_iaps)
+remove indexes after file names (eg 6570.1.jpg to 6570.jpg)
+nb - check randomization (find shuffle)
+counterbalance high and low between conditions (currently: high == distraction)
+viewing angle: 34x28 (Hajcak jt 2013)
+comment in: draw_text(pause_text, float('inf'))
 """
 
 # region IMPORT MODULES
@@ -67,14 +68,14 @@ thisExp = data.ExperimentHandler(
 
 # Set durartions
 if expInfo['testMonkey'] == '1':
-    fixDuration = 0.1 # 4  # fixation duration (will change on every iteration)
-    stimDuration = 0.1# 12.5  # stim duration
-    iti_dur = 0.1#2
-    soundStart = 0 # 6.5
+    fixDuration = 4  # fixation duration (will change on every iteration)
+    stimDuration = 12.6  # stim duration
+    iti_dur = 2
+    soundStart = 6.5
     expInfo['participant'] = 'Monkey'
 else:
     fixDuration = 4 # just the first iti, later will change on every trial (random()+0.5)
-    stimDuration = 12.5  # stim duration
+    stimDuration = 12.6  # stim duration
     iti_dur = 2
     soundStart = 6.5
 
@@ -131,7 +132,7 @@ if expInfo['frameRate'] != None:
     frameDur = round(expInfo['frameRate']) # save data
 else:
     frameDur = 'NaN'  # could not measure, so guess
-print('the monitor refreshrate is: '+ str(frameDur))
+print('the monitor refresh rate is: '+ str(frameDur))
 
 # Initiate clock to keep track of time
 clock = core.Clock()
@@ -237,7 +238,7 @@ def draw_ssvep(win, duration, pitch, A, f, theta, ti, trigNum):
                 col = A*sin(2*pi*f*time)
                 background.fillColor = [col,col,col]
                 background.draw()
-                square.draw()
+                #square.draw()
 
             # Draw an image
 
@@ -259,7 +260,7 @@ def draw_ssvep(win, duration, pitch, A, f, theta, ti, trigNum):
                 mySound.setSound('A', octave = pitch)
                 trigNum += 10
                 # print('sound_'+ str(trigNum))
-                soundTime = clock.getTime()
+                soundTime = win.getFutureFlipTime(clock='ptb') # clock.getTime()
                 # send the trigger and play
                 sendTrigger(soundTime, trigNum, expInfo['EEG'])
                 mySound.play()
@@ -445,7 +446,8 @@ while runExperiment:
         # print('pause_'+str(trigNum)) 
 
         if expInfo['testMonkey'] == '0':
-            draw_text(pause_text, float('inf'))
+            #draw_text(pause_text, float('inf'))
+            draw_text(pause_text, 0.2)
         else:
             draw_text(pause_text, 0.2)
 
