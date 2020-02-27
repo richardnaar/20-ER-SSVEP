@@ -8,8 +8,8 @@ locfile =   ' C:\Program Files\MATLAB\R2014a\toolbox\eeglab13_6_5b\32_4EOG.ced';
 
 %% IMPORT LIGHT SENSOR DATA
 
-% impdir = [datDir, 'Light\'];                                                % import directory
-impdir = [datDir, 'Pilot\'];                                                % import directory
+impdir = [datDir, 'Light\'];                                                % import directory
+%impdir = [datDir, 'Pilot\'];                                                % import directory
 cleandir = [datDir, 'Clean\'];
 
 implist = dir([impdir, '*.bdf']);                                           % make a fresh list of the contents of the raw files directory (input of this loop)
@@ -21,10 +21,10 @@ fprintf('loading participant: %s \n', implist(subi).name);
 
 ALLEEG = []; EEG = []; CURRENTSET = [];                                     % erase anything in the eeglab. 
         
-dat = openbdf([impdir, implist(subi).name]);                                % avab faili, et lugeda kanalite arvu
-event = strmatch('Status', {dat.Head.Label},'exact');                       % leiab event kanali asukoha
-erg1 = strmatch('Erg1', {dat.Head.Label}, 'exact');                         % leiab Erg1 kanali asukoha
-exg1 = strmatch('EXG1', {dat.Head.Label}, 'exact');
+dat2plot = openbdf([impdir, implist(subi).name]);                                % avab faili, et lugeda kanalite arvu
+event = strmatch('Status', {dat2plot.Head.Label},'exact');                       % leiab event kanali asukoha
+erg1 = strmatch('Erg1', {dat2plot.Head.Label}, 'exact');                         % leiab Erg1 kanali asukoha
+exg1 = strmatch('EXG1', {dat2plot.Head.Label}, 'exact');
 clear dat;                                                                  % kuna see fail võib ruumi võtta, kustutame ära
 
 % EEG = pop_biosig([impdir, implist(subi).name]); 
@@ -44,7 +44,12 @@ EEG = pop_chanedit(EEG, 'load',{[datDir 'BioSemi64_4.loc'] 'filetype' 'autodetec
 
 % FIND EVENTS
 trig.tSeq = {'1' 'fix'; '2' 'pic'; '3' 'sound'; '4' 'iti'; '5' 'pause'};
-trig.cond = {'1' 'neg'; '2' 'ntr'; '3' 'distr'; '6' 'non-distr'};
+
+if strcmp(implist(subi).name, '112_20_ER_SSVEP.bdf')
+    trig.cond = {'1' 'neg'; '2' 'ntr'; '6' 'distr'; '3' 'non-distr'};
+else
+    trig.cond = {'1' 'neg'; '2' 'ntr'; '3' 'distr'; '6' 'non-distr'};
+end
 
 for eventi = 1:length(EEG.event)
     
@@ -103,7 +108,9 @@ fprintf('Found %d events. \n', length(eventOffset))
 % electrodes = {'O1', 'Oz', 'O2', 'POz', 'P1', 'P2', 'PO3', 'PO4'};'P7','P8'
 electrodes = {'O1', 'Oz', 'O2', 'PO7', 'Po8', 'PO3', 'PO4' };
 
+
 elec2plot = find(ismember({EEG.chanlocs.labels}, electrodes)); % find electrode indexes
+% elec2plot = 73;
 
 fprintf('\nNumber of electrodes aggregated:  %d ', length(elec2plot)); fprintf('\n')
 
@@ -195,19 +202,33 @@ end % next segment
 end % next sub
 %%
 % dataStruct{:}
+colors = {'k','r'};
+figure(2)
+subid = 2; fprintf( ['\nsubjects(s): ', dataStruct{1}{ subid }, '\n'] )
+segment = 3; fprintf( ['segment(s): ', dataStruct{2}{ segment }, '\n'] )
+valence = 1:2; fprintf( ['segment(s): ', dataStruct{3}{ valence }, '\n'] )
+condition = 1:2; fprintf( ['condition(s): ', dataStruct{4}{ condition }, '\n'] )
 
-juku = cell2mat(grandAverage);
-dat = squeeze( mean(mean(juku(:,2,:,:),3),4) );
-dat = squeeze( mean(juku(:,2,2,:),4) ); % ntr vs neg
-dat = squeeze( mean(juku(:,3,:,2),3) ); % distr vs non-distr
-dat = squeeze( mean(mean(juku(:,3,:,:),3),4) ); % pre vs post
+
+dat2plot = grandAverage(subid, segment, valence, condition);
+dat2plot = cell2mat( squeeze(dat2plot));
+col2avg = length(size(dat2plot))-1;
+
+for x = 1:col2avg
+dat2plot = squeeze(mean(dat2plot, 2));
+end
+
+% dat2plot = squeeze( mean(mean(juku(:,2,:,:),3),4) );
+% dat2plot = squeeze( mean(juku(:,2,2,:),4) ); % ntr vs neg
+% dat2plot = squeeze( mean(juku(:,3,:,2),3) ); % distr vs non-distr
+% dat2plot = squeeze( mean(mean(juku(:,3,:,:),3),4) ); % pre vs post
 
 
-fdat = abs(dat(1:99)).^2;
+fdat = abs(dat2plot(1:199)).^2;
 
 snrE = zeros(1,size(fdat,1));
-skipbins =  1; % 1 Hz, hard-coded! (not skipping)
-numbins  = 2; %  2 Hz, also hard-coded!
+skipbins =  2; % 1 Hz, hard-coded! (not skipping)
+numbins  = 4; %  2 Hz, also hard-coded!
 
 % loop over frequencies and compute SNR
 for hzi=numbins+1:length(fdat)-numbins-1
@@ -223,18 +244,24 @@ hz = 0:.5:round((EEG.srate*2));
 
 
 % stem(hz(1:size(snrE,2)),snrE, 'r')
-stem(hz(1:size(snrE,2)),snrE,'--k','linew',3,'markersize',2.5)
+
+    
+stem(hz(1:size(snrE,2)),snrE,['', colors{gcf}],'linew',3,'markersize',2.5)
 hold
+%stem(hz(1:size(snrE,2)),snrE,['', colors{2}],'linew',3,'markersize',2.5)
 
-col = zeros(size(snrE)); col(find(hz == 37.5)) = 1; col = col .*snrE; col(find(col == 0)) = NaN;
-stem(hz(1:size(col,2)),col,'k','linew',3,'markersize',2.5)
+% col = zeros(size(snrE)); col(find(hz == 37.5)) = 1; col = col .*snrE; col(find(col == 0)) = NaN;
+% stem(hz(1:size(col,2)),col,colors{gcf},'linew',3,'markersize',2.5)
+% 
+% legend({'Other'; 'Stim'},'FontSize',12)
+% ylabel('SNR','FontSize',12); xlabel('Frequency', 'FontSize',12)  
 
-legend({'Other'; 'Stim'},'FontSize',12)
-ylabel('SNR','FontSize',12); xlabel('Frequency', 'FontSize',12)  
+%legend({'Light sensor measurement'},'FontSize',12)
+%legend({'LS (ntr)', 'LS (neg)'},'FontSize',12)
 
 
-set(gca,'ylim',[0 max(snrE)+2], 'FontSize',12)
-set(gca,'xlim',[1 48], 'FontSize',12)
+set(gca,'ylim',[0 max(snrE)+20], 'FontSize',12)
+set(gca,'xlim',[1 99], 'FontSize',12)
 
 
 %% ntr vs neg
