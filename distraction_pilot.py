@@ -208,7 +208,7 @@ mySound = sound.Sound(
 
 def sendTrigger(trigStart, trigN, EEG):
     trigTime = clock.getTime() - trigStart
-    if EEG == '1':
+    if EEG == '0':
         if trigTime < 0.025 and trigTime > 0:  # send trigger for 25 ms and do not send the trigger before next flip time
             port.setData(trigN)
         else:
@@ -231,7 +231,7 @@ expInfo['phaseOffset'] = theta  # save data
 def draw_ssvep(win, duration, pitch, A, f, theta, ti, trigNum):
     # print(ti-picCount)
     # print('pic_'+ str(trigNum))
-    picStartTime = clock.getTime()  # win.getFutureFlipTime(clock='ptb')??
+    picStartTime = win.getFutureFlipTime(clock='ptb')  # clock.getTime()  #
     soundPlayed = False
     timeC = 0
     time = clock.getTime() - picStartTime
@@ -287,7 +287,8 @@ def draw_ssvep(win, duration, pitch, A, f, theta, ti, trigNum):
 # fixation
 def draw_fix(win, fixation, duration, trigNum):
     # print('fix_'+ str(trigNum))
-    fixStartTime = clock.getTime()  # win.getFutureFlipTime(clock='ptb')  # core.Clock()
+    # win.getFutureFlipTime(clock='ptb')  # core.Clock()
+    fixStartTime = win.getFutureFlipTime(clock='ptb')
     time = clock.getTime() - fixStartTime
     while (time) < duration:
         if not event.getKeys('q'):
@@ -312,7 +313,7 @@ def draw_fix(win, fixation, duration, trigNum):
 
 def draw_iti(win, iti_dur, trigNum):
     # print('iti_'+str(trigNum))
-    iti_time = clock.getTime()
+    iti_time = win.getFutureFlipTime(clock='ptb')  # clock.getTime()
     time = clock.getTime() - iti_time
     while (time) < iti_dur:
         if expInfo['square'] == '1':
