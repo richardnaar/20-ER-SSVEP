@@ -44,7 +44,7 @@ psychopyVersion = '3.2.4'
 expName = os.path.basename(__file__)  # + data.getDateStr()
 
 expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '0',
-           'stimFrequency': '15', 'square': '0', 'testMonkey': '0', 'pauseAfterEvery': '20'}
+           'stimFrequency': '15', 'square': '0', 'testMonkey': '1', 'pauseAfterEvery': '20', 'countFrames': '1'}
 # dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 # if dlg.OK == False:
 #     core.quit()  # user pressed cancel
@@ -72,7 +72,7 @@ thisExp = data.ExperimentHandler(
 # Set durartions
 if expInfo['testMonkey'] == '1':
     fixDuration = 0.1  # fixation duration (will change on every iteration)
-    stimDuration = 0.126  # stim duration
+    stimDuration = 1  # 0.126  # stim duration
     iti_dur = 0.2
     soundStart = 0.65
     expInfo['participant'] = 'Monkey'
@@ -231,17 +231,24 @@ expInfo['phaseOffset'] = theta  # save data
 def draw_ssvep(win, duration, pitch, A, f, theta, ti, trigNum):
     # print(ti-picCount)
     # print('pic_'+ str(trigNum))
-    picStartTime = clock.getTime()  # win.getFutureFlipTime(clock='ptb')  # 
+    picStartTime = clock.getTime()  # win.getFutureFlipTime(clock='ptb')  #
+    frameN = 0
     soundPlayed = False
     timeC = 0
     time = clock.getTime() - picStartTime
     while (time) < duration:
-
+        frameN += 1
         if not event.getKeys('q'):
-            if expInfo['square'] == '0':
+            if expInfo['square'] == '0' and expInfo['countFrames'] == '0':
                 time = clock.getTime() - picStartTime  # win.getFutureFlipTime(clock='ptb')
                 images[ti-picCount].contrast = (1-A) + \
                     (A*sin(2*pi*f * time + theta))
+            elif expInfo['countFrames'] == '1':
+                if frameN % 2 == 0:
+                    images[ti-picCount].contrast = 1
+                else:
+                    images[ti-picCount].contrast = 1-(2*A)
+
             else:
                 time = win.getFutureFlipTime(clock='ptb') - picStartTime
                 col = A*sin(2*pi*f*time)
@@ -313,7 +320,7 @@ def draw_fix(win, fixation, duration, trigNum):
 
 def draw_iti(win, iti_dur, trigNum):
     # print('iti_'+str(trigNum))
-    iti_time = clock.getTime() # win.getFutureFlipTime(clock='ptb')  # 
+    iti_time = clock.getTime()  # win.getFutureFlipTime(clock='ptb')  #
     time = clock.getTime() - iti_time
     while (time) < iti_dur:
         if expInfo['square'] == '1':
