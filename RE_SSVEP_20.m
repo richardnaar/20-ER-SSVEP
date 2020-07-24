@@ -38,7 +38,9 @@ exg1 = strmatch('EXG1', {dat2plot.Head.Label}, 'exact');
 clear dat;                                                                  % kuna see fail võib ruumi võtta, kustutame ära
 
 EEG = pop_biosig([impdir, implist(subi).name]); 
-if lightSensor == 0; EEG = pop_biosig([impdir, implist(subi).name], 'ref',exg1+4:exg1+5)        % reference at EXG5 and EXG6
+if lightSensor == 0
+    
+EEG = pop_biosig([impdir, implist(subi).name], 'ref',exg1+4:exg1+5);       % reference at EXG5 and EXG6
  
 [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, CURRENTSET, 'setname', implist(subi).name(1:end-4));% imporditud andmestiku salvestamine
 
@@ -89,7 +91,13 @@ end
 % %% find events
 
 events = {'pic'}; % 'pic_non-distr_pos'
-segment = {'first', 'first-second', 'second'};
+% segment = {'first', 'first-second', 'second'}; segv = 0; % old segments
+% segment = {'first', 'second', 'third', 'fourth', 'fifth'}; segv = 1;
+segment = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'}; segv = 1;
+% segment = {'1', '2', '3', '4', '5', '6'}; segv = 1;
+
+
+segTime = (0:2:24)*EEG.srate;
 valence = {'ntr', 'neg'};
 distrCond = {'non-distr', 'distr'};
 
@@ -104,6 +112,12 @@ for segIndx = 1:length(segment)
 
     allIndx = find( strcmp({EEG.event.type}, events{typeIndx}) .*  strcmp({EEG.event.valence}, valence{valIndx}) ... 
         .* strcmp({EEG.event.distrCond}, distrCond{condIndx}) );
+
+% new segments
+if segv == 1
+    eventOnset = {EEG.event(allIndx).latency}; % find start of the epoch 
+else
+%old segments    
 if segIndx < 3
     eventOffset = {EEG.event(allIndx+segIndx).latency}; % find event offset (sound, iti == 2)
     eventOnset = {EEG.event(allIndx).latency}; % find start of the epoch 
@@ -111,13 +125,15 @@ else
     eventOffset = {EEG.event(allIndx+2).latency}; % iti
     eventOnset = {EEG.event(allIndx+1).latency}; % sound
 end
+
+end
 % fprintf('Found %d events. \n', currentIndx-1)
-fprintf('Found %d events. \n', length(eventOffset))
+fprintf('Found %d events. \n', length(eventOnset))
 
 %% select channels
 % electrodes = {'O1', 'Oz', 'O2', 'POz', 'P1', 'P2', 'PO3', 'PO4'};'P7','P8'
 if lightSensor == 0
-electrodes = {'O1', 'Oz', 'O2', 'PO7', 'PO8', 'PO3', 'PO4' };
+electrodes = {'O1', 'Oz', 'O2','PO3', 'PO4'}; %  'PO8' [0], ,'PO7'  
 % electrodes = {'Oz'};
 else
 electrodes = {'Erg1'};    
@@ -129,34 +145,35 @@ elec2plot = find(ismember({EEG.chanlocs.labels}, electrodes)); % find electrode 
 fprintf('\nNumber of electrodes aggregated:  %d ', length(elec2plot)); fprintf('\n')
 
 %%
-transient = 0.5; % this is in seconds
+if lightSensor == 1;transient = 0; else transient = 0.5; end % this is in seconds
 srate = EEG.srate;
 %%
 thisCueEvent = 0;
 meanComplexFFT = [];
-while (thisCueEvent <= length(eventOffset)-2)
+while (thisCueEvent <= length(eventOnset)-2)
 thisCueEvent = thisCueEvent + 1;
-     
-%      startSample = round(eventOnset(thisCueEvent)+transient*srate); % subtract the transient off from the start
-% 
-%      endSample = round(eventOffset(thisCueEvent)); 
-%      
+startSampleERP = round(eventOnset{thisCueEvent}+transient*srate);
+
+if segv == 1
+% new segments start
+    startSample = round(eventOnset{thisCueEvent}+transient*srate + segTime(segIndx)); 
+    trialDur = 2; % 
+% new segments end
+else    
+% old segments      
      startSample = round(eventOnset{thisCueEvent}+transient*srate); % subtract the transient off from the start
-     startSampleERP = round(eventOnset{thisCueEvent}+transient*srate);
-
-     endSample = round(eventOffset{thisCueEvent}); 
-     
-%      trialDur = round((endSample-startSample)/1000)*1000; % 
+     endSample = round(eventOffset{thisCueEvent});     
      trialDur = round((endSample-startSample)/srate); % 
-
+% end of old segments 
+end
      % redifine the end or the start (for coherent averaging)
      endSample = startSample+trialDur*srate; % find the event offset if the epoch is calculated from cue event
-
           
     % Pull out a timeseries that follows/preceeds the event 
 
     allSamples = EEG.data(elec2plot,startSample:endSample-1); % channels
-    allSamplesERP = EEG.data(elec2plot,startSampleERP:endSample-1)-mean(EEG.data(elec2plot,startSampleERP-(srate*0.25):startSampleERP-1));
+    allSamplesERP = EEG.data(elec2plot,startSampleERP:endSample-1); %-mean(EEG.data(elec2plot,startSampleERP-(srate*0.25):startSampleERP-1),2);
+%     allSamplesERP = bsxfun(@minus, EEG.data(elec2plot,startSampleERP:endSample-1), mean(EEG.data(elec2plot,startSampleERP-(srate*0.25):startSampleERP-1),2)); 
     % eventIndx = 1:length(event) % loop through the event categories
 
     if size(elec2plot,2) > 1
@@ -164,10 +181,13 @@ thisCueEvent = thisCueEvent + 1;
         allSamplesERP=squeeze(mean(allSamples(1:end-1, :))); % mean of channels
     end
     
+    allSamplesERP = allSamplesERP-mean(mean(EEG.data(elec2plot,startSampleERP-(srate*0.25):startSampleERP-1),2));
+    
     % We can now bin into 1 second intervals
     rebinnedData=reshape(allSamples, EEG.srate*2,trialDur/2);
     fftRebinned=fft(rebinnedData); % Perform FFT down time
     
+    meanERP{subi, segIndx, valIndx, condIndx, thisCueEvent} = allSamplesERP;
     meanComplexFFT(:,thisCueEvent) = mean(fftRebinned,2); % nb abs % This is the mean complex FFT for this trial (averaged across bins)
     grandAverageERP{subi, segIndx, valIndx, condIndx, thisCueEvent} = allSamplesERP; 
 end
@@ -217,21 +237,30 @@ allSnrE{subi, segIndx, valIndx, condIndx} = snrE;
 end % next segment
 end % next sub
 
-save([datDir, 'grandAverage_pilot_lightSensor'], 'grandAverage', '-v7.3');
+% save([datDir, 'grandAverage_pilot_lightSensor'], 'grandAverage', '-v7.3');
+save([datDir, 'grandAverage_pilot_lightSensor_framesLong'], 'grandAverage', '-v7.3')
+% save([datDir, 'grandAverage_pilot_segments'], 'grandAverage', '-v7.3');
+% save([datDir, 'grandAverage_pilot'], 'grandAverage', '-v7.3');
+
 %%
 % dataStruct{:}
 
 implistavg = dir([datDir, '*.mat']); 
-load([datDir, implistavg(3).name]); % load data
+load([datDir, implistavg(5).name]); % load data
 %%
 cd('C:\Users\Richard Naar\Documents\dok\ssvep\Proof of concept\artiklid ja raamatud (Liisa)\20-ER-SSVEP\Figures')
 srate = 512;
 %%
 
-colors = {'k','r'};
-figure(1)
-subid = 2; fprintf( ['\nsubjects(s): ', dataStruct{1}{ subid }, '\n'] )
-segment = 2; fprintf( ['segment(s): ', dataStruct{2}{ segment }, '\n'] )
+colors = {'k','m','b','g','y','r', '--k','--m','--b','--g','--y','--r'};
+figure(2)
+hold
+
+N = 12;
+ij = 1;
+for ij = 1:N
+subid = 1; fprintf( ['\nsubjects(s): ', dataStruct{1}{ subid }, '\n'] )
+segment = ij; fprintf( ['segment(s): ', dataStruct{2}{ segment }, '\n'] )
 valence = 1:2; fprintf( ['segment(s): ', dataStruct{3}{ valence }, '\n'] )
 condition = 1:2; fprintf( ['condition(s): ', dataStruct{4}{ condition }, '\n'] )
 
@@ -241,11 +270,18 @@ dat2plot = grandAverage(subid, segment, valence, condition);
 
 dat2plot = squeeze(cat(4,dat2plot{:}));
 % dat2plot = abs(mean(dat2plot,2)).^2;
+dat2plot = mean(dat2plot,2);
+
 % 
 % stem(dat2plot,['', colors{gcf}],'linew',3,'markersize',2.5)
 
 
-fdat = abs(dat2plot(1:99)).^2;
+fdat = abs(dat2plot(1:99)).^2; % fdat = dat2plot(1:99); %
+% fdat = abs(dat2plot(1:99));
+% hz = 0:.5:round((srate*2));
+% plot(hz(2:99),fdat(2:99),['', colors{1}],'linew',3,'markersize',2.5) %+0.2*(ij-1)
+% hold
+% legend({'Sub1'; 'Sub2'},'FontSize',12)
 
 snrE = zeros(1,size(fdat,1));
 skipbins =  4; %2 2 Hz, hard-coded! (not skipping)
@@ -261,31 +297,34 @@ end
 
 nfft = ceil( srate/.5 ); % .5 Hz resolution
 % hz = linspace(0,round(srate),nfft);
-hz = 0:.5:round((srate*2));
+
 
 
 % stem(hz(1:size(snrE,2)),snrE, 'r')
+% % legend({'1st'; '2nd'; '3rd'; '4th'; '5th';},'FontSize',12)
+% wins = 1:segment;
+% legend({num2str(wins')},'FontSize',12)
 
-    
-stem(hz(1:size(snrE,2)),snrE,['', colors{gcf}],'linew',3,'markersize',2.5)
-hold
+stem(hz(1:size(snrE,2))+0.2*(ij-1),snrE,['', colors{ij}],'linew',3,'markersize',2.5) %+0.2*(ij-1)
+% hold
 %stem(hz(1:size(snrE,2)),snrE,['', colors{2}],'linew',3,'markersize',2.5)
 
-col = zeros(size(snrE)); col(find(hz == 37.5)) = 1; col = col .*snrE; col(find(col == 0)) = NaN;
-stem(hz(1:size(col,2)),col,colors{2},'linew',3,'markersize',2.5)
+% col = zeros(size(snrE)); col(find(hz == 37.5)) = 1; col = col .*snrE; col(find(col == 0)) = NaN;
+% stem(hz(1:size(col,2)),col,'r','linew',3,'markersize',2.5)
 % 
-legend({'Other'; 'Stim'},'FontSize',12)
-ylabel('SNR','FontSize',12); xlabel('Frequency', 'FontSize',12)  
+% 
+% legend({'Other'; 'Stim'},'FontSize',12)
+% ylabel('SNR','FontSize',12); xlabel('Frequency', 'FontSize',12)  
 
 %legend({'Light sensor measurement'},'FontSize',12)
 %legend({'LS (ntr)', 'LS (neg)'},'FontSize',12)
 
 
-set(gca,'ylim',[0 15], 'FontSize',12) % 
+% set(gca,'ylim',[0 15], 'FontSize',12) % 
 % set(gca,'ylim',[0 7000], 'FontSize',12) %
 % set(gca,'ylim',[0 max(snrE)+1000], 'FontSize',12) %
 set(gca,'xlim',[1 48], 'FontSize',12)
-
+end
 
 %% ntr vs neg
 stem(hz(1:size(snrE,2)),snrE,'r','linew',3,'markersize',2.5)
