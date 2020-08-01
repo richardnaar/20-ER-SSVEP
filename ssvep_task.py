@@ -44,7 +44,8 @@ expInfo['expName'] = expName
 # Data file name stem = absolute path + name; later add .psyexp, .csv, .log, etc
 # filename = _thisDir + os.sep + u'data/%s_%s_%s' %(expInfo['participant'], expName, expInfo['date'])
 # filename = dirpath + '\\' + expInfo['participant'] + expName + expInfo['date']
-filename = dirpath + '\\data\\' + expInfo['participant'] + expName + '_' + expInfo['date']
+filename = dirpath + '\\data\\' + \
+    expInfo['participant'] + expName + '_' + expInfo['date']
 
 # An ExperimentHandler isn't essential but helps with data saving
 thisExp = data.ExperimentHandler(
@@ -120,7 +121,8 @@ appraisal_text = visual.TextStim(
     depth=0.0)
 
 VAS = visual.RatingScale(
-    win=win, name = 'VAS', marker='triangle', size=1.0, # labels=(' ', ' '), 
+    # labels=(' ', ' '),
+    win=win, name='VAS', marker='triangle', size=1.0, stretch=1.0,
     pos=[0.0, -0.4], low=0, high=100, precision=100, skipKeys=None,
     showValue=False, scale=None, acceptPreText='Kliki skaalal',
     acceptText='Salvestan', markerStart='50')
@@ -156,6 +158,7 @@ picSeries = table['imageID']
 # and not event.getKeys('q')
 
 # flickering picture
+
 
 def draw_ssvep(win, pic, duration, picName):
     picStartTime = clock.getTime()
@@ -204,6 +207,7 @@ def draw_appraisal(win, appraisal_text, duration):
 
 # mingil põhjusel läheb kinni, kui esimesele nupule vajutada
 
+
 def draw_VAS(win, VAS, VAS_text, colName):
     # Initialize components for Routine "VAS"
     VAS.reset()
@@ -217,7 +221,8 @@ def draw_VAS(win, VAS, VAS_text, colName):
         else:
             core.quit()
     m.setVisible(False)
-    thisExp.addData(colName, VAS.getRating())  # write average srate to the file
+    # write average srate to the file
+    thisExp.addData(colName, VAS.getRating())
     thisExp.addData(colName+'_RT', VAS.getRT())
     core.wait(0.25)
 # endregion
@@ -233,6 +238,7 @@ def draw_VAS(win, VAS, VAS_text, colName):
 #     stimulus1_msg_sent = True
 
 # port.close()
+
 
 # This is the TRIAL LOOP
 runExperiment = True
@@ -259,7 +265,6 @@ while runExperiment:
 
     picName = str(picSeries[trials[ti]])
     pic = picFolder[0]+'/' + picName + '.jpg'
-    
 
     # Draw FIXATION (1st time)
     draw_fix(win, fixation, fixDuration)
@@ -289,14 +294,13 @@ while runExperiment:
             aCondition = 'ntr'
         apCounterNtr += 1
 
-    
-    if  aCondition == 'neg':
+    if aCondition == 'neg':
         appraisal_text.text = apprSeriesNeg[trials[ti]]
     else:
         appraisal_text.text = apprSeriesNtr[trials[ti]]
 
     thisExp.addData('aValence', aCondition)
-    thisExp.addData('picValence', picConditon[trials[ti]])  
+    thisExp.addData('picValence', picConditon[trials[ti]])
 
     # Draw APPRAISAL text
     draw_appraisal(win, appraisal_text, apprDuration)
@@ -306,12 +310,12 @@ while runExperiment:
 
     # Draw QUESTION (2nd time)
     VAS_text.text = 'Insert your question #2 here...'
-    VAS.labels=('left2', 'right2')
+    VAS.labels = ('left2', 'right2')
     draw_VAS(win, VAS, VAS_text, 'Qestion_2')
 
     ti += 1
     thisExp.nextEntry()
-    
+
 
 # # these shouldn't be strictly necessary (should auto-save)
 # thisExp.saveAsWideText(filename+'.csv')

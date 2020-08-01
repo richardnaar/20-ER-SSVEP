@@ -1,5 +1,3 @@
-cheat
-python
 .ipynb_checkpoints
 .vscode
 .gitignore
@@ -11,5 +9,5 @@ Analysis in R
 ssvep_iaps
 UR_ssvep
 __pycache__
-psydataImport
 ssvep_appraisal_ws.code-workspace
+psydatImport.py

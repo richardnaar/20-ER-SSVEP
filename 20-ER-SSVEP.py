@@ -11,42 +11,47 @@ counterbalance high and low between conditions (currently: high == distraction)
 viewing angle: 34x28 (Hajcak jt 2013)
 remember: LCM if square 
 comment in: draw_text(pause_text, float('inf'))
+volume=1.0
 """
 
 # region IMPORT MODULES
 
 # future should make it possible to run the same code under Python 2
 # from __future__ import absolute_import, division
-from psychopy import sound
+import psychopy
+from psychopy import locale_setup, gui, visual, core, data, event, logging, sound
 
 import psychtoolbox as ptb
 import os  # system and path functions
 import pandas as pd  # data structures
-import numpy as np
-
 import serial
+import platform
 
 from numpy import pi, sin, random, zeros
-from numpy.random import randint
-from psychopy import locale_setup, gui, visual, core, data, event, logging, sound
 from numpy.random import random, randint, shuffle
+
+import numpy as np
+
 
 # endregion
 
 # region SET UP THE DATA
 # get the current directory
 dirpath = os.getcwd()
-print(dirpath)
+
 # Information about the experimental session
-psychopyVersion = '3.2.4'
+psychopyVersion = psychopy.__version__
+print('PsychoPy version: ' + psychopy.__version__)
+
 # filename of the script
 expName = os.path.basename(__file__)  # + data.getDateStr()
 
 expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '0',
-           'stimFrequency': '15', 'square': '0', 'testMonkey': '1', 'pauseAfterEvery': '20', 'countFrames': '1'}
-# dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
-# if dlg.OK == False:
-#     core.quit()  # user pressed cancel
+           'stimFrequency': '15', 'square': '0', 'testMonkey': '1', 'pauseAfterEvery': '32', 'countFrames': '1'}
+
+dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
+if dlg.OK == False:
+    core.quit()  # user pressed cancel
 expInfo['date'] = data.getDateStr()  # add a simple timestamp
 expInfo['expName'] = expName
 
@@ -54,13 +59,18 @@ expInfo['expName'] = expName
 filename = dirpath + '\\data\\' + \
     expInfo['participant'] + '_' + expName + '_' + expInfo['date']
 
+print('Data folder and filename... ' + filename[-48:])
+
+runInfo = str(platform.uname()[0:])
+
 # An ExperimentHandler isn't essential but helps with data saving
 thisExp = data.ExperimentHandler(
-    name=expName, version='',
+    name=expName, version=psychopyVersion,
     extraInfo=expInfo, runtimeInfo=None,
     originPath=dirpath + '\\' + os.path.basename(__file__),
     savePickle=True, saveWideText=True,
     dataFileName=filename)
+
 # this outputs to the screen, not a file
 # logging.console.setLevel(logging.WARNING)
 
@@ -72,15 +82,16 @@ thisExp = data.ExperimentHandler(
 if expInfo['testMonkey'] == '1':
     fixDuration = 0.1  # fixation duration (will change on every iteration)
     stimDuration = 1  # 0.126  # stim duration
-    iti_dur = 0.2
+    iti_dur_default = 0.2
     soundStart = 0.65
     expInfo['participant'] = 'Monkey'
 else:
     # just the first iti, later will change on every trial (random()+0.5)
-    fixDuration = 3.5  # +/- 0.5
+    fixDuration = 1.5  #
     stimDuration = 12.6  # stim duration
-    iti_dur = 2
+    iti_dur_default = 3.5  # +/- 0.5
     soundStart = 6.5
+    secondCueTime = [6, 6.5, 7]
 
 expInfo['stimDuration'] = stimDuration  # save data
 expInfo['itiDuration'] = iti_dur  # save data
@@ -99,6 +110,7 @@ if expInfo['EEG'] == '1':
 # Find stimuli and create a list of all_files
 
 # print("current directory is : " + dirpath)
+
 # define the path to the pictures folder and find the list of files
 pic_dir = dirpath + '\\ssvep_iaps'
 all_files = list(filter(lambda x: x.endswith('.jpg'), os.listdir(pic_dir)))
@@ -119,7 +131,7 @@ picSeries = table['imageID']
 # region SETUP WINDOW
 win = visual.Window(
     # size=(1920, 1200), 1920, 1080, 1536, 864, (1024, 768)
-    size=(1920, 1080), fullscr=True, screen=0, color='grey',
+    size=(1920/2, 1080/2), fullscr=False, screen=0, color='grey',
     blendMode='avg', useFBO=True, monitor='testMonitor',
     units='deg')
 
@@ -134,7 +146,7 @@ print(expInfo['frameRate'])
 if expInfo['frameRate'] != None:
     frameDur = round(expInfo['frameRate'])  # save data
 else:
-    frameDur = 'NaN'  # could not measure, so guess
+    frameDur = 'NaN'  # could not measure, so NaN
 print('the monitor refresh rate is: ' + str(frameDur))
 
 # Initiate clock to keep track of time
@@ -194,7 +206,7 @@ square = visual.Rect(
 
 # set up the sound (the pitch/octave will be changed inside the loop)
 mySound = sound.Sound(
-    value='A', secs=0.2, octave=3, stereo=1, volume=1.0, loops=0, sampleRate=48000, blockSize=128,
+    value='A', secs=0.2, octave=3, stereo=1, volume=0, loops=0, sampleRate=48000, blockSize=128,
     preBuffer=-1, hamming=True, autoLog=True)
 
 # endregion
@@ -350,20 +362,6 @@ def draw_text(txt, pause_dur):
             core.quit()
 # endregion
 
-# region IDEAS FOR TRIGGERING
-# for sending the biosemi triggers
-# port = serial.Serial('COM3', baudrate=115200) #
-# if stimulus1.status = STARTED and not stimulus1_msg_sent:
-#     port.write(bytes(str(binary))) # send the message now
-#     stimulus1_msg_sent = True
-# or
-# if stimulus1.status = STARTED and not stimulus1_msg_sent:
-#     win.callOnFlip(port.write, something) # send the message when the window is updated
-#     stimulus1_msg_sent = True
-
-# port.close()
-# endregion
-
 
 # region SHUFFLE TRIALS AND LOAD IMAGES
 runExperiment = True
@@ -431,11 +429,6 @@ while runExperiment:
         trigNum += 6
 
     # Draw FIXATION
-    if expInfo['testMonkey'] == '0':
-        fixDuration = random() + 3.5
-    else:
-        fixDuration = fixDuration
-
     trigNum += 10
     draw_fix(win, fixation, fixDuration, trigNum)
 
@@ -458,6 +451,11 @@ while runExperiment:
         pic_dir + '\\' + picName + '.jpg').st_size)
 
     # ITI
+    if expInfo['testMonkey'] == '0':
+        iti_dur = random() + iti_dur_default
+    else:
+        iti_dur = iti_dur_default
+
     trigNum += 20
     draw_iti(win, iti_dur, trigNum)
 
