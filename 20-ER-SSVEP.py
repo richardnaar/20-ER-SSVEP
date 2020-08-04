@@ -47,7 +47,7 @@ print('PsychoPy version: ' + psychopy.__version__)
 expName = os.path.basename(__file__)  # + data.getDateStr()
 
 expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '0',
-           'stimFrequency': '15', 'square': '0', 'testMonkey': '0', 'pauseAfterEvery': '32', 'countFrames': '1'}
+           'stimFrequency': '15', 'square': '0', 'testMonkey': '1', 'pauseAfterEvery': '32', 'countFrames': '1'}
 
 # dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 # if dlg.OK == False:
@@ -95,7 +95,6 @@ thisExp = data.ExperimentHandler(
 # region SIMULUS TIMING AND SET UP THE EEG PORT
 
 
-
 expInfo['stimDuration'] = stimDuration  # save data
 expInfo['itiDuration'] = str(iti_dur_default) + '+/- 0.5'  # save data
 
@@ -137,7 +136,8 @@ picsets = np.unique(table['picset'])
 for seti in picsets:
     currentset = table[table['picset'] == seti].reset_index(drop=True)
     for valencei in np.unique(currentset['emo']):
-        emoSetInCurrent = currentset[currentset['emo'] == valencei].reset_index(drop=True)
+        emoSetInCurrent = currentset[currentset['emo']
+                                     == valencei].reset_index(drop=True)
         condlist = list(range(1, 5))*4
         # shuffle(condlist)
         # ntrRand = list(range(1, 5))*4
@@ -159,7 +159,8 @@ for seti in picsets:
         emoSetInCurrent['presentQuestion'] = np.squeeze(
             np.asarray(rndQM)).reshape(-1).astype(int)
 
-        emoSetInCurrent[['cond','presentQuestion']] = emoSetInCurrent[['cond','presentQuestion']].sample(frac=1).reset_index(drop=True)
+        emoSetInCurrent[['cond', 'presentQuestion']] = emoSetInCurrent[[
+            'cond', 'presentQuestion']].sample(frac=1).reset_index(drop=True)
         # randomlist = list(range(1,16))
         # shuffle(randomlist)
 
@@ -275,6 +276,22 @@ subbox = visual.Rect(
     lineWidth=0, lineColor=[1, 1, 1], lineColorSpace='rgb',
     fillColor=[-1, -1, -1], fillColorSpace='rgb',
     opacity=1, depth=0.0, interpolate=True)
+
+VAS = visual.RatingScale(
+    # labels=(' ', ' '),
+    win=win, name='VAS', marker='triangle', size=1.0, stretch=1.0,
+    pos=[0.0, -0.4], low=0, high=100, precision=100, skipKeys=None,
+    showValue=False, scale=None, acceptPreText='Kliki skaalal',
+    acceptText='Salvestan', markerStart='50')
+
+VAS_text = visual.TextStim(
+    win=win, name='appraisal_text',
+    text='VAS text',
+    font='Arial',
+    pos=(0, 5), height=1, wrapWidth=None, ori=0,
+    color='white', colorSpace='rgb', opacity=1,
+    languageStyle='LTR',
+    depth=0.0)
 
 # set up the sound (the pitch/octave will be changed inside the loop)
 # mySound = sound.Sound(
@@ -425,6 +442,26 @@ def draw_text(txt, pause_dur):
             core.quit()
         elif theseKeys[0] == 'space':
             break
+
+
+def draw_VAS(win, VAS, VAS_text, colName):
+    # Initialize components for Routine "VAS"
+    VAS.reset()
+    VASstartTime = clock.getTime()
+    m.setVisible(True)
+    while VAS.noResponse:
+        if not event.getKeys('q'):
+            VAS_text.draw()
+            VAS.draw()
+            win.flip()
+        else:
+            core.quit()
+    m.setVisible(False)
+    # write average srate to the file
+    thisExp.addData(colName, VAS.getRating())
+    thisExp.addData(colName+'_RT', VAS.getRT())
+    core.wait(0.25)
+
 # endregion
 
 
@@ -516,7 +553,7 @@ while runExperiment:
 
     # SAVE SOME DATA
     thisExp.addData('cond', condic[newTable['cond'][ti]])
-    thisExp.addData('Qestion', newTable['presentQuestion'][ti])    
+    thisExp.addData('Qestion', newTable['presentQuestion'][ti])
     thisExp.addData('valence', picConditon[trials[ti]])
     thisExp.addData('pictureID', picName)
     thisExp.addData('fixDuration', fixDuration)
@@ -533,6 +570,11 @@ while runExperiment:
 
     trigNum += 20
     draw_iti(win, iti_dur, trigNum)
+
+    # Draw QUESTION
+    if newTable['presentQuestion'][ti] == 1:
+        VAS_text.text = 'Insert your question here...'
+        draw_VAS(win, VAS, VAS_text, 'Qestion_1')
 
     # PAUSE (preloading next set of N (pauseAfterEvery) images to achive better timing)
     pauseStart = clock.getTime()  # win.getFutureFlipTime(clock='ptb')
