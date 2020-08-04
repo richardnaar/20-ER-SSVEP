@@ -55,6 +55,22 @@ expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '0',
 expInfo['date'] = data.getDateStr()  # add a simple timestamp
 expInfo['expName'] = expName
 
+# Set durartions
+if expInfo['testMonkey'] == '1':
+    fixDuration = 0.1  # fixation duration (will change on every iteration)
+    stimDuration = 1  # 0.126  # stim duration
+    iti_dur_default = 0.2
+    soundStart = 0.65
+    secondCueTime = [6, 6.5, 7]
+    expInfo['participant'] = 'Monkey'
+else:
+    # just the first iti, later will change on every trial (random()+0.5)
+    fixDuration = 1.5  #
+    stimDuration = 12.6  # stim duration
+    iti_dur_default = 3.5  # +/- 0.5
+    soundStart = 6.5
+    secondCueTime = [6, 6.5, 7]
+
 # Data file name stem = absolute path + name; later add .psyexp, .csv, .log, etc
 filename = dirpath + '\\data\\' + \
     expInfo['participant'] + '_' + expName + '_' + expInfo['date']
@@ -78,23 +94,10 @@ thisExp = data.ExperimentHandler(
 
 # region SIMULUS TIMING AND SET UP THE EEG PORT
 
-# Set durartions
-if expInfo['testMonkey'] == '1':
-    fixDuration = 0.1  # fixation duration (will change on every iteration)
-    stimDuration = 1  # 0.126  # stim duration
-    iti_dur_default = 0.2
-    soundStart = 0.65
-    expInfo['participant'] = 'Monkey'
-else:
-    # just the first iti, later will change on every trial (random()+0.5)
-    fixDuration = 1.5  #
-    stimDuration = 12.6  # stim duration
-    iti_dur_default = 3.5  # +/- 0.5
-    soundStart = 6.5
-    secondCueTime = [6, 6.5, 7]
+
 
 expInfo['stimDuration'] = stimDuration  # save data
-expInfo['itiDuration'] = iti_dur_default  # save data
+expInfo['itiDuration'] = str(iti_dur_default) + '+/- 0.5'  # save data
 
 if expInfo['EEG'] == '1':
     from psychopy import parallel
@@ -129,30 +132,57 @@ table = xls_file.parse('ERSSVEP_images')
 table = table.sort_values(['emo', 'picset']).reset_index(drop=True)
 
 newTable = pd.DataFrame()
-for seti in np.unique(table['picset']):
+picsets = np.unique(table['picset'])
+# shuffle(picsets)
+for seti in picsets:
     currentset = table[table['picset'] == seti].reset_index(drop=True)
-    negRand = list(range(1, 5))*4
-    shuffle(negRand)
-    ntrRand = list(range(1, 5))*4
-    shuffle(ntrRand)
-    currentset['cond'] = negRand+ntrRand
-    newTable = newTable.append(currentset).reset_index(drop=True)
+    for valencei in np.unique(currentset['emo']):
+        emoSetInCurrent = currentset[currentset['emo'] == valencei].reset_index(drop=True)
+        condlist = list(range(1, 5))*4
+        # shuffle(condlist)
+        # ntrRand = list(range(1, 5))*4
+        # shuffle(ntrRand)
+        emoSetInCurrent['cond'] = condlist  # +ntrRand !!
+
+        setSize = len(emoSetInCurrent)
+        # numberOfAConds = len(np.unique(emoSetInCurrent['cond']))
+        # numberOfValConds = len(np.unique(emoSetInCurrent['emo']))
+        rndQM = np.zeros((int(setSize/4), 4))
+
+        rndNeg = randint(len(rndQM))
+        rndQM[rndNeg] = 1
+
+        # for vali in range(1, numberOfValConds+1):
+        #     rndNeg = randint(len(rndQM)/2) + 4*(vali-1)
+        #     rndQM[rndNeg] = 1
+
+        emoSetInCurrent['presentQuestion'] = np.squeeze(
+            np.asarray(rndQM)).reshape(-1).astype(int)
+
+        emoSetInCurrent[['cond','presentQuestion']] = emoSetInCurrent[['cond','presentQuestion']].sample(frac=1).reset_index(drop=True)
+        # randomlist = list(range(1,16))
+        # shuffle(randomlist)
+
+        newTable = newTable.append(emoSetInCurrent).reset_index(drop=True)
+
 
 table = newTable
 table['cond'] = table['cond'].astype(str)
 picConditon = table['emo']
 picSeries = table['imageFile']
-# numberOfAConds = len(np.unique(newTable['cond']))
-# numberOfValConds = len(np.unique(newTable['emo']))
+
+# setSize = len(currentset)
+# numberOfAConds = len(np.unique(currentset['cond']))
+# numberOfValConds = len(np.unique(currentset['emo']))
 # rndQM = np.zeros((int(setSize/numberOfAConds), numberOfAConds))
 
 # for vali in range(1, numberOfValConds+1):
 #     rndNeg = randint(len(rndQM)/2) + 4*(vali-1)
 #     rndQM[rndNeg] = 1
 
-# rndQM = np.zeros((int(setSize/numberOfAConds), numberOfAConds))
 
 # newTable['presentQuestion'] = rndQM.tolist()
+
 # [0.976,0.820,0.192]
 boxcols = [[1.000, 0.804, 0.004], [-1.000, 0.686, 0.639]]
 shuffle(boxcols)
@@ -486,6 +516,7 @@ while runExperiment:
 
     # SAVE SOME DATA
     thisExp.addData('cond', condic[newTable['cond'][ti]])
+    thisExp.addData('Qestion', newTable['presentQuestion'][ti])    
     thisExp.addData('valence', picConditon[trials[ti]])
     thisExp.addData('pictureID', picName)
     thisExp.addData('fixDuration', fixDuration)
