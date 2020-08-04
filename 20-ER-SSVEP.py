@@ -160,8 +160,8 @@ shuffle(boxcols)
 coldic = {'1': [boxcols[0], boxcols[0]], '2': [boxcols[0], boxcols[1]],
           '3': [boxcols[1], boxcols[1]], '4': [boxcols[1], boxcols[0]]}
 
-condic = {'1': ['vaata', 'vaata'], '2': ['vaata', 'loenda'],
-          '3': ['loenda', 'loenda'], '4': ['loenda', 'vaata']}
+condic = {'1': ['VAATA PILTI', 'VAATA PILTI'], '2': ['VAATA PILTI', 'LOENDA'],
+          '3': ['LOENDA', 'LOENDA'], '4': ['LOENDA', 'VAATA PILTI']}
 
 # if expInfo['testMonkey'] == '1':
 #     screenReso = ()
@@ -240,7 +240,7 @@ background = visual.Rect(
 
 subbox = visual.Rect(
     win=win, units='deg',
-    width=(5, 5)[0], height=(2, 2)[1],
+    width=(8, 8)[0], height=(2, 2)[1],
     ori=0, pos=(0, -horiz/2.8),
     lineWidth=0, lineColor=[1, 1, 1], lineColorSpace='rgb',
     fillColor=[-1, -1, -1], fillColorSpace='rgb',
@@ -324,7 +324,14 @@ def draw_ssvep(win, duration, A, f, theta, ti, trigNum):
                 # send the trigger and play
                 sendTrigger(soundTime, trigNum, expInfo['EEG'])
                 # mySound.play(when=soundTime)
-                text.setText(condic[newTable['cond'][ti]][1])
+                if condic[newTable['cond'][ti]][1] == 'LOENDA':
+                    shuffle(intOnScreen)
+                    numTxt = ': ' + \
+                        str(randint(intOnScreen[0], intOnScreen[0]+50))
+                    text.setText(condic[newTable['cond'][ti]][1] + numTxt)
+                else:
+                    text.setText(condic[newTable['cond'][ti]][1])
+
                 background.fillColor = coldic[newTable['cond'][ti]][1]
                 soundPlayed = True
             elif soundPlayed:
@@ -464,7 +471,13 @@ while runExperiment:
     # Draw flickering PICTURE
 
     trigNum += 10
-    text.setText(condic[newTable['cond'][ti]][0])
+    if condic[newTable['cond'][ti]][0] == 'LOENDA':
+        shuffle(intOnScreen)
+        numTxt = ': ' + str(randint(intOnScreen[0], intOnScreen[0]+50))
+        text.setText(condic[newTable['cond'][ti]][0] + numTxt)
+    else:
+        text.setText(condic[newTable['cond'][ti]][0])
+
     background.fillColor = coldic[newTable['cond'][ti]][0]
     draw_ssvep(win, stimDuration, A, f, theta, ti, trigNum)
 
@@ -472,7 +485,7 @@ while runExperiment:
     picName = images[ti-picCount].name
 
     # SAVE SOME DATA
-    # thisExp.addData('distraction', distrCond)
+    thisExp.addData('cond', condic[newTable['cond'][ti]])
     thisExp.addData('valence', picConditon[trials[ti]])
     thisExp.addData('pictureID', picName)
     thisExp.addData('fixDuration', fixDuration)
