@@ -5,13 +5,9 @@
 SSVEP task 04/02/2020
 monitor setting (e.g. mon2 to testMonitor)
 set up a iaps folder (ssvep_iaps)
-remove indexes after file names (eg 6570.1.jpg to 6570.jpg)
-nb - check randomization (find shuffle)
 counterbalance high and low between conditions (currently: high == distraction)
 viewing angle: 34x28 (Hajcak jt 2013)
 remember: LCM if square 
-comment in: draw_text(pause_text, float('inf'))
-volume=1.0
 """
 
 # region IMPORT MODULES
@@ -19,7 +15,7 @@ volume=1.0
 # future should make it possible to run the same code under Python 2
 # from __future__ import absolute_import, division
 import psychopy
-from psychopy import locale_setup, gui, visual, core, data, event, logging, sound
+from psychopy import locale_setup, gui, visual, core, data, event, logging, sound, monitors
 
 import psychtoolbox as ptb
 import os  # system and path functions
@@ -132,10 +128,19 @@ table = table.sort_values(['emo', 'picset']).reset_index(drop=True)
 
 newTable = pd.DataFrame()
 picsets = np.unique(table['picset'])
+shuffle(picsets)
+trueSetSize = int(len(table)/len(picsets))
+counter = 0
+# shuffledic = {'a': 1,}
 # shuffle(picsets)
+tilist = list()
 for seti in picsets:
+    rndtilist = list(range(counter*trueSetSize, trueSetSize * (counter+1)))
+    shuffle(rndtilist)
+    tilist = tilist + rndtilist
     currentset = table[table['picset'] == seti].reset_index(drop=True)
     for valencei in np.unique(currentset['emo']):
+
         emoSetInCurrent = currentset[currentset['emo']
                                      == valencei].reset_index(drop=True)
         condlist = list(range(1, 5))*4
@@ -145,9 +150,9 @@ for seti in picsets:
         emoSetInCurrent['cond'] = condlist  # +ntrRand !!
 
         setSize = len(emoSetInCurrent)
-        # numberOfAConds = len(np.unique(emoSetInCurrent['cond']))
+        numberOfAConds = len(np.unique(emoSetInCurrent['cond']))
         # numberOfValConds = len(np.unique(emoSetInCurrent['emo']))
-        rndQM = np.zeros((int(setSize/4), 4))
+        rndQM = np.zeros((int(setSize/numberOfAConds), numberOfAConds))
 
         rndNeg = randint(len(rndQM))
         rndQM[rndNeg] = 1
@@ -163,14 +168,23 @@ for seti in picsets:
             'cond', 'presentQuestion']].sample(frac=1).reset_index(drop=True)
         # randomlist = list(range(1,16))
         # shuffle(randomlist)
+        secondCueRndList = secondCueTime * \
+            int(np.ceil(setSize/len(secondCueTime)))
+        secondCueRndList = secondCueRndList[0:setSize]
+        shuffle(secondCueRndList)
+        emoSetInCurrent['secondCueTime'] = secondCueRndList
 
+        emoSetInCurrent = emoSetInCurrent.sample(frac=1).reset_index(drop=True)
         newTable = newTable.append(emoSetInCurrent).reset_index(drop=True)
+    counter += 1
+
+newTable['trialID'] = tilist
+newTable = newTable.sort_values(['trialID']).reset_index(drop=True)
 
 
-table = newTable
-table['cond'] = table['cond'].astype(str)
-picConditon = table['emo']
-picSeries = table['imageFile']
+newTable['cond'] = newTable['cond'].astype(str)
+picConditon = newTable['emo']
+picSeries = newTable['imageFile']
 
 # setSize = len(currentset)
 # numberOfAConds = len(np.unique(currentset['cond']))
@@ -197,14 +211,19 @@ condic = {'1': ['VAATA PILTI', 'VAATA PILTI'], '2': ['VAATA PILTI', 'LOENDA'],
 # if expInfo['testMonkey'] == '1':
 #     screenReso = ()
 
+
 intOnScreen = np.linspace(150, 950, 9)
-# shuffle(intOnScreen)
-# randint(intOnScreen[0],intOnScreen[0]+50)
+
+if expInfo['testMonkey'] == '1':
+    monSettings = {'size': (1920/2, 1080/2), 'fullscr': False}
+else:
+    monSettings = {'size': (1920, 1080), 'fullscr': True}
+
 
 # region SETUP WINDOW
 win = visual.Window(
     # size=(1920, 1200), 1920, 1080, 1536, 864, (1024, 768)
-    size=(1920, 1080), fullscr=True, screen=0, color='grey',
+    size=monSettings['size'], fullscr=monSettings['fullscr'], screen=0, color='grey',
     blendMode='avg', useFBO=True, monitor='testMonitor',
     units='deg')
 
@@ -449,6 +468,10 @@ def draw_VAS(win, VAS, VAS_text, colName):
     VAS.reset()
     VASstartTime = clock.getTime()
     m.setVisible(True)
+
+    if expInfo['testMonkey'] == '1':
+        VAS.noResponse = False
+
     while VAS.noResponse:
         if not event.getKeys('q'):
             VAS_text.draw()
@@ -552,8 +575,10 @@ while runExperiment:
     picName = images[ti-picCount].name
 
     # SAVE SOME DATA
+    thisExp.addData('2ndCueTime', newTable['secondCueTime'][ti])
+    thisExp.addData('picset', newTable['picset'][ti])
     thisExp.addData('cond', condic[newTable['cond'][ti]])
-    thisExp.addData('Qestion', newTable['presentQuestion'][ti])
+    thisExp.addData('Question', newTable['presentQuestion'][ti])
     thisExp.addData('valence', picConditon[trials[ti]])
     thisExp.addData('pictureID', picName)
     thisExp.addData('fixDuration', fixDuration)
@@ -574,7 +599,7 @@ while runExperiment:
     # Draw QUESTION
     if newTable['presentQuestion'][ti] == 1:
         VAS_text.text = 'Insert your question here...'
-        draw_VAS(win, VAS, VAS_text, 'Qestion_1')
+        draw_VAS(win, VAS, VAS_text, 'Question_1')
 
     # PAUSE (preloading next set of N (pauseAfterEvery) images to achive better timing)
     pauseStart = clock.getTime()  # win.getFutureFlipTime(clock='ptb')
