@@ -49,9 +49,9 @@ expName = os.path.basename(__file__)  # + data.getDateStr()
 expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '0',
            'stimFrequency': '15', 'square': '0', 'testMonkey': '1', 'pauseAfterEvery': '32', 'countFrames': '1'}
 
-dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
-if dlg.OK == False:
-    core.quit()  # user pressed cancel
+# dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
+# if dlg.OK == False:
+#     core.quit()  # user pressed cancel
 expInfo['date'] = data.getDateStr()  # add a simple timestamp
 expInfo['expName'] = expName
 
@@ -94,7 +94,7 @@ else:
     secondCueTime = [6, 6.5, 7]
 
 expInfo['stimDuration'] = stimDuration  # save data
-expInfo['itiDuration'] = iti_dur  # save data
+expInfo['itiDuration'] = iti_dur_default  # save data
 
 if expInfo['EEG'] == '1':
     from psychopy import parallel
@@ -120,13 +120,17 @@ picFolder = ['ssvep_iaps']
 
 xls_file = pd.ExcelFile('ERSSVEP_images.xlsx')
 table = xls_file.parse('ERSSVEP_images')
-apprSeriesNeg = table['NEG Tõlgenduslause eesti keeles']
-apprSeriesNtr = table['NTR tõlgenduslause eesti keeles ']
+# apprSeriesNeg = table['NEG Tõlgenduslause eesti keeles']
+# apprSeriesNtr = table['NTR tõlgenduslause eesti keeles ']
 
 picConditon = table['emo']
-picSeries = table['imageID']
+picSeries = table['imageFile']
 
 # endregion
+
+# if expInfo['testMonkey'] == '1':
+#     screenReso = ()
+
 
 # region SETUP WINDOW
 win = visual.Window(
@@ -205,9 +209,9 @@ square = visual.Rect(
     opacity=1, depth=0.0, interpolate=True)
 
 # set up the sound (the pitch/octave will be changed inside the loop)
-mySound = sound.Sound(
-    value='A', secs=0.2, octave=3, stereo=1, volume=0, loops=0, sampleRate=48000, blockSize=128,
-    preBuffer=-1, hamming=True, autoLog=True)
+# mySound = sound.Sound(
+#     value='A', secs=0.2, octave=3, stereo=1, volume=0, loops=0, sampleRate=48000, blockSize=128,
+#     preBuffer=-1, hamming=True, autoLog=True)
 
 # endregion
 
@@ -238,7 +242,7 @@ expInfo['phaseOffset'] = theta  # save data
 # window, picture (cd/folder/name.jpg), duration, picture name (for data), pitch (octave), amplitude, frequecy, phase offset
 
 
-def draw_ssvep(win, duration, pitch, A, f, theta, ti, trigNum):
+def draw_ssvep(win, duration, A, f, theta, ti, trigNum):
     # print(ti-picCount)
     # print('pic_'+ str(trigNum))
     picStartTime = clock.getTime()  # win.getFutureFlipTime(clock='ptb')  #
@@ -282,14 +286,14 @@ def draw_ssvep(win, duration, pitch, A, f, theta, ti, trigNum):
 
             # play sound half way through
             if (clock.getTime() - picStartTime) > soundStart and not soundPlayed:
-                mySound.setSound('A', octave=pitch)
+                # mySound.setSound('A', octave=pitch)
                 trigNum += 10
                 # print('sound_'+ str(trigNum))
                 soundTime = win.getFutureFlipTime(
                     clock='ptb')  # clock.getTime()
                 # send the trigger and play
                 sendTrigger(soundTime, trigNum, expInfo['EEG'])
-                mySound.play(when=soundTime)
+                # mySound.play(when=soundTime)
                 soundPlayed = True
             elif soundPlayed:
                 sendTrigger(soundTime, trigNum, expInfo['EEG'])
@@ -348,18 +352,18 @@ def draw_iti(win, iti_dur, trigNum):
 def draw_text(txt, pause_dur):
     pause_time = clock.getTime()
     while (clock.getTime() - pause_time) < pause_dur:
-        buttons = mouse.getPressed()
+        # buttons = mouse.getPressed()
         theseKeys = event.getKeys(keyList=['q', 'space'])
-        if len(theseKeys) == 0 and sum(buttons) == 0:
+        if len(theseKeys) == 0:
             text.setText(txt)
             text.draw()
             win.flip()
-        elif sum(buttons) > 0:
-            break
         elif theseKeys[0] == 'q':
             if expInfo['EEG'] == '1':
                 port.setData(0)
             core.quit()
+        elif theseKeys[0] == 'space':
+            break
 # endregion
 
 
@@ -371,7 +375,7 @@ nTrials = len(trials)
 distrCondNeg = list(zeros(25)) + list(zeros(25)+1)
 appraisalCondNtr = list(zeros(25)) + list(zeros(25)+1)
 
-shuffle(trials)
+# shuffle(trials)
 shuffle(distrCondNeg)
 shuffle(appraisalCondNtr)
 # pitchList = [3,5]
@@ -379,7 +383,7 @@ shuffle(appraisalCondNtr)
 images = []
 for file in trials[0:pauseAfterEvery]:
     images.append(visual.ImageStim(win=win, image=pic_dir + '\\' + str(
-        picSeries[file]) + '.jpg', units='deg', size=picSize, name=str(picSeries[file])))
+        picSeries[file]), units='deg', size=picSize, name=str(picSeries[file])))  # + '.jpg'
 
 # endregion
 
@@ -404,30 +408,31 @@ while runExperiment:
 
     # RANDOMIZATION
 
-    if picConditon[trials[ti]] == 'neg':
-        trigNum = 1  # trigger num
-        if distrCondNeg[apCounterNeg] == 0:
-            distrCond = 'distr'
-        else:
-            distrCond = 'no-distr'
-            tone = 2
-        apCounterNeg += 1
-    else:
-        trigNum = 2
-        if distrCondNeg[apCounterNtr] == 0:
-            distrCond = 'distr'
-        else:
-            distrCond = 'no-distr'
-        apCounterNtr += 1
+    # if picConditon[trials[ti]] == 'neg':
+    #     trigNum = 1  # trigger num
+    #     if distrCondNeg[apCounterNeg] == 0:
+    #         distrCond = 'distr'
+    #     else:
+    #         distrCond = 'no-distr'
+    #         tone = 2
+    #     apCounterNeg += 1
+    # else:
+    #     trigNum = 2
+    #     if distrCondNeg[apCounterNtr] == 0:
+    #         distrCond = 'distr'
+    #     else:
+    #         distrCond = 'no-distr'
+    #     apCounterNtr += 1
 
-    # define the pitch according to the distractor condition
-    if distrCond == 'distr':
-        pitch = 5
-        trigNum += 3
-    else:
-        pitch = 3
-        trigNum += 6
+    # # define the pitch according to the distractor condition
+    # if distrCond == 'distr':
+    #     pitch = 5
+    #     trigNum += 3
+    # else:
+    #     pitch = 3
+    #     trigNum += 6
 
+    trigNum = 1
     # Draw FIXATION
     trigNum += 10
     draw_fix(win, fixation, fixDuration, trigNum)
@@ -435,20 +440,20 @@ while runExperiment:
     # Draw flickering PICTURE
 
     trigNum += 10
-    draw_ssvep(win, stimDuration, pitch, A, f, theta, ti, trigNum)
+    draw_ssvep(win, stimDuration, A, f, theta, ti, trigNum)
 
     # Define picture name for saving
     picName = images[ti-picCount].name
 
     # SAVE SOME DATA
-    thisExp.addData('distraction', distrCond)
+    # thisExp.addData('distraction', distrCond)
     thisExp.addData('valence', picConditon[trials[ti]])
     thisExp.addData('pictureID', picName)
     thisExp.addData('fixDuration', fixDuration)
     thisExp.addData('triaslN', ti+1)
  #   os.stat(pic_dir + '\\' + str(picSeries[0]) + '.jpg').st_size
     thisExp.addData('picBytes', os.stat(
-        pic_dir + '\\' + picName + '.jpg').st_size)
+        pic_dir + '\\' + picName).st_size)  # + '.jpg'
 
     # ITI
     if expInfo['testMonkey'] == '0':
@@ -481,7 +486,7 @@ while runExperiment:
         # PRELOAD PICTURES FOR EACH BLOCK
         for file in trials[start:end]:
             images.append(visual.ImageStim(win=win, image=pic_dir + '\\' + str(
-                picSeries[file]) + '.jpg', units='deg', size=picSize, name=str(picSeries[file])))
+                picSeries[file]), units='deg', size=picSize, name=str(picSeries[file])))  # + '.jpg'
 
     thisExp.nextEntry()
     ti += 1
