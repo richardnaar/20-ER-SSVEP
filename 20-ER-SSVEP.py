@@ -47,7 +47,7 @@ print('PsychoPy version: ' + psychopy.__version__)
 expName = os.path.basename(__file__)  # + data.getDateStr()
 
 expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '0',
-           'stimFrequency': '15', 'square': '0', 'testMonkey': '1', 'pauseAfterEvery': '32', 'countFrames': '1'}
+           'stimFrequency': '15', 'square': '0', 'testMonkey': '0', 'pauseAfterEvery': '32', 'countFrames': '1'}
 
 # dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 # if dlg.OK == False:
@@ -123,19 +123,57 @@ table = xls_file.parse('ERSSVEP_images')
 # apprSeriesNeg = table['NEG Tõlgenduslause eesti keeles']
 # apprSeriesNtr = table['NTR tõlgenduslause eesti keeles ']
 
+# endregion
+
+# add randomization here
+table = table.sort_values(['emo', 'picset']).reset_index(drop=True)
+
+newTable = pd.DataFrame()
+for seti in np.unique(table['picset']):
+    currentset = table[table['picset'] == seti].reset_index(drop=True)
+    negRand = list(range(1, 5))*4
+    shuffle(negRand)
+    ntrRand = list(range(1, 5))*4
+    shuffle(ntrRand)
+    currentset['cond'] = negRand+ntrRand
+    newTable = newTable.append(currentset).reset_index(drop=True)
+
+table = newTable
+table['cond'] = table['cond'].astype(str)
 picConditon = table['emo']
 picSeries = table['imageFile']
+# numberOfAConds = len(np.unique(newTable['cond']))
+# numberOfValConds = len(np.unique(newTable['emo']))
+# rndQM = np.zeros((int(setSize/numberOfAConds), numberOfAConds))
 
-# endregion
+# for vali in range(1, numberOfValConds+1):
+#     rndNeg = randint(len(rndQM)/2) + 4*(vali-1)
+#     rndQM[rndNeg] = 1
+
+# rndQM = np.zeros((int(setSize/numberOfAConds), numberOfAConds))
+
+# newTable['presentQuestion'] = rndQM.tolist()
+# [0.976,0.820,0.192]
+boxcols = [[1.000, 0.804, 0.004], [-1.000, 0.686, 0.639]]
+shuffle(boxcols)
+
+coldic = {'1': [boxcols[0], boxcols[0]], '2': [boxcols[0], boxcols[1]],
+          '3': [boxcols[1], boxcols[1]], '4': [boxcols[1], boxcols[0]]}
+
+condic = {'1': ['vaata', 'vaata'], '2': ['vaata', 'loenda'],
+          '3': ['loenda', 'loenda'], '4': ['loenda', 'vaata']}
 
 # if expInfo['testMonkey'] == '1':
 #     screenReso = ()
 
+intOnScreen = np.linspace(150, 950, 9)
+# shuffle(intOnScreen)
+# randint(intOnScreen[0],intOnScreen[0]+50)
 
 # region SETUP WINDOW
 win = visual.Window(
     # size=(1920, 1200), 1920, 1080, 1536, 864, (1024, 768)
-    size=(1920/2, 1080/2), fullscr=False, screen=0, color='grey',
+    size=(1920, 1080), fullscr=True, screen=0, color='grey',
     blendMode='avg', useFBO=True, monitor='testMonitor',
     units='deg')
 
@@ -161,12 +199,12 @@ clock = core.Clock()
 
 #
 if expInfo['square'] == '0':
-    horiz = 34*0.7
-    vert = 28*0.7
+    horiz = 34
+    vert = 28
     picSize = (horiz, vert)
 else:
-    horiz = (34*0.7)-5
-    vert = (28*0.7)-5
+    horiz = (34)
+    vert = (28)
     picSize = (horiz, vert)
 
 pause_text = 'See on paus. Jätkamiseks vajuta palun hiireklahvi . . .'
@@ -194,16 +232,16 @@ fixation = visual.ShapeStim(
 
 background = visual.Rect(
     win=win, units='deg',
-    width=(horiz+5, horiz+5)[0], height=(vert+5, vert+5)[1],
+    width=(horiz+2, horiz+2)[0], height=(vert+2, vert+2)[1],
     ori=0, pos=(0, 0),
     lineWidth=0, lineColor=[1, 1, 1], lineColorSpace='rgb',
     fillColor=[1, 1, 1], fillColorSpace='rgb',
     opacity=1, depth=0.0, interpolate=True)
 
-square = visual.Rect(
+subbox = visual.Rect(
     win=win, units='deg',
-    width=(horiz, horiz)[0], height=(vert, vert)[1],
-    ori=0, pos=(0, 0),
+    width=(5, 5)[0], height=(2, 2)[1],
+    ori=0, pos=(0, -horiz/2.8),
     lineWidth=0, lineColor=[1, 1, 1], lineColorSpace='rgb',
     fillColor=[-1, -1, -1], fillColorSpace='rgb',
     opacity=1, depth=0.0, interpolate=True)
@@ -245,6 +283,7 @@ expInfo['phaseOffset'] = theta  # save data
 def draw_ssvep(win, duration, A, f, theta, ti, trigNum):
     # print(ti-picCount)
     # print('pic_'+ str(trigNum))
+    text.pos = (0, -horiz/2.8)
     picStartTime = clock.getTime()  # win.getFutureFlipTime(clock='ptb')  #
     frameN = 0
     soundPlayed = False
@@ -263,23 +302,14 @@ def draw_ssvep(win, duration, A, f, theta, ti, trigNum):
                 else:
                     images[ti-picCount].contrast = 1-(2*A)
 
-            else:
-                time = win.getFutureFlipTime(clock='ptb') - picStartTime
-                col = A*sin(2*pi*f*time)
-                background.fillColor = [col, col, col]
-                background.draw()
-
             # Draw an image
-
+            background.draw()
             images[ti-picCount].draw()
-
-            # # not sure if this is really necessary
-            # if timeC == 0:
-            #     duration = duration + (clock.getTime() - picStartTime) #
-            #     # print(duration)
-            #     timeC += 1
+            subbox.draw()
+            text.draw()
 
             # flip and send the trigger
+
             win.flip()
             if not soundPlayed:
                 sendTrigger(picStartTime, trigNum, expInfo['EEG'])
@@ -294,6 +324,8 @@ def draw_ssvep(win, duration, A, f, theta, ti, trigNum):
                 # send the trigger and play
                 sendTrigger(soundTime, trigNum, expInfo['EEG'])
                 # mySound.play(when=soundTime)
+                text.setText(condic[newTable['cond'][ti]][1])
+                background.fillColor = coldic[newTable['cond'][ti]][1]
                 soundPlayed = True
             elif soundPlayed:
                 sendTrigger(soundTime, trigNum, expInfo['EEG'])
@@ -313,12 +345,7 @@ def draw_fix(win, fixation, duration, trigNum):
     time = clock.getTime() - fixStartTime
     while (time) < duration:
         if not event.getKeys('q'):
-            if expInfo['square'] == '1':
-                time = clock.getTime() - fixStartTime  # win.getFutureFlipTime(clock='ptb')
-                col = A*sin(2*pi*f*time)
-                background.fillColor = [col, col, col]
-                background.draw()
-                square.draw()
+
             fixation.draw()
             # flip and send the trigger
             win.flip()
@@ -339,10 +366,7 @@ def draw_iti(win, iti_dur, trigNum):
     while (time) < iti_dur:
         if expInfo['square'] == '1':
             time = clock.getTime() - iti_time  # win.getFutureFlipTime(clock='ptb')
-            col = A*sin(2*pi*f*time)
-            background.fillColor = [col, col, col]
-            background.draw()
-            square.draw()
+
         # flip and send the trigger
         win.flip()
         sendTrigger(iti_time, trigNum, expInfo['EEG'])
@@ -440,6 +464,8 @@ while runExperiment:
     # Draw flickering PICTURE
 
     trigNum += 10
+    text.setText(condic[newTable['cond'][ti]][0])
+    background.fillColor = coldic[newTable['cond'][ti]][0]
     draw_ssvep(win, stimDuration, A, f, theta, ti, trigNum)
 
     # Define picture name for saving
