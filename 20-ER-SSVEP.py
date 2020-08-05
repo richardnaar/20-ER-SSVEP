@@ -43,7 +43,7 @@ print('PsychoPy version: ' + psychopy.__version__)
 expName = os.path.basename(__file__)  # + data.getDateStr()
 
 expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '0',
-           'stimFrequency': '15', 'square': '0', 'testMonkey': '1', 'pauseAfterEvery': '32', 'countFrames': '1'}
+           'stimFrequency': '15', 'square': '0', 'testMonkey': '0', 'pauseAfterEvery': '32', 'countFrames': '1'}
 
 # dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 # if dlg.OK == False:
@@ -113,6 +113,9 @@ if expInfo['EEG'] == '1':
 pic_dir = dirpath + '\\ssvep_iaps'
 all_files = list(filter(lambda x: x.endswith('.jpg'), os.listdir(pic_dir)))
 picFolder = ['ssvep_iaps']
+
+intro_dir = dirpath + '\\ekraanijuhised'
+introfiles = list(filter(lambda x: x.endswith('.JPG'), os.listdir(intro_dir)))
 
 # Import the condion file
 
@@ -206,7 +209,7 @@ else:
 # region SETUP WINDOW
 win = visual.Window(
     # size=(1920, 1200), 1920, 1080, 1536, 864, (1024, 768)
-    size=monSettings['size'], fullscr=monSettings['fullscr'], screen=0, color='grey',
+    size=monSettings['size'], fullscr=monSettings['fullscr'], screen=0, color='black',
     blendMode='avg', useFBO=True, monitor='testMonitor',
     units='deg')
 
@@ -418,10 +421,10 @@ def draw_iti(win, iti_dur, trigNum):
         time = clock.getTime() - iti_time
 
 
-def draw_text(txt, pause_dur):
+def draw_text(txt, pause_dur, mouseOnly):
     pause_time = clock.getTime()
     while (clock.getTime() - pause_time) < pause_dur:
-        # buttons = mouse.getPressed()
+        buttons = mouse.getPressed()
         theseKeys = event.getKeys(keyList=['q', 'space'])
         if len(theseKeys) == 0:
             text.setText(txt)
@@ -431,7 +434,9 @@ def draw_text(txt, pause_dur):
             if expInfo['EEG'] == '1':
                 port.setData(0)
             core.quit()
-        elif theseKeys[0] == 'space':
+        elif theseKeys[0] == 'space' and mouseOnly == 0:
+            break
+        elif sum(buttons) > 0 and mouseOnly == 1:
             break
 
 
@@ -473,6 +478,36 @@ shuffle(distrCondNeg)
 shuffle(appraisalCondNtr)
 # pitchList = [3,5]
 
+
+def loadpics(picture_directory, pics, endindx, fileExt, listname, picSize):
+    for file in range(0, endindx):
+        listname.append(visual.ImageStim(win=win, image=picture_directory + '\\' + str(
+            pics[file]), units='deg', size=picSize, name=str(pics[file])))
+
+
+intropics = []
+loadpics(intro_dir, introfiles, len(introfiles), [],
+         intropics, (picSize[0], picSize[1]))
+
+# instructions
+for indx in range(0, len(intropics)):
+    core.wait(0.25)
+    presentPic = True
+
+    while presentPic:
+        intropics[indx].draw()
+        win.flip()
+
+        buttons = mouse.getPressed()
+        theseKeys = event.getKeys(keyList=['q', 'space'])
+
+        if len(theseKeys) > 0 and theseKeys[0] == 'q':
+            if expInfo['EEG'] == '1':
+                port.setData(0)
+            core.quit()
+        elif sum(buttons) > 0:
+            presentPic = False
+
 images = []
 for file in trials[0:pauseAfterEvery]:
     images.append(visual.ImageStim(win=win, image=pic_dir + '\\' + str(
@@ -481,7 +516,7 @@ for file in trials[0:pauseAfterEvery]:
 # endregion
 
 # region THIS IS THE TRIAL LOOP
-draw_text(start_text, float('inf'))
+draw_text(start_text, float('inf'), 0)
 
 picCount = 0
 ti = 0
@@ -492,7 +527,7 @@ while runExperiment:
     m.setVisible(False)  # hide the cursor
     if ti == nTrials:
         # close and quit
-        draw_text(goodbye_text, float('inf'))
+        draw_text(goodbye_text, float('inf'), 1)
         if expInfo['EEG'] == '1':
             port.setData(0)
             port.close()
@@ -557,9 +592,9 @@ while runExperiment:
 
         sendTrigger(pauseStart, trigNum, expInfo['EEG'])
         if expInfo['testMonkey'] == '0':
-            draw_text(pause_text, float('inf'))
+            draw_text(pause_text, float('inf'), 1)
         else:
-            draw_text(pause_text, 0.2)
+            draw_text(pause_text, 0.2, 1)
 
         picCount += pauseAfterEvery
         images = []
