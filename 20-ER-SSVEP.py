@@ -43,7 +43,7 @@ print('PsychoPy version: ' + psychopy.__version__)
 expName = os.path.basename(__file__)  # + data.getDateStr()
 
 expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '0',
-           'stimFrequency': '15', 'square': '0', 'testMonkey': '0', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '1'}
+           'stimFrequency': '15', 'square': '0', 'testMonkey': '1', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '1'}
 
 # dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 # if dlg.OK == False:
@@ -494,7 +494,7 @@ trainingTable['cond'] = trainingTable['cond'].sample(frac=1).values.astype(str)
 trainingTable['presentQuestion'] = trainingTable['presentQuestion'].sample(
     frac=1).values
 
-draw_text('Palun oota. Laen pildid mällu...', 0.1, 0)
+draw_text('Palun oota. Laen pildid mällu...', 1, 0)
 
 intropics = []
 loadpics(intro_dir, introfiles, len(introfiles),
@@ -545,7 +545,7 @@ for gIndx in routinedic:
         nTrials = len(trials_training)
         images = trainingpics
         current_pic_dir = training_dir
-        instructions = 'Need seeriad on harjutamiseks...'
+        instructions = 'Järgmised esitused on harjutamiseks...'
     elif routinedic[gIndx] == 'experiment':
         condData = newTable
         trials = newTable['trialID']  # list(range(0, len(picSeries)))
