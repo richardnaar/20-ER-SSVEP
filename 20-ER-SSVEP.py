@@ -43,7 +43,7 @@ print('PsychoPy version: ' + psychopy.__version__)
 expName = os.path.basename(__file__)  # + data.getDateStr()
 
 expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '0',
-           'stimFrequency': '15', 'square': '0', 'testMonkey': '0', 'pauseAfterEvery': '32', 'countFrames': '1'}
+           'stimFrequency': '15', 'square': '0', 'testMonkey': '0', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '1'}
 
 # dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 # if dlg.OK == False:
@@ -462,6 +462,15 @@ def draw_VAS(win, VAS, VAS_text, colName):
     thisExp.addData(colName+'_RT', VAS.getRT())
     core.wait(0.25)
 
+
+draw_text('Palun oota. Laen pildid mällu...', 0.1, 0)
+
+
+def loadpics(picture_directory, pics, endindx, listname, picSize):
+    for file in range(0, endindx):
+        listname.append(visual.ImageStim(win=win, image=picture_directory + '\\' + str(
+            pics[file]), units='deg', size=picSize, name=str(pics[file])))
+
 # endregion
 
 
@@ -479,15 +488,14 @@ shuffle(appraisalCondNtr)
 # pitchList = [3,5]
 
 
-def loadpics(picture_directory, pics, endindx, fileExt, listname, picSize):
-    for file in range(0, endindx):
-        listname.append(visual.ImageStim(win=win, image=picture_directory + '\\' + str(
-            pics[file]), units='deg', size=picSize, name=str(pics[file])))
-
-
 intropics = []
-loadpics(intro_dir, introfiles, len(introfiles), [],
+loadpics(intro_dir, introfiles, len(introfiles),
          intropics, (picSize[0], picSize[1]))
+
+images = []
+for file in trials[0:pauseAfterEvery]:
+    images.append(visual.ImageStim(win=win, image=pic_dir + '\\' + str(
+        picSeries[file]), units='deg', size=picSize, name=str(picSeries[file])))  # + '.jpg'
 
 # instructions
 for indx in range(0, len(intropics)):
@@ -508,10 +516,6 @@ for indx in range(0, len(intropics)):
         elif sum(buttons) > 0:
             presentPic = False
 
-images = []
-for file in trials[0:pauseAfterEvery]:
-    images.append(visual.ImageStim(win=win, image=pic_dir + '\\' + str(
-        picSeries[file]), units='deg', size=picSize, name=str(picSeries[file])))  # + '.jpg'
 
 # endregion
 
@@ -610,6 +614,45 @@ while runExperiment:
 
     thisExp.nextEntry()
     ti += 1
+
+# endregion
+
+# region reexposure
+if expInfo['reExposure'] == '1':
+    reexpopics = []
+    loadpics(pic_dir, all_files, len(all_files),
+             reexpopics, (picSize[0], picSize[1]))
+
+    for indx in range(0, len(reexpopics)):
+
+        # draw fixation
+        draw_fix(win, fixation, 0.5, 0)
+
+        reexpopics[indx].draw()
+        win.flip()
+
+        pause_time = clock.getTime()
+        pause_dur = 0.5
+        while (clock.getTime() - pause_time) < pause_dur:
+            reexpopics[indx].draw()
+            win.flip()
+
+            buttons = mouse.getPressed()
+            theseKeys = event.getKeys(keyList=['q', 'space'])
+
+            if len(theseKeys) > 0 and theseKeys[0] == 'q':
+                if expInfo['EEG'] == '1':
+                    port.setData(0)
+                core.quit()
+
+        # draw iti
+        iti_dur = random() + iti_dur_default
+        draw_iti(win, iti_dur, 0)
+
+        # draw VAS
+        # VAS_text.text = 'Insert your question here...'
+        # draw_VAS(win, VAS, VAS_text, 'Question_1')
+
 # endregion
 
 # region CLOSE AND QUIT
