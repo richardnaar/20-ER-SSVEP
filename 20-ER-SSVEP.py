@@ -2,12 +2,10 @@
 # -*- coding: utf-8 -*-
 
 """
-SSVEP task 04/02/2020
-monitor setting (e.g. mon2 to testMonitor)
-set up a iaps folder (ssvep_iaps)
-counterbalance high and low between conditions (currently: high == distraction)
-viewing angle: 34x28 (Hajcak jt 2013)
-remember: LCM if square 
+SSVEP task 05/08/2020
+monitor setting (e.g. testMonitor to smtn else)
+set up the folders (ssvep_iaps, training_pics, intro_pics)
+viewing angle: 34x28 (Hajcak jt 2013) 
 """
 
 # region IMPORT MODULES
@@ -45,9 +43,10 @@ expName = os.path.basename(__file__)  # + data.getDateStr()
 expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '0',
            'stimFrequency': '15', 'square': '0', 'testMonkey': '1', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '1'}
 
-# dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
-# if dlg.OK == False:
-#     core.quit()  # user pressed cancel
+dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
+if dlg.OK == False:
+    core.quit()  # user pressed cancel
+
 expInfo['date'] = data.getDateStr()  # add a simple timestamp
 expInfo['expName'] = expName
 
@@ -114,7 +113,7 @@ pic_dir = dirpath + '\\ssvep_iaps'
 all_files = list(filter(lambda x: x.endswith('.jpg'), os.listdir(pic_dir)))
 picFolder = ['ssvep_iaps']
 
-intro_dir = dirpath + '\\ekraanijuhised'
+intro_dir = dirpath + '\\intro_pics'
 introfiles = list(filter(lambda x: x.endswith('.JPG'), os.listdir(intro_dir)))
 
 training_dir = dirpath + '\\training_pics'
@@ -485,9 +484,12 @@ trainingTable = pd.DataFrame(data=np.zeros(
 trainingTable.loc[:] = 'training'
 
 trainingTable['imageFile'] = trainingfiles
-trainingTable['cond'] = list(range(1, 5))*2
+trainingcondlist = list(range(1, 5)) * int(np.ceil(len(trainingfiles)/4))
+trainingTable['cond'] = trainingcondlist[0:len(trainingfiles)]
 trainingTable['trialID'] = trials_training
-trainingTable['presentQuestion'] = list(zeros(4)) + list(np.ones(4))
+trainingQList = list(zeros(int(np.ceil(len(trainingfiles)/2)))) + \
+    list(np.ones(int(np.ceil(len(trainingfiles)/2))))
+trainingTable['presentQuestion'] = trainingQList[0:len(trainingfiles)]
 
 trainingTable['imageFile'] = trainingTable['imageFile'].sample(frac=1).values
 trainingTable['cond'] = trainingTable['cond'].sample(frac=1).values.astype(str)
