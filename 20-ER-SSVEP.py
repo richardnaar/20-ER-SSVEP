@@ -128,56 +128,53 @@ table = table.sort_values(['emo', 'picset']).reset_index(drop=True)
 
 newTable = pd.DataFrame()
 picsets = np.unique(table['picset'])
+# randomize picsets
 shuffle(picsets)
 trueSetSize = int(len(table)/len(picsets))
 counter = 0
-# shuffledic = {'a': 1,}
-# shuffle(picsets)
 tilist = list()
 for seti in picsets:
+    # rndtilist randomizes trials within each set
     rndtilist = list(range(counter*trueSetSize, trueSetSize * (counter+1)))
     shuffle(rndtilist)
     tilist = tilist + rndtilist
     currentset = table[table['picset'] == seti].reset_index(drop=True)
     for valencei in np.unique(currentset['emo']):
-
+        # define conditions and 2nd cue times for each emotion category and each set seperately
         emoSetInCurrent = currentset[currentset['emo']
                                      == valencei].reset_index(drop=True)
         condlist = list(range(1, 5))*4
-        # shuffle(condlist)
-        # ntrRand = list(range(1, 5))*4
-        # shuffle(ntrRand)
-        emoSetInCurrent['cond'] = condlist  # +ntrRand !!
 
+        emoSetInCurrent['cond'] = condlist
+
+        # present question once in each question (25 % of the time)
         setSize = len(emoSetInCurrent)
         numberOfAConds = len(np.unique(emoSetInCurrent['cond']))
-        # numberOfValConds = len(np.unique(emoSetInCurrent['emo']))
         rndQM = np.zeros((int(setSize/numberOfAConds), numberOfAConds))
 
         rndNeg = randint(len(rndQM))
         rndQM[rndNeg] = 1
 
-        # for vali in range(1, numberOfValConds+1):
-        #     rndNeg = randint(len(rndQM)/2) + 4*(vali-1)
-        #     rndQM[rndNeg] = 1
-
         emoSetInCurrent['presentQuestion'] = np.squeeze(
             np.asarray(rndQM)).reshape(-1).astype(int)
 
+        # randomize condition and question presentation
         emoSetInCurrent[['cond', 'presentQuestion']] = emoSetInCurrent[[
             'cond', 'presentQuestion']].sample(frac=1).reset_index(drop=True)
-        # randomlist = list(range(1,16))
-        # shuffle(randomlist)
+
+        # define 2nd cue times similarly for each emotion category in each set separately
         secondCueRndList = secondCueTime * \
             int(np.ceil(setSize/len(secondCueTime)))
         secondCueRndList = secondCueRndList[0:setSize]
         shuffle(secondCueRndList)
         emoSetInCurrent['secondCueTime'] = secondCueRndList
 
+        # this randomization is not strictly nessesary since 'tilist' (see below) shuffles the trials within each set already
         emoSetInCurrent = emoSetInCurrent.sample(frac=1).reset_index(drop=True)
         newTable = newTable.append(emoSetInCurrent).reset_index(drop=True)
     counter += 1
 
+# sorting vased on trialID ensures that the trilas are shuffled within each picset
 newTable['trialID'] = tilist
 newTable = newTable.sort_values(['trialID']).reset_index(drop=True)
 
@@ -186,17 +183,6 @@ newTable['cond'] = newTable['cond'].astype(str)
 picConditon = newTable['emo']
 picSeries = newTable['imageFile']
 
-# setSize = len(currentset)
-# numberOfAConds = len(np.unique(currentset['cond']))
-# numberOfValConds = len(np.unique(currentset['emo']))
-# rndQM = np.zeros((int(setSize/numberOfAConds), numberOfAConds))
-
-# for vali in range(1, numberOfValConds+1):
-#     rndNeg = randint(len(rndQM)/2) + 4*(vali-1)
-#     rndQM[rndNeg] = 1
-
-
-# newTable['presentQuestion'] = rndQM.tolist()
 
 # [0.976,0.820,0.192]
 boxcols = [[1.000, 0.804, 0.004], [-1.000, 0.686, 0.639]]
@@ -207,9 +193,6 @@ coldic = {'1': [boxcols[0], boxcols[0]], '2': [boxcols[0], boxcols[1]],
 
 condic = {'1': ['VAATA PILTI', 'VAATA PILTI'], '2': ['VAATA PILTI', 'LOENDA'],
           '3': ['LOENDA', 'LOENDA'], '4': ['LOENDA', 'VAATA PILTI']}
-
-# if expInfo['testMonkey'] == '1':
-#     screenReso = ()
 
 
 intOnScreen = np.linspace(150, 950, 9)
@@ -248,21 +231,15 @@ clock = core.Clock()
 # region INITIALIZE TASK COMPONENTS
 
 #
-if expInfo['square'] == '0':
-    horiz = 34
-    vert = 28
-    picSize = (horiz, vert)
-else:
-    horiz = (34)
-    vert = (28)
-    picSize = (horiz, vert)
+
+horiz = 34
+vert = 28
+picSize = (horiz, vert)
+
 
 pause_text = 'See on paus. Jätkamiseks vajuta palun hiireklahvi . . .'
-
 start_text = 'Palun oota kuni eksperimentaator käivitab mõõtmise . . . \n\n Programmi sulgemiseks vajuta: "q"'
-
 goodbye_text = 'Katse on lõppenud. Programmi sulgemiseks vajuta palun hiireklahvi . . . '
-
 
 text = visual.TextStim(win=win,
                        text='insert txt here',
@@ -311,11 +288,6 @@ VAS_text = visual.TextStim(
     color='white', colorSpace='rgb', opacity=1,
     languageStyle='LTR',
     depth=0.0)
-
-# set up the sound (the pitch/octave will be changed inside the loop)
-# mySound = sound.Sound(
-#     value='A', secs=0.2, octave=3, stereo=1, volume=0, loops=0, sampleRate=48000, blockSize=128,
-#     preBuffer=-1, hamming=True, autoLog=True)
 
 # endregion
 
@@ -528,30 +500,6 @@ while runExperiment:
         core.quit()
 
     # RANDOMIZATION
-
-    # if picConditon[trials[ti]] == 'neg':
-    #     trigNum = 1  # trigger num
-    #     if distrCondNeg[apCounterNeg] == 0:
-    #         distrCond = 'distr'
-    #     else:
-    #         distrCond = 'no-distr'
-    #         tone = 2
-    #     apCounterNeg += 1
-    # else:
-    #     trigNum = 2
-    #     if distrCondNeg[apCounterNtr] == 0:
-    #         distrCond = 'distr'
-    #     else:
-    #         distrCond = 'no-distr'
-    #     apCounterNtr += 1
-
-    # # define the pitch according to the distractor condition
-    # if distrCond == 'distr':
-    #     pitch = 5
-    #     trigNum += 3
-    # else:
-    #     pitch = 3
-    #     trigNum += 6
 
     trigNum = 1
     # Draw FIXATION
