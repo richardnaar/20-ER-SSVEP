@@ -599,6 +599,7 @@ for gIndx in routinedic:
         picName = images[ti-picCount].name
 
         # SAVE SOME DATA
+        thisExp.addData('trialType', routinedic[gIndx])
         thisExp.addData('2ndCueTime', condData['secondCueTime'][ti])
         thisExp.addData('picset', condData['picset'][ti])
         thisExp.addData('cond', condic[condData['cond'][ti]])
