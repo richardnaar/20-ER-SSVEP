@@ -424,7 +424,7 @@ def draw_iti(win, iti_dur, trigNum):
         time = clock.getTime() - iti_time
 
 
-def draw_text(txt, pause_dur, mouseOnly):
+def draw_text(txt, pause_dur, mouse_resp):
     pause_time = clock.getTime()
     while (clock.getTime() - pause_time) < pause_dur:
         buttons = mouse.getPressed()
@@ -433,15 +433,13 @@ def draw_text(txt, pause_dur, mouseOnly):
             text.setText(txt)
             text.draw()
             win.flip()
-        elif len(theseKeys) > 0:
-            if theseKeys[0] == 'q':
-                if expInfo['EEG'] == '1':
-                    port.setData(0)
-                core.quit()
-        elif len(theseKeys) > 0 and mouseOnly == 0:
-            if theseKeys[0] == 'space':
-                break
-        elif sum(buttons) > 0 and mouseOnly == 1:
+        elif len(theseKeys) > 0 and theseKeys[0] == 'space' and mouse_resp == 0:
+            break
+        elif len(theseKeys) > 0 and theseKeys[0] == 'q':
+            if expInfo['EEG'] == '1':
+                port.setData(0)
+            core.quit()
+        elif sum(buttons) > 0 and mouse_resp == 1:
             break
 
 
@@ -496,7 +494,7 @@ trainingTable['cond'] = trainingTable['cond'].sample(frac=1).values.astype(str)
 trainingTable['presentQuestion'] = trainingTable['presentQuestion'].sample(
     frac=1).values
 
-draw_text('Palun oota. Laen pildid mällu...', 1, 0)
+draw_text('Palun oota. Laen pildid mällu...', 1, 1)
 
 intropics = []
 loadpics(intro_dir, introfiles, len(introfiles),
@@ -540,7 +538,6 @@ routinedic = {'0': 'training', '1': 'experiment'}
 
 for gIndx in routinedic:
     runExperiment = True
-    text.pos = (0, 0)
     if routinedic[gIndx] == 'training':
         condData = trainingTable
         trials = trainingTable['trialID']
@@ -548,6 +545,7 @@ for gIndx in routinedic:
         images = trainingpics
         current_pic_dir = training_dir
         instructions = 'Järgmised esitused on harjutamiseks...'
+        mouse_resp = 1
     elif routinedic[gIndx] == 'experiment':
         condData = newTable
         trials = newTable['trialID']  # list(range(0, len(picSeries)))
@@ -555,8 +553,9 @@ for gIndx in routinedic:
         images = images_experiment
         current_pic_dir = pic_dir
         instructions = start_text
+        mouse_resp = 0
 
-    draw_text(instructions, float('inf'), 0)  #
+    draw_text(instructions, float('inf'), mouse_resp)  #
 
     picCount = 0
     ti = 0
@@ -594,6 +593,7 @@ for gIndx in routinedic:
 
         background.fillColor = coldic[condData['cond'][ti]][0]
         draw_ssvep(win, stimDuration, A, f, theta, ti, trigNum)
+        text.pos = (0, 0)
 
         # Define picture name for saving
         picName = images[ti-picCount].name
