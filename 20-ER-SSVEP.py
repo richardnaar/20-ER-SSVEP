@@ -429,16 +429,18 @@ def draw_text(txt, pause_dur, mouseOnly):
     while (clock.getTime() - pause_time) < pause_dur:
         buttons = mouse.getPressed()
         theseKeys = event.getKeys(keyList=['q', 'space'])
-        if len(theseKeys) == 0:
+        if len(theseKeys) == 0 and sum(buttons) == 0:
             text.setText(txt)
             text.draw()
             win.flip()
-        elif theseKeys[0] == 'q':
-            if expInfo['EEG'] == '1':
-                port.setData(0)
-            core.quit()
-        elif theseKeys[0] == 'space' and mouseOnly == 0:
-            break
+        elif len(theseKeys) > 0:
+            if theseKeys[0] == 'q':
+                if expInfo['EEG'] == '1':
+                    port.setData(0)
+                core.quit()
+        elif len(theseKeys) > 0 and mouseOnly == 0:
+            if theseKeys[0] == 'space':
+                break
         elif sum(buttons) > 0 and mouseOnly == 1:
             break
 
