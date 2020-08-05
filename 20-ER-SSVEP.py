@@ -15,7 +15,7 @@ viewing angle: 34x28 (Hajcak jt 2013)
 import psychopy
 from psychopy import locale_setup, gui, visual, core, data, event, logging, sound, monitors
 
-import psychtoolbox as ptb
+# import psychtoolbox as ptb
 import os  # system and path functions
 import pandas as pd  # data structures
 import serial
