@@ -603,7 +603,7 @@ for gIndx in routinedic:
         thisExp.addData('picset', condData['picset'][ti])
         thisExp.addData('cond', condic[condData['cond'][ti]])
         thisExp.addData('Question', condData['presentQuestion'][ti])
-        thisExp.addData('valence', condData['valence'][ti])
+        thisExp.addData('valence', condData['emo'][ti])
         thisExp.addData('pictureID', picName)
         thisExp.addData('fixDuration', fixDuration)
         thisExp.addData('triaslN', ti+1)
