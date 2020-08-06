@@ -41,7 +41,7 @@ print('PsychoPy version: ' + psychopy.__version__)
 expName = os.path.basename(__file__)  # + data.getDateStr()
 
 expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '0',
-           'stimFrequency': '15', 'frame': '0', 'testMonkey': '1', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '1'}
+           'stimFrequency': '15', 'frame': '0', 'testMonkey': '0', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '1'}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 if dlg.OK == False:
@@ -531,7 +531,7 @@ for gIndx in routinedic:
     elif routinedic[gIndx] == 'experiment':
         condData, trials, nTrials, images, current_pic_dir, instructions, mouse_resp = \
             newTable, newTable['trialID'], len(
-                trials), images_experiment, pic_dir, start_text, 0
+                newTable['trialID']), images_experiment, pic_dir, start_text, 0
 
     text.pos = (0, 0)  # change text position back
     draw_text(instructions, float('inf'), mouse_resp)  #
@@ -642,7 +642,7 @@ if expInfo['reExposure'] == '1':
         draw_fix(win, fixation, 0.5, 0)
         reexpopics[indx].draw(), win.flip()
 
-        pause_time, pause_dur = clock.getTime(), 0.5
+        pause_time, pause_dur = clock.getTime(), 3.5
         while (clock.getTime() - pause_time) < pause_dur:
             reexpopics[indx].draw(), win.flip()
 
