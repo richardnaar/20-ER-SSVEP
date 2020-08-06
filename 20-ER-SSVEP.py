@@ -8,6 +8,8 @@ set up the folders (ssvep_iaps, training_pics, intro_pics)
 viewing angle: 34x28 (Hajcak jt 2013) 
 """
 
+# C:\Program Files\PsychoPy3\Lib\site-packages\psychopy\demos\coder\stimuli
+
 # region IMPORT MODULES
 
 # future should make it possible to run the same code under Python 2
@@ -19,6 +21,7 @@ import os  # system and path functions
 import pandas as pd  # data structures
 import serial
 import platform
+import sys
 
 from numpy import pi, sin, random, zeros
 from numpy.random import random, randint, shuffle
@@ -26,8 +29,16 @@ from PIL import Image
 
 import numpy as np
 
-
 # endregion (IMPORT MODULES)
+
+# region DEFINE PICTURE FOLDERS (and name of the condition file)
+# relative to the os.getcwd()
+intro_pictures = 'intro_pics'  # folder with the intro pictures
+training_pics = 'training_pics'  # folder with the training pictures
+ssvep_exp = 'ssvep_iaps'  # folder with the experimental pictures
+conditionFile = 'ERSSVEP_images'  # name of the condition file
+
+# endregion DEFINE PICTURE FOLDERS
 
 # region SET UP THE INFO DIALOG AND EXPERIMENT HANDLER
 # get the current directory
@@ -41,7 +52,7 @@ print('PsychoPy version: ' + psychopy.__version__)
 expName = os.path.basename(__file__)  # + data.getDateStr()
 
 expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '0',
-           'stimFrequency': '15', 'frame': '0', 'testMonkey': '0', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '1'}
+           'stimFrequency': '15', 'frame': '0', 'testMonkey': '1', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '1'}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 if dlg.OK == False:
@@ -98,81 +109,99 @@ if expInfo['EEG'] == '1':
 print("current directory is : " + dirpath)
 
 # pictures (pptx slides convered to pictures) used in the introduction
-intro_dir = dirpath + '\\intro_pics'
-introfiles = list(filter(lambda x: x.endswith('.JPG'), os.listdir(intro_dir)))
-# pictures used in the training loop
-training_dir = dirpath + '\\training_pics'
-trainingfiles = list(
-    filter(lambda x: x.endswith('.jpg'), os.listdir(training_dir)))
-# pictures used in the experiment
-pic_dir = dirpath + '\\ssvep_iaps'
-all_files = list(filter(lambda x: x.endswith('.jpg'), os.listdir(pic_dir)))
-picFolder = ['ssvep_iaps']
-
+try:
+    intro_dir = dirpath + '\\' + intro_pictures
+    introfiles = list(
+        filter(lambda x: x.endswith('.JPG'), os.listdir(intro_dir)))
+    # pictures used in the training loop
+    training_dir = dirpath + '\\' + training_pics
+    trainingfiles = list(
+        filter(lambda x: x.endswith('.jpg'), os.listdir(training_dir)))
+    # pictures used in the experiment
+    pic_dir = dirpath + '\\' + ssvep_exp
+    all_files = list(filter(lambda x: x.endswith('.jpg'), os.listdir(pic_dir)))
+    noData = False
+except:
+    print('NB! A problem with locating the pictures. Using example pictures instead...')
+    example_pictures_dir = sys.executable[0:-10] + \
+        'Lib\site-packages\psychopy\demos\coder\stimuli'
+    intro_dir, training_dir, pic_dir = example_pictures_dir, example_pictures_dir, example_pictures_dir
+    introfiles = list(
+        filter(lambda x: x.endswith('.jpg'), os.listdir(intro_dir)))
+    # pictures used in the training loop
+    trainingfiles = list(
+        filter(lambda x: x.endswith('.jpg'), os.listdir(training_dir)))
+    # pictures used in the experiment
+    all_files = list(filter(lambda x: x.endswith('.jpg'), os.listdir(pic_dir)))
+    noData = True
 # Import the condion file
-xls_file = pd.ExcelFile('ERSSVEP_images.xlsx')
-table = xls_file.parse('ERSSVEP_images')
+try:
+    xls_file = pd.ExcelFile(conditionFile + '.xlsx')
+    table = xls_file.parse()  # 'ERSSVEP_images'
+except:
+    print('Can\'t find condition table... Are you sure that the name of the condition file is: ' + conditionFile + '?')
 
 # endregion (FIND FILES)
 
 # region RANDOMIZATION
-# sort by emo and picset
-table = table.sort_values(['emo', 'picset']).reset_index(drop=True)
-# define newTable as data frame in pandas
-newTable, picsets = pd.DataFrame(), np.unique(table['picset'])
-# randomize picsets
-shuffle(picsets)
-trueSetSize, counter, tilist = int(len(table)/len(picsets)), 0, list()
+if noData == False:
+        # sort by emo and picset
+    table = table.sort_values(['emo', 'picset']).reset_index(drop=True)
+    # define newTable as data frame in pandas
+    newTable, picsets = pd.DataFrame(), np.unique(table['picset'])
+    # randomize picsets
+    shuffle(picsets)
+    trueSetSize, counter, tilist = int(len(table)/len(picsets)), 0, list()
 
-# iterate randomly through all the picsets
-for seti in picsets:
-    # pick the subset of the data
-    currentset = table[table['picset'] == seti].reset_index(drop=True)
-    # tilist randomizes trials within each set
-    rndtilist = list(range(counter*trueSetSize, trueSetSize * (counter+1)))
-    shuffle(rndtilist)
-    tilist = tilist + rndtilist
-    # iterate through all the emo categories
-    for valencei in np.unique(currentset['emo']):
-        # define conditions and 2nd cue times for each emotion category and each set seperately
-        emoSetInCurrent = currentset[currentset['emo']
-                                     == valencei].reset_index(drop=True)
-        # condition data
-        condlist = list(range(1, 5))*4
-        emoSetInCurrent['cond'] = condlist
+    # iterate randomly through all the picsets
+    for seti in picsets:
+        # pick the subset of the data
+        currentset = table[table['picset'] == seti].reset_index(drop=True)
+        # tilist randomizes trials within each set
+        rndtilist = list(range(counter*trueSetSize, trueSetSize * (counter+1)))
+        shuffle(rndtilist)
+        tilist = tilist + rndtilist
+        # iterate through all the emo categories
+        for valencei in np.unique(currentset['emo']):
+            # define conditions and 2nd cue times for each emotion category and each set seperately
+            emoSetInCurrent = currentset[currentset['emo']
+                                         == valencei].reset_index(drop=True)
+            # condition data
+            condlist = list(range(1, 5))*4
+            emoSetInCurrent['cond'] = condlist
 
-        # present question once in each condition (25 % of the time if 8 design cells and 32 pics in the set)
-        setSize = len(emoSetInCurrent)
-        numberOfAConds = len(np.unique(emoSetInCurrent['cond']))
-        rndQM = np.zeros((int(setSize/numberOfAConds), numberOfAConds))
-        rndQM[randint(len(rndQM))] = 1
-        emoSetInCurrent['presentQuestion'] = np.squeeze(
-            np.asarray(rndQM)).reshape(-1).astype(int)
+            # present question once in each condition (25 % of the time if 8 design cells and 32 pics in the set)
+            setSize = len(emoSetInCurrent)
+            numberOfAConds = len(np.unique(emoSetInCurrent['cond']))
+            rndQM = np.zeros((int(setSize/numberOfAConds), numberOfAConds))
+            rndQM[randint(len(rndQM))] = 1
+            emoSetInCurrent['presentQuestion'] = np.squeeze(
+                np.asarray(rndQM)).reshape(-1).astype(int)
 
-        # randomize condition and question presentation
-        emoSetInCurrent[['cond', 'presentQuestion']] = emoSetInCurrent[[
-            'cond', 'presentQuestion']].sample(frac=1).reset_index(drop=True)
+            # randomize condition and question presentation
+            emoSetInCurrent[['cond', 'presentQuestion']] = emoSetInCurrent[[
+                'cond', 'presentQuestion']].sample(frac=1).reset_index(drop=True)
 
-        # define 2nd cue times similarly for each emotion category in each set separately
-        secondCueRndList = secondCueTime * \
-            int(np.ceil(setSize/len(secondCueTime)))
-        secondCueRndList = secondCueRndList[0:setSize]
-        shuffle(secondCueRndList)
-        emoSetInCurrent['secondCueTime'] = secondCueRndList
+            # define 2nd cue times similarly for each emotion category in each set separately
+            secondCueRndList = secondCueTime * \
+                int(np.ceil(setSize/len(secondCueTime)))
+            secondCueRndList = secondCueRndList[0:setSize]
+            shuffle(secondCueRndList)
+            emoSetInCurrent['secondCueTime'] = secondCueRndList
 
-        # this randomization is not strictly nessesary since 'tilist' (see below) shuffles the trials within each set already
-        emoSetInCurrent = emoSetInCurrent.sample(frac=1).reset_index(drop=True)
-        newTable = newTable.append(emoSetInCurrent).reset_index(drop=True)
-    counter += 1
+            # this randomization is not strictly nessesary since 'tilist' (see below) shuffles the trials within each set already
+            emoSetInCurrent = emoSetInCurrent.sample(
+                frac=1).reset_index(drop=True)
+            newTable = newTable.append(emoSetInCurrent).reset_index(drop=True)
+        counter += 1
 
-# sorting vased on trialID ensures that the trilas are shuffled within each picset
-newTable['trialID'] = tilist
-newTable = newTable.sort_values(['trialID']).reset_index(drop=True)
+    # sorting vased on trialID ensures that the trilas are shuffled within each picset
+    newTable['trialID'] = tilist
+    newTable = newTable.sort_values(['trialID']).reset_index(drop=True)
 
-
-newTable['cond'] = newTable['cond'].astype(str)
-picConditon = newTable['emo']
-picSeries = newTable['imageFile']
+    newTable['cond'] = newTable['cond'].astype(str)
+    picConditon = newTable['emo']
+    picSeries = newTable['imageFile']
 
 
 # define box colors and randomize
@@ -460,9 +489,15 @@ def loadpics(picture_directory, pics, endindx, listname, units, picSize):
 trials_training = range(0, len(trainingfiles))
 nTrials_training = len(trials_training)
 
-trainingTable = pd.DataFrame(data=np.zeros(
-    (nTrials_training, len(newTable.columns))), columns=newTable.columns)
-trainingTable.loc[:] = 'training'
+if noData == False:
+    trainingTable = pd.DataFrame(data=np.zeros(
+        (nTrials_training, len(newTable.columns))), columns=newTable.columns)
+    trainingTable.loc[:] = 'training'
+else:
+    dataCols = ['imageFile', 'valence', 'arousal', 'aff_cv', 'emo', 'semantic',
+                'picset', 'cond', 'presentQuestion', 'secondCueTime', 'trialID']
+    trainingTable = pd.DataFrame(data=np.zeros(
+        (nTrials_training, len(dataCols))), columns=dataCols)
 
 trainingTable['imageFile'], trainingTable['trialID'], trainingTable['secondCueTime'] = trainingfiles, trials_training, secondCueTime[1]
 trainingcondlist = list(range(1, 5)) * int(np.ceil(len(trainingfiles)/4))
@@ -476,14 +511,21 @@ trainingTable['imageFile'] = trainingTable['imageFile'].sample(frac=1).values
 trainingTable['cond'] = trainingTable['cond'].sample(frac=1).values.astype(str)
 trainingTable['presentQuestion'] = trainingTable['presentQuestion'].sample(
     frac=1).values
+
+if noData:
+    newTable = trainingTable
+
 # endregion (TRAINING TRIALS)
 
 # region LOAD IMAGES
 draw_text('Palun oota. Laen pildid mällu...', 1, 1)  #
 
+# python_pic_dir = sys.executable[0:-10] + 'Lib\site-packages\psychopy\demos\coder\stimuli'
+
+
 intropics = []
 loadpics(intro_dir, introfiles, len(introfiles),
-         intropics, 'pix',  (960, 720))
+         intropics, 'pix', None)
 
 trainingpics = []
 loadpics(training_dir, trainingTable['imageFile'], len(trainingTable['imageFile']),
@@ -500,12 +542,14 @@ for file in newTable['trialID'][0:pauseAfterEvery]:
 
 # only if actually testing
 if expInfo['testMonkey'] == '0':
-    for indx in range(0, len(intropics)):
+    presentIntroPics, countIntroPics = True, 0
+    while presentIntroPics == True:
+        # for indx in range(0, len(intropics)):
         core.wait(0.25)
         presentPic = True
 
         while presentPic:
-            intropics[indx].draw(), win.flip()
+            intropics[countIntroPics].draw(), win.flip()
 
             buttons, theseKeys = mouse.getPressed(
             ), event.getKeys(keyList=['q', 'space'])
@@ -513,8 +557,17 @@ if expInfo['testMonkey'] == '0':
                 if expInfo['EEG'] == '1':
                     port.setData(0)
                 core.quit()
-            elif sum(buttons) > 0:
-                presentPic = False
+            elif len(buttons) > 0:
+                if buttons[2] == 1:
+                    countIntroPics += 1
+                    presentPic = False
+                elif buttons[0] == 1:
+                    if countIntroPics > 0:
+                        countIntroPics -= 1
+                    presentPic = False
+        if countIntroPics == len(intropics):
+            presentIntroPics = False
+            buttons = 0
 # endregion (PRESENT INSTRUCTIONS)
 
 # region THIS IS THE EXPERIMENT LOOP
@@ -542,10 +595,13 @@ for gIndx in routinedic:
         mouse.setVisible(False)  # hide the cursor
         if ti == nTrials and routinedic[gIndx] == 'experiment':
             # close and quit
-            draw_text(goodbye_text, float('inf'), 1)
-            if expInfo['EEG'] == '1':
-                port.setData(0), port.close()
-            win.close(), core.quit()
+            if expInfo['reExposure'] == '0':
+                draw_text(goodbye_text, float('inf'), 1)
+                if expInfo['EEG'] == '1':
+                    port.setData(0), port.close()
+                win.close(), core.quit()
+            else:
+                break
         elif ti == nTrials:
             break
 
@@ -576,7 +632,7 @@ for gIndx in routinedic:
 
         # SAVE SOME DATA
         thisExp.addData('trialType', routinedic[gIndx]), thisExp.addData(
-            '2ndCueTime', condData['secondCueTime'][ti])
+            'secondCueTime', condData['secondCueTime'][ti])
         thisExp.addData('picset', condData['picset'][ti]), thisExp.addData(
             'cond', condic[condData['cond'][ti]])
         thisExp.addData('Question', condData['presentQuestion'][ti]), thisExp.addData(
@@ -602,29 +658,33 @@ for gIndx in routinedic:
 
         # PAUSE (preloading next set of N (pauseAfterEvery) images to achive better timing)
         pauseStart = clock.getTime()  # win.getFutureFlipTime(clock='ptb')
-        if (ti+1) % pauseAfterEvery == 0:
-            trigNum += 10
-            # print('pause_'+str(trigNum))
+        try:
+            if (ti+1) % pauseAfterEvery == 0:
+                trigNum += 10
+                # print('pause_'+str(trigNum))
 
-            text.pos = (0, 0)  # change text position back
-            sendTrigger(pauseStart, trigNum, expInfo['EEG'])
-            if expInfo['testMonkey'] == '0':
-                draw_text(pause_text, float('inf'), 1)
-            else:
-                draw_text(pause_text, 0.2, 1)
+                text.pos = (0, 0)  # change text position back
+                sendTrigger(pauseStart, trigNum, expInfo['EEG'])
+                if ti < nTrials:
+                    if expInfo['testMonkey'] == '0':
+                        draw_text(pause_text, float('inf'), 1)
+                    else:
+                        draw_text(pause_text, 0.2, 1)
 
-            picCount += pauseAfterEvery
-            images = []
-            start = ti+1
-            end = start+pauseAfterEvery
+                picCount += pauseAfterEvery
+                images = []
+                start = ti+1
+                end = start+pauseAfterEvery
 
-            if end > nTrials:
-                end = nTrials
-            # PRELOAD PICTURES FOR EACH BLOCK
-            for file in newTable['trialID'][start:end]:
-                images.append(visual.ImageStim(win=win, image=pic_dir + '\\' + str(
-                    newTable['imageFile'][file]), units='deg', size=picSize, name=str(newTable['imageFile'][file])))  # + '.jpg'
-
+                if end > nTrials:
+                    end = nTrials
+                # PRELOAD PICTURES FOR EACH BLOCK
+                for file in condData['trialID'][start:end]:
+                    images.append(visual.ImageStim(win=win, image=current_pic_dir + '\\' + str(
+                        condData['imageFile'][file]), units='deg', size=picSize, name=str(condData['imageFile'][file])))  # + '.jpg'
+        except:
+            print(
+                'Variable "pauseAfterEvery" empty or smaller than 1 - pause will be skipped')
         thisExp.nextEntry()
         ti += 1
 
@@ -632,15 +692,31 @@ for gIndx in routinedic:
 
 # region RE-EXPOSURE
 if expInfo['reExposure'] == '1':
+    draw_text('Intro to re-exposure (hit space to continue)',
+              float('inf'), mouse_resp)  #
+
     reexpopics = []
-    loadpics(pic_dir, all_files, len(all_files),
-             reexpopics, (picSize[0], picSize[1]))
+    newTable = newTable.sample(frac=1).reset_index(drop=True)
+    loadpics(pic_dir, newTable['imageFile'], len(newTable['imageFile']),
+             reexpopics, 'deg', (picSize[0], picSize[1]))
 
     for indx in range(0, len(reexpopics)):
 
         # draw fixation
         draw_fix(win, fixation, 0.5, 0)
         reexpopics[indx].draw(), win.flip()
+
+        # SAVE SOME DATA
+        thisExp.addData('trialType', 're-exposure'), thisExp.addData(
+            'secondCueTime', newTable['secondCueTime'][indx])
+        thisExp.addData('picset', newTable['picset'][indx]), thisExp.addData(
+            'cond', condic[newTable['cond'][indx]])
+        thisExp.addData('Question', newTable['presentQuestion'][indx]), thisExp.addData(
+            'valence', newTable['emo'][indx])
+        thisExp.addData('pictureID', picName), thisExp.addData(
+            'fixDuration', fixDuration)
+        thisExp.addData('triaslN', indx+1), thisExp.addData('picBytes',
+                                                            os.stat(current_pic_dir + '\\' + picName).st_size)
 
         pause_time, pause_dur = clock.getTime(), 3.5
         while (clock.getTime() - pause_time) < pause_dur:
@@ -650,6 +726,8 @@ if expInfo['reExposure'] == '1':
             ), event.getKeys(keyList=['q', 'space'])
 
             if len(theseKeys) > 0 and theseKeys[0] == 'q':
+                # text.pos = (0, 0)  # change text position back
+                draw_text(goodbye_text, float('inf'), 1)
                 if expInfo['EEG'] == '1':
                     port.setData(0)
                 core.quit()
@@ -658,9 +736,16 @@ if expInfo['reExposure'] == '1':
         iti_dur = random() + iti_dur_default
         draw_iti(win, iti_dur, 0)
 
-        # draw VAS
-        # VAS_text.text = 'Siia tuleb küsimus...'
-        # draw_VAS(win, VAS, VAS_text, 'Question_1')
+    thisExp.nextEntry()
+
+    if indx == len(reexpopics)-1:
+        draw_text(goodbye_text, float('inf'), 1)
+        if expInfo['EEG'] == '1':
+            port.setData(0)
+            core.quit()
+    # draw VAS
+    # VAS_text.text = 'Siia tuleb küsimus...'
+    # draw_VAS(win, VAS, VAS_text, 'Question_1')
 
 # endregion (RE-EXPOSURE)
 
