@@ -567,7 +567,7 @@ if expInfo['testMonkey'] == '0':
                     presentPic = False
         if countIntroPics == len(intropics):
             presentIntroPics = False
-            buttons = 0
+            core.wait(0.25)
 # endregion (PRESENT INSTRUCTIONS)
 
 # region THIS IS THE EXPERIMENT LOOP
