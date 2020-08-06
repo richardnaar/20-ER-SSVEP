@@ -51,7 +51,7 @@ print('PsychoPy version: ' + psychopy.__version__)
 # filename of the script
 expName = os.path.basename(__file__)  # + data.getDateStr()
 
-expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '0',
+expInfo = {'participant': 'Participant', 'session': '001', 'EEG': '0', 'Chemicum': '0',
            'stimFrequency': '15', 'frame': '0', 'testMonkey': '1', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '1'}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
@@ -692,7 +692,7 @@ for gIndx in routinedic:
 
 # region RE-EXPOSURE
 if expInfo['reExposure'] == '1':
-    draw_text('Intro to re-exposure (hit space to continue)',
+    draw_text('Re-exposure intro (jätkamiseks vajuta tühukut)',
               float('inf'), mouse_resp)  #
 
     reexpopics = []
@@ -726,8 +726,6 @@ if expInfo['reExposure'] == '1':
             ), event.getKeys(keyList=['q', 'space'])
 
             if len(theseKeys) > 0 and theseKeys[0] == 'q':
-                # text.pos = (0, 0)  # change text position back
-                draw_text(goodbye_text, float('inf'), 1)
                 if expInfo['EEG'] == '1':
                     port.setData(0)
                 core.quit()
@@ -736,7 +734,7 @@ if expInfo['reExposure'] == '1':
         iti_dur = random() + iti_dur_default
         draw_iti(win, iti_dur, 0)
 
-    thisExp.nextEntry()
+        thisExp.nextEntry()
 
     if indx == len(reexpopics)-1:
         draw_text(goodbye_text, float('inf'), 1)
