@@ -41,7 +41,7 @@ print('PsychoPy version: ' + psychopy.__version__)
 expName = os.path.basename(__file__)  # + data.getDateStr()
 
 expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '0',
-           'stimFrequency': '15', 'frame': '0', 'testMonkey': '1', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '1'}
+           'stimFrequency': '15', 'frame': '0', 'testMonkey': '0', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '1'}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 if dlg.OK == False:
@@ -52,19 +52,12 @@ expInfo['expName'] = expName
 
 # Set durartions
 if expInfo['testMonkey'] == '1':
-    fixDuration = 0.1  # fixation duration (will change on every iteration)
-    stimDuration = 1  # 0.126  # stim duration
-    iti_dur_default = 0.2
-    # soundStart = 0.65
-    secondCueTime = [0.1, 0.2, 0.3]
-    expInfo['participant'] = 'Monkey'
+    fixDuration, stimDuration, iti_dur_default, secondCueTime, expInfo['participant'] = \
+        0.1,        1,              0.2,        [0.1, 0.2, 0.3], 'Monkey'
 else:
     # just the first iti, later will change on every trial (random()+0.5)
-    fixDuration = 1.5  #
-    stimDuration = 12.6  # stim duration
-    iti_dur_default = 3.5  # +/- 0.5
-    # soundStart = 6.5
-    secondCueTime = [6, 6.5, 7]
+    fixDuration, stimDuration, iti_dur_default, secondCueTime = \
+        1.5,        12.6,           3.5,         [6, 6.5, 7]
 
 # Data file name stem = absolute path + name; later add .psyexp, .csv, .log, etc
 filename = dirpath + '\\data\\' + \
@@ -126,13 +119,11 @@ table = xls_file.parse('ERSSVEP_images')
 # sort by emo and picset
 table = table.sort_values(['emo', 'picset']).reset_index(drop=True)
 # define newTable as data frame in pandas
-newTable = pd.DataFrame()
-picsets = np.unique(table['picset'])
+newTable, picsets = pd.DataFrame(), np.unique(table['picset'])
 # randomize picsets
 shuffle(picsets)
-trueSetSize = int(len(table)/len(picsets))
-counter = 0  # keeps track of the number sets iterated
-tilist = list()
+trueSetSize, counter, tilist = int(len(table)/len(picsets)), 0, list()
+
 # iterate randomly through all the picsets
 for seti in picsets:
     # pick the subset of the data
@@ -202,6 +193,7 @@ intOnScreen = np.linspace(150, 950, 9)
 
 # endregion (RANDOMIZATION)
 
+
 # region SETUP WINDOW
 
 if expInfo['testMonkey'] == '1':
@@ -255,8 +247,7 @@ else:
 
 # region INITIALIZE TASK COMPONENTS
 
-horiz = 34
-vert = 28
+horiz, vert = 34, 28,
 picSize = (horiz, vert)
 
 pause_text = 'See on paus. Jätkamiseks vajuta palun hiireklahvi . . .'
@@ -327,11 +318,9 @@ def sendTrigger(trigStart, trigN, EEG):
 
 
 def draw_ssvep(win, duration, ti, trigNum):
-    text.pos = (0, -horiz/2.8)
     picStartTime = clock.getTime()
-    frameN = 0
-    secondCuePresented = False
-    contrastNotYetChanged = True
+    text.pos, frameN = (0, -horiz/2.8), 0
+    secondCuePresented, contrastNotYetChanged = False, True
     time = clock.getTime() - picStartTime
     while (time) < duration:
         frameN += 1
@@ -342,20 +331,16 @@ def draw_ssvep(win, duration, ti, trigNum):
                     (A*sin(2*pi*f * time + theta))
             elif expInfo['countFrames'] == '1':
                 if frameN % moduloNr == 0:  # waits until the remainder of the devision between frameN and moduloNr is 0
-                    images[ti-picCount].contrast = 1
-                    contrastNotYetChanged = True
+                    images[ti-picCount].contrast, contrastNotYetChanged = 1, True
                 elif contrastNotYetChanged:
-                    images[ti-picCount].contrast = 1-(2*A)
-                    contrastNotYetChanged = False
+                    images[ti-picCount].contrast, contrastNotYetChanged = 1 - \
+                        (2*A), False
 
             # Draw frame, image, subtitle box and text on top of each other
-            background.draw()
-            images[ti-picCount].draw()
-            subbox.draw()
-            text.draw()
+            background.draw(
+            ), images[ti-picCount].draw(), subbox.draw(), text.draw()
 
             # flip and send the trigger
-
             win.flip()
             if not secondCuePresented:
                 sendTrigger(picStartTime, trigNum, expInfo['EEG'])
@@ -377,8 +362,7 @@ def draw_ssvep(win, duration, ti, trigNum):
                     text.setText(condic[condData['cond'][ti]][1])
 
                 # change the frame colour
-                background.fillColor = coldic[condData['cond'][ti]][1]
-                secondCuePresented = True
+                background.fillColor, secondCuePresented = coldic[condData['cond'][ti]][1], True
             elif secondCuePresented:
                 sendTrigger(cueTime, trigNum, expInfo['EEG'])
         else:
@@ -430,8 +414,7 @@ def draw_text(txt, pause_dur, mouse_resp):
         buttons = mouse.getPressed()
         theseKeys = event.getKeys(keyList=['q', 'space'])
         if len(theseKeys) == 0 and sum(buttons) == 0:
-            text.setText(txt)
-            text.draw()
+            text.setText(txt), text.draw()
             win.flip()
         elif len(theseKeys) > 0 and theseKeys[0] == 'space' and mouse_resp == 0:
             break
@@ -454,15 +437,14 @@ def draw_VAS(win, VAS, VAS_text, colName):
 
     while VAS.noResponse:
         if not event.getKeys('q'):
-            VAS_text.draw()
-            VAS.draw()
+            VAS_text.draw(), VAS.draw()
             win.flip()
         else:
             core.quit()
     mouse.setVisible(False)
-    # write average srate to the file
-    thisExp.addData(colName, VAS.getRating())
-    thisExp.addData(colName+'_RT', VAS.getRT())
+    # save the rating and RT
+    thisExp.addData(colName, VAS.getRating()), thisExp.addData(
+        colName+'_RT', VAS.getRT())
     core.wait(0.25)
 
 
@@ -475,21 +457,21 @@ def loadpics(picture_directory, pics, endindx, listname, units, picSize):
 
 
 # region SET UP THE TRAINING TRIALS
-trials_training = range(0, len(trainingfiles))
-nTrials_training = len(trials_training)
+trials_training, nTrials_training = range(
+    0, len(trainingfiles)), len(trials_training)
 
 trainingTable = pd.DataFrame(data=np.zeros(
     (nTrials_training, len(newTable.columns))), columns=newTable.columns)
 trainingTable.loc[:] = 'training'
 
-trainingTable['imageFile'] = trainingfiles
+trainingTable['imageFile'], trainingTable['trialID'], trainingTable['secondCueTime'] = trainingfiles, trials_training, secondCueTime[1]
+
 trainingcondlist = list(range(1, 5)) * int(np.ceil(len(trainingfiles)/4))
-trainingTable['cond'] = trainingcondlist[0:len(trainingfiles)]
-trainingTable['trialID'] = trials_training
 trainingQList = list(zeros(int(np.ceil(len(trainingfiles)/2)))) + \
     list(np.ones(int(np.ceil(len(trainingfiles)/2))))
-trainingTable['presentQuestion'] = trainingQList[0:len(trainingfiles)]
-trainingTable['secondCueTime'] = secondCueTime[1]
+
+trainingTable['presentQuestion'], trainingTable['cond'] = trainingQList[0:len(
+    trainingfiles)], trainingcondlist[0:len(trainingfiles)]
 
 trainingTable['imageFile'] = trainingTable['imageFile'].sample(frac=1).values
 trainingTable['cond'] = trainingTable['cond'].sample(frac=1).values.astype(str)
@@ -524,12 +506,10 @@ if expInfo['testMonkey'] == '0':
         presentPic = True
 
         while presentPic:
-            intropics[indx].draw()
-            win.flip()
+            intropics[indx].draw(), win.flip()
 
-            buttons = mouse.getPressed()
-            theseKeys = event.getKeys(keyList=['q', 'space'])
-
+            buttons, theseKeys = mouse.getPressed(
+            ), event.getKeys(keyList=['q', 'space'])
             if len(theseKeys) > 0 and theseKeys[0] == 'q':
                 if expInfo['EEG'] == '1':
                     port.setData(0)
@@ -545,28 +525,19 @@ routinedic = {'0': 'training', '1': 'experiment'}
 for gIndx in routinedic:
     runExperiment = True
     if routinedic[gIndx] == 'training':
-        condData = trainingTable
-        trials = trainingTable['trialID']
-        nTrials = len(trials_training)
-        images = trainingpics
-        current_pic_dir = training_dir
+        condData, trials, nTrials, images, current_pic_dir, mouse_resp = \
+            trainingTable, trainingTable['trialID'], len(
+                trials_training), trainingpics, training_dir, 1
         instructions = 'Järgmised esitused on harjutamiseks...'
-        mouse_resp = 1
     elif routinedic[gIndx] == 'experiment':
-        condData = newTable
-        trials = newTable['trialID']  # list(range(0, len(picSeries)))
-        nTrials = len(trials)
-        images = images_experiment
-        current_pic_dir = pic_dir
-        instructions = start_text
-        mouse_resp = 0
+        condData, trials, nTrials, images, current_pic_dir, instructions, mouse_resp = \
+            newTable, newTable['trialID'], len(
+                trials), images_experiment, pic_dir, start_text, 0
 
+    text.pos = (0, 0)  # change text position back
     draw_text(instructions, float('inf'), mouse_resp)  #
 
-    picCount = 0
-    ti = 0
-    apCounterNeg = 0
-    apCounterNtr = 0
+    picCount, ti, apCounterNeg, apCounterNtr = 0, 0, 0, 0
     while runExperiment:
         expInfo['globalTime'] = clock.getTime()  # save data
         mouse.setVisible(False)  # hide the cursor
@@ -574,10 +545,8 @@ for gIndx in routinedic:
             # close and quit
             draw_text(goodbye_text, float('inf'), 1)
             if expInfo['EEG'] == '1':
-                port.setData(0)
-                port.close()
-            win.close()
-            core.quit()
+                port.setData(0), port.close()
+            win.close(), core.quit()
         elif ti == nTrials:
             break
 
@@ -599,24 +568,24 @@ for gIndx in routinedic:
 
         background.fillColor = coldic[condData['cond'][ti]][0]
         secondCueStart = condData['secondCueTime'][ti]
+        # draw the flickering picture
         draw_ssvep(win, stimDuration, ti, trigNum)
-        text.pos = (0, 0)
+        text.pos = (0, 0)  # change text position back
 
         # Define picture name for saving
         picName = images[ti-picCount].name
 
         # SAVE SOME DATA
-        thisExp.addData('trialType', routinedic[gIndx])
-        thisExp.addData('2ndCueTime', condData['secondCueTime'][ti])
-        thisExp.addData('picset', condData['picset'][ti])
-        thisExp.addData('cond', condic[condData['cond'][ti]])
-        thisExp.addData('Question', condData['presentQuestion'][ti])
-        thisExp.addData('valence', condData['emo'][ti])
-        thisExp.addData('pictureID', picName)
-        thisExp.addData('fixDuration', fixDuration)
-        thisExp.addData('triaslN', ti+1)
-        thisExp.addData('picBytes', os.stat(
-            current_pic_dir + '\\' + picName).st_size)
+        thisExp.addData('trialType', routinedic[gIndx]), thisExp.addData(
+            '2ndCueTime', condData['secondCueTime'][ti])
+        thisExp.addData('picset', condData['picset'][ti]), thisExp.addData(
+            'cond', condic[condData['cond'][ti]])
+        thisExp.addData('Question', condData['presentQuestion'][ti]), thisExp.addData(
+            'valence', condData['emo'][ti])
+        thisExp.addData('pictureID', picName), thisExp.addData(
+            'fixDuration', fixDuration)
+        thisExp.addData('triaslN', ti+1), thisExp.addData('picBytes',
+                                                          os.stat(current_pic_dir + '\\' + picName).st_size)
 
         # ITI
         if expInfo['testMonkey'] == '0':
@@ -638,6 +607,7 @@ for gIndx in routinedic:
             trigNum += 10
             # print('pause_'+str(trigNum))
 
+            text.pos = (0, 0)  # change text position back
             sendTrigger(pauseStart, trigNum, expInfo['EEG'])
             if expInfo['testMonkey'] == '0':
                 draw_text(pause_text, float('inf'), 1)
@@ -652,9 +622,9 @@ for gIndx in routinedic:
             if end > nTrials:
                 end = nTrials
             # PRELOAD PICTURES FOR EACH BLOCK
-            for file in trials[start:end]:
+            for file in newTable['trialID'][0:end]:
                 images.append(visual.ImageStim(win=win, image=pic_dir + '\\' + str(
-                    picSeries[file]), units='deg', size=picSize, name=str(picSeries[file])))  # + '.jpg'
+                    newTable['imageFile'][file]), units='deg', size=picSize, name=str(newTable['imageFile'][file])))  # + '.jpg'
 
         thisExp.nextEntry()
         ti += 1
@@ -671,18 +641,14 @@ if expInfo['reExposure'] == '1':
 
         # draw fixation
         draw_fix(win, fixation, 0.5, 0)
+        reexpopics[indx].draw(), win.flip()
 
-        reexpopics[indx].draw()
-        win.flip()
-
-        pause_time = clock.getTime()
-        pause_dur = 0.5
+        pause_time, pause_dur = clock.getTime(), 0.5
         while (clock.getTime() - pause_time) < pause_dur:
-            reexpopics[indx].draw()
-            win.flip()
+            reexpopics[indx].draw(), win.flip()
 
-            buttons = mouse.getPressed()
-            theseKeys = event.getKeys(keyList=['q', 'space'])
+            buttons, theseKeys = mouse.getPressed(
+            ), event.getKeys(keyList=['q', 'space'])
 
             if len(theseKeys) > 0 and theseKeys[0] == 'q':
                 if expInfo['EEG'] == '1':
