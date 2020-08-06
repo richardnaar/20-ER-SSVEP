@@ -22,6 +22,7 @@ import platform
 
 from numpy import pi, sin, random, zeros
 from numpy.random import random, randint, shuffle
+from PIL import Image
 
 import numpy as np
 
@@ -465,10 +466,10 @@ def draw_VAS(win, VAS, VAS_text, colName):
     core.wait(0.25)
 
 
-def loadpics(picture_directory, pics, endindx, listname, picSize):
+def loadpics(picture_directory, pics, endindx, listname, units, picSize):
     for file in range(0, endindx):
         listname.append(visual.ImageStim(win=win, image=picture_directory + '\\' + str(
-            pics[file]), units='deg', size=picSize, name=str(pics[file])))
+            pics[file]), units=units, size=picSize, name=str(pics[file])))
 
 # endregion (DEFINE FUNCTIONS)
 
@@ -501,11 +502,11 @@ draw_text('Palun oota. Laen pildid mällu...', 1, 1)  #
 
 intropics = []
 loadpics(intro_dir, introfiles, len(introfiles),
-         intropics, (picSize[0], picSize[1]))
+         intropics, 'pix',  (960, 720))
 
 trainingpics = []
 loadpics(training_dir, trainingTable['imageFile'], len(trainingTable['imageFile']),
-         trainingpics, (picSize[0], picSize[1]))
+         trainingpics, 'deg', (picSize[0],  picSize[1]))
 
 images_experiment = []
 for file in newTable['trialID'][0:pauseAfterEvery]:
