@@ -41,7 +41,7 @@ print('PsychoPy version: ' + psychopy.__version__)
 expName = os.path.basename(__file__)  # + data.getDateStr()
 
 expInfo = {'participant': 'rn', 'session': '001', 'EEG': '0', 'Chemicum': '0',
-           'stimFrequency': '15', 'frame': '0', 'testMonkey': '0', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '1'}
+           'stimFrequency': '15', 'frame': '0', 'testMonkey': '1', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '1'}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 if dlg.OK == False:
@@ -457,15 +457,14 @@ def loadpics(picture_directory, pics, endindx, listname, units, picSize):
 
 
 # region SET UP THE TRAINING TRIALS
-trials_training, nTrials_training = range(
-    0, len(trainingfiles)), len(trials_training)
+trials_training = range(0, len(trainingfiles))
+nTrials_training = len(trials_training)
 
 trainingTable = pd.DataFrame(data=np.zeros(
     (nTrials_training, len(newTable.columns))), columns=newTable.columns)
 trainingTable.loc[:] = 'training'
 
 trainingTable['imageFile'], trainingTable['trialID'], trainingTable['secondCueTime'] = trainingfiles, trials_training, secondCueTime[1]
-
 trainingcondlist = list(range(1, 5)) * int(np.ceil(len(trainingfiles)/4))
 trainingQList = list(zeros(int(np.ceil(len(trainingfiles)/2)))) + \
     list(np.ones(int(np.ceil(len(trainingfiles)/2))))
