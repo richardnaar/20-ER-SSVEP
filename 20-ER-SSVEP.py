@@ -660,7 +660,6 @@ for gIndx in routinedic:
 
 # endregion (EXPERIMENT LOOP)
 
-
 # region RE-EXPOSURE
 if expInfo['reExposure'] == '1':
     reexpopics = []
