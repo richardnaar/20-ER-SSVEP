@@ -621,7 +621,7 @@ for gIndx in routinedic:
             if end > nTrials:
                 end = nTrials
             # PRELOAD PICTURES FOR EACH BLOCK
-            for file in newTable['trialID'][0:end]:
+            for file in newTable['trialID'][start:end]:
                 images.append(visual.ImageStim(win=win, image=pic_dir + '\\' + str(
                     newTable['imageFile'][file]), units='deg', size=picSize, name=str(newTable['imageFile'][file])))  # + '.jpg'
 
