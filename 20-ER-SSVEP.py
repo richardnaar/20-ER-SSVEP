@@ -129,8 +129,7 @@ try:
     noData = False
 except:
     print('NB! A problem with locating the pictures. Using example pictures instead...')
-    example_pictures_dir = sys.executable[0:-10] + \
-        'Lib\site-packages\psychopy\demos\coder\stimuli'
+    example_pictures_dir = 'C:\\Program Files\\PsychoPy3\\Lib\site-packages\psychopy\demos\coder\stimuli'
     intro_dir, training_dir, pic_dir = example_pictures_dir, example_pictures_dir, example_pictures_dir
     introfiles = list(
         filter(lambda x: x.endswith('.jpg'), os.listdir(intro_dir)))
