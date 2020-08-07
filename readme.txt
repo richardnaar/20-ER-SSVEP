@@ -1,4 +1,6 @@
-find region "DEFINE PICTURE FOLDERS (and name of the condition file)": 
+readme for ER-SSVEP-20.py
+
+Find region "DEFINE PICTURE FOLDERS (and name of the condition file)": 
 	a) specify the names of the folders (relative to the experiment directory)
 	b) specify the name of condition file
 
