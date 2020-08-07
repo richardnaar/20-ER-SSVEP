@@ -25,7 +25,7 @@ import sys
 
 from numpy import pi, sin, random, zeros
 from numpy.random import random, randint, shuffle
-from PIL import Image
+# from PIL import Image
 
 import numpy as np
 
@@ -70,6 +70,9 @@ else:
     fixDuration, stimDuration, iti_dur_default, secondCueTime = \
         1.5,        12.6,           3.5,         [6, 6.5, 7]
 
+expInfo['stimDuration'] = stimDuration  # save data
+expInfo['itiDuration'] = str(iti_dur_default) + '+/- 0.5'  # save data
+
 # Data file name stem = absolute path + name; later add .psyexp, .csv, .log, etc
 filename = dirpath + '\\data\\' + \
     expInfo['participant'] + '_' + expName + '_' + expInfo['date']
@@ -88,10 +91,7 @@ thisExp = data.ExperimentHandler(
 
 # endregion (SET UP THE EPERIMENT INFO DATA)
 
-# region SIMULUS TIMING AND SET UP THE EEG PORT
-
-expInfo['stimDuration'] = stimDuration  # save data
-expInfo['itiDuration'] = str(iti_dur_default) + '+/- 0.5'  # save data
+# region EEG PORT SETUP
 
 if expInfo['EEG'] == '1':
     from psychopy import parallel
@@ -101,7 +101,13 @@ if expInfo['EEG'] == '1':
         port = parallel.ParallelPort(address=0xe010)
         port.setData(0)
     trigNum = 0
-# endregion (SIMULUS TIMING AND SET UP THE EEG PORT)
+
+trigdic = {'training': '0', 'experiment': '1', 'VAATA PILTI': '1', 'LOENDA': '0', 'NEG': '1', 'NEUTRAL': '0',
+           'a': '00', 'b': '10', 'c': '01', 'd': '11', 'first': '00', 'second': '00', 'question': '00'}
+
+trigger = str()
+
+# endregion (EEG PORT SETUP)
 
 # region FIND FILES
 # Find stimuli and create a list of all_files
@@ -227,8 +233,11 @@ intOnScreen = np.linspace(150, 950, 9)
 
 if expInfo['testMonkey'] == '1':
     monSettings = {'size': (1920/2, 1080/2), 'fullscr': False}
+    boxdenom = float('inf')
 else:
-    monSettings = {'size': (1920, 1080), 'fullscr': True}
+    monSettings = {'size': (1920/2, 1080/2), 'fullscr': False}
+    boxdenom = 2.8
+    # monSettings = {'size': (1920, 1080), 'fullscr': True}
 
 win = visual.Window(
     size=monSettings['size'], fullscr=monSettings['fullscr'], screen=0, color='black',
@@ -311,7 +320,7 @@ background = visual.Rect(
 subbox = visual.Rect(
     win=win, units='deg',
     width=(8, 8)[0], height=(2, 2)[1],
-    ori=0, pos=(0, -horiz/2.8),
+    ori=0, pos=(0, -horiz/boxdenom),
     lineWidth=0, lineColor=[1, 1, 1], lineColorSpace='rgb',
     fillColor=[-1, -1, -1], fillColorSpace='rgb',
     opacity=1, depth=0.0, interpolate=True)
@@ -346,10 +355,10 @@ def sendTrigger(trigStart, trigN, EEG):
             port.setData(0)
 
 
-def draw_ssvep(win, duration, ti, trigNum):
+def draw_ssvep(win, duration, ti, trigNum, secondEventStart):
     picStartTime = clock.getTime()
-    text.pos, frameN = (0, -horiz/2.8), 0
-    secondCuePresented, contrastNotYetChanged = False, True
+    text.pos, frameN, secondCueTime = (0, -horiz/boxdenom), 0, False
+    secondCuePresented, contrastNotYetChanged, eventPos = False, True, 'first'
     time = clock.getTime() - picStartTime
     while (time) < duration:
         frameN += 1
@@ -365,6 +374,13 @@ def draw_ssvep(win, duration, ti, trigNum):
                     images[ti-picCount].contrast, contrastNotYetChanged = 1 - \
                         (2*A), False
 
+            if not secondCueTime and secondCuePresented:
+                trigger = trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][1]] + \
+                    trigdic[condData['emo'][ti]] + trigdic[condData['picset']
+                                                           [ti]] + trigdic[eventPos]
+                secondCueTime = clock.getTime()
+                sendTrigger(secondCueTime, trigger, expInfo['EEG'])
+
             # Draw frame, image, subtitle box and text on top of each other
             background.draw(
             ), images[ti-picCount].draw(), subbox.draw(), text.draw()
@@ -372,16 +388,23 @@ def draw_ssvep(win, duration, ti, trigNum):
             # flip and send the trigger
             win.flip()
             if not secondCuePresented:
-                sendTrigger(picStartTime, trigNum, expInfo['EEG'])
+                eventPos = 'second'
+                trigger = trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + \
+                    trigdic[condData['emo'][ti]] + trigdic[condData['picset']
+                                                           [ti]] + trigdic[eventPos]
+                sendTrigger(picStartTime, trigger, expInfo['EEG'])
 
-            # play sound half way through
-            if (clock.getTime() - picStartTime) > secondCueStart and not secondCuePresented:
+            # present 2nd cue at secondEventStart time
+            if (clock.getTime() - picStartTime) > secondEventStart and not secondCuePresented:
                 trigNum += 10
                 # print('secondCue_'+ str(trigNum))
                 cueTime = win.getFutureFlipTime(
                     clock='ptb')
                 # send the trigger and present the random integer
-                sendTrigger(cueTime, trigNum, expInfo['EEG'])
+                trigger = trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + \
+                    trigdic[condData['emo'][ti]] + trigdic[condData['picset']
+                                                           [ti]] + trigdic[eventPos]
+                sendTrigger(cueTime, trigger, expInfo['EEG'])
                 if condic[condData['cond'][ti]][1] == 'LOENDA':
                     shuffle(intOnScreen)
                     numTxt = ': ' + \
@@ -392,8 +415,7 @@ def draw_ssvep(win, duration, ti, trigNum):
 
                 # change the frame colour
                 background.fillColor, secondCuePresented = coldic[condData['cond'][ti]][1], True
-            elif secondCuePresented:
-                sendTrigger(cueTime, trigNum, expInfo['EEG'])
+
         else:
             if expInfo['EEG'] == '1':
                 port.setData(0)
@@ -413,7 +435,7 @@ def draw_fix(win, fixation, duration, trigNum):
             fixation.draw()
             # flip and send the trigger
             win.flip()
-            sendTrigger(fixStartTime, trigNum, expInfo['EEG'])
+            # sendTrigger(fixStartTime, trigNum, expInfo['EEG'])
         else:
             if expInfo['EEG'] == '1':
                 port.setData(0)
@@ -431,7 +453,7 @@ def draw_iti(win, iti_dur, trigNum):
 
         # flip and send the trigger
         win.flip()
-        sendTrigger(iti_time, trigNum, expInfo['EEG'])
+        # sendTrigger(iti_time, trigNum, expInfo['EEG'])
         time = clock.getTime() - iti_time
 
 
@@ -458,6 +480,12 @@ def draw_VAS(win, VAS, VAS_text, colName):
     VAS.reset()
     VASstartTime = clock.getTime()
     mouse.setVisible(True)
+    eventPos = 'question'
+
+    trigger = trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + \
+        trigdic[condData['emo'][ti]] + trigdic[condData['picset']
+                                               [ti]] + trigdic[eventPos]
+    sendTrigger(VASstartTime, trigger, expInfo['EEG'])
 
     if expInfo['testMonkey'] == '1':
         VAS.noResponse = False
@@ -622,7 +650,7 @@ for gIndx in routinedic:
         background.fillColor = coldic[condData['cond'][ti]][0]
         secondCueStart = condData['secondCueTime'][ti]
         # draw the flickering picture
-        draw_ssvep(win, stimDuration, ti, trigNum)
+        draw_ssvep(win, stimDuration, ti, trigNum, secondCueStart)
         text.pos = (0, 0)  # change text position back
 
         # Define picture name for saving
@@ -662,7 +690,7 @@ for gIndx in routinedic:
                 # print('pause_'+str(trigNum))
 
                 text.pos = (0, 0)  # change text position back
-                sendTrigger(pauseStart, trigNum, expInfo['EEG'])
+                # sendTrigger(pauseStart, trigNum, expInfo['EEG'])
                 if ti < nTrials:
                     if expInfo['testMonkey'] == '0':
                         draw_text(pause_text, float('inf'), 1)
@@ -685,7 +713,6 @@ for gIndx in routinedic:
                 'Variable "pauseAfterEvery" empty or smaller than 1 - pause will be skipped')
         thisExp.nextEntry()
         ti += 1
-
 # endregion (EXPERIMENT LOOP)
 
 # region RE-EXPOSURE
