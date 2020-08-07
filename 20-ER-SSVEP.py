@@ -29,7 +29,7 @@ from PIL import Image
 
 import numpy as np
 
-# endregion (IMPORT MODULES)
+# endregion (IMPORT MODULES )
 
 # region DEFINE PICTURE FOLDERS (and name of the condition file)
 # relative to the os.getcwd()
