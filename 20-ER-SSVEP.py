@@ -52,7 +52,7 @@ print('PsychoPy version: ' + psychopy.__version__)
 expName = os.path.basename(__file__)  # + data.getDateStr()
 
 expInfo = {'participant': 'Participant', 'session': '001', 'EEG': '0', 'Chemicum': '0',
-           'stimFrequency': '15', 'frame': '0', 'testMonkey': '1', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '1'}
+           'stimFrequency': '15', 'testMonkey': '1', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '1'}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 if dlg.OK == False:
@@ -254,7 +254,7 @@ clock = core.Clock()
 # use frameRate to add data and to define moduloNr
 
 pauseAfterEvery = int(expInfo['pauseAfterEvery'])  # save data
-if expInfo['frame'] == 0:
+if expInfo['countFrames'] == 0:
     # define parameters used to draw the flickering stimuli
     theta = pi/2  # constant phase offset
     f = float(expInfo['stimFrequency'])  # in Hz # save data
@@ -354,7 +354,7 @@ def draw_ssvep(win, duration, ti, trigNum):
     while (time) < duration:
         frameN += 1
         if not event.getKeys('q'):
-            if expInfo['frame'] == '0' and expInfo['countFrames'] == '0':
+            if expInfo['countFrames'] == '0':
                 time = clock.getTime() - picStartTime  # win.getFutureFlipTime(clock='ptb')
                 images[ti-picCount].contrast = (1-A) + \
                     (A*sin(2*pi*f * time + theta))
@@ -428,8 +428,6 @@ def draw_iti(win, iti_dur, trigNum):
     iti_time = clock.getTime()  # win.getFutureFlipTime(clock='ptb')  #
     time = clock.getTime() - iti_time
     while (time) < iti_dur:
-        if expInfo['frame'] == '1':
-            time = clock.getTime() - iti_time  # win.getFutureFlipTime(clock='ptb')
 
         # flip and send the trigger
         win.flip()
