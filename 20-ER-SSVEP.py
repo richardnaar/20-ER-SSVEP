@@ -482,7 +482,7 @@ def draw_VAS(win, VAS, VAS_text, colName):
     mouse.setVisible(True)
     eventPos = 'question'
 
-    trigger = trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + \
+    trigger = trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][1]] + \
         trigdic[condData['emo'][ti]] + trigdic[condData['picset']
                                                [ti]] + trigdic[eventPos]
     sendTrigger(VASstartTime, trigger, expInfo['EEG'])
