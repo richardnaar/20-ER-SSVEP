@@ -5,7 +5,7 @@
 SSVEP task 05/08/2020
 monitor setting (e.g. testMonitor to smtn else)
 set up the folders (ssvep_iaps, training_pics, intro_pics)
-viewing angle: 34x28 (Hajcak jt 2013) 
+viewing angle: 34x28 (Hajcak jt 2013)
 """
 
 # C:\Program Files\PsychoPy3\Lib\site-packages\psychopy\demos\coder\stimuli
@@ -22,6 +22,7 @@ import pandas as pd  # data structures
 import serial
 import platform
 import sys
+import PIL
 
 from numpy import pi, sin, random, zeros
 from numpy.random import random, randint, shuffle
@@ -33,9 +34,9 @@ import numpy as np
 
 # region DEFINE PICTURE FOLDERS (and name of the condition file)
 # relative to the os.getcwd()
-intro_pictures = 'stimuli/instructions'  # folder with the intro pictures
-training_pics = 'stimuli/practice'  # folder with the training pictures
-ssvep_exp = 'stimuli/images'  # folder with the experimental pictures
+intro_pictures = 'stimuli\\instructions'  # folder with the intro pictures
+training_pics = 'stimuli\\practice'  # folder with the training pictures
+ssvep_exp = 'stimuli\\images'  # folder with the experimental pictures
 conditionFile = 'ERSSVEP_images'  # name of the condition file
 
 # endregion DEFINE PICTURE FOLDERS
@@ -52,7 +53,7 @@ print('PsychoPy version: ' + psychopy.__version__)
 expName = os.path.basename(__file__)  # + data.getDateStr()
 
 expInfo = {'participant': 'Participant', 'session': '001', 'EEG': '0', 'Chemicum': '0',
-           'stimFrequency': '15', 'testMonkey': '1', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '1'}
+           'stimFrequency': '15', 'testMonkey': '0', 'pauseAfterEvery': '10', 'countFrames': '1', 'reExposure': '0', 'triggerTest': '0', 'showIntro': '0'}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 if dlg.OK == False:
@@ -103,7 +104,7 @@ if expInfo['EEG'] == '1':
     trigNum = 0
 
 trigdic = {'training': '0', 'experiment': '1', 'VAATA PILTI': '1', 'LOENDA': '0', 'NEG': '1', 'NEUTRAL': '0',
-           'a': '00', 'b': '10', 'c': '01', 'd': '11', 'first': '00', 'second': '00', 'question': '00'}
+           'a': '00', 'b': '10', 'c': '01', 'd': '11', 'first': '00', 'second': '10', 'question': '11'}
 
 trigger = str()
 
@@ -132,7 +133,8 @@ except:
     example_pictures_dir = 'C:\\Program Files\\PsychoPy3\\Lib\site-packages\psychopy\demos\coder\stimuli'
     intro_dir, training_dir, pic_dir = example_pictures_dir, example_pictures_dir, example_pictures_dir
     introfiles = list(
-        filter(lambda x: x.endswith('.jpg'), os.listdir(intro_dir)))
+        filter(lambda x: x.endswith('.jpg'), os.listdir(intro_dir))).sort
+    # introfiles.sort()
     # pictures used in the training loop
     trainingfiles = list(
         filter(lambda x: x.endswith('.jpg'), os.listdir(training_dir)))
@@ -180,6 +182,7 @@ if noData == False:
             numberOfAConds = len(np.unique(emoSetInCurrent['cond']))
             rndQM = np.zeros((int(setSize/numberOfAConds), numberOfAConds))
             rndQM[randint(len(rndQM))] = 1
+            rndQM[0:len(rndQM)] = 1  # just for debugging - comment out later
             emoSetInCurrent['presentQuestion'] = np.squeeze(
                 np.asarray(rndQM)).reshape(-1).astype(int)
 
@@ -234,8 +237,9 @@ if expInfo['testMonkey'] == '1':
     monSettings = {'size': (1920/2, 1080/2), 'fullscr': False}
     boxdenom = float('inf')
 else:
-    monSettings = {'size': (1024, 768), 'fullscr': True}
-    boxdenom = 2.8
+    # (1024, 768) (1920, 1200)
+    monSettings = {'size': (1920, 1200), 'fullscr': True}
+    boxdenom = float('inf')  # 2.8
 
 win = visual.Window(
     size=monSettings['size'], fullscr=monSettings['fullscr'], screen=0, color='black',
@@ -254,9 +258,6 @@ if expInfo['frameRate'] != None:
 else:
     frameDur = 'NaN'  # could not measure, so NaN
 print('the monitor refresh rate is: ' + str(frameDur))
-
-# Initiate clock to keep track of time
-clock = core.Clock()
 
 # use frameRate to add data and to define moduloNr
 
@@ -291,6 +292,9 @@ start_text = 'Palun oota kuni eksperimentaator käivitab mõõtmise . . . \n\n P
 goodbye_text = 'Aitäh! Katse on läbi! Kutsu katse läbiviija. \n\nPärast mõõtevahendite eemaldamist palume Sul vastata teises ruumis lühikesele küsimustikule \
 \n\nProgrammi sulgemiseks vajuta palun hiireklahvi . . . '
 
+# Initiate clock to keep track of time
+clock = core.Clock()
+
 text = visual.TextStim(win=win,
                        text='insert txt here',
                        font='Arial',
@@ -298,7 +302,6 @@ text = visual.TextStim(win=win,
                        color='white', colorSpace='rgb', opacity=1,
                        languageStyle='LTR',
                        depth=0.0)
-
 fixation = visual.ShapeStim(
     win=win, name='fixation', vertices='cross',
     size=(1, 1),
@@ -324,36 +327,40 @@ subbox = visual.Rect(
     opacity=1, depth=0.0, interpolate=True)
 
 # Initialize components for Routine "vas"
+scale_width = 10
+scale_y_pos = -2
+
 item = visual.TextStim(win=win, name='item',
                        text='default text',
                        font='Arial',
-                       pos=(0, 0.2), height=0.04, wrapWidth=1.5, ori=0, units='norm',
+                       pos=(0, 10), height=1, wrapWidth=20, ori=0, units='deg',
                        color=[0.702, 0.702, 0.702], colorSpace='rgb', opacity=1,
                        languageStyle='LTR',
                        depth=-1.0)
 scale_low = visual.TextStim(win=win, name='scale_low',
                             text='default text',
                             font='Arial',
-                            pos=(-2/3, -0.1), height=0.03, wrapWidth=None, ori=0, units='norm',
+                            pos=(-scale_width-5, scale_y_pos), height=1, wrapWidth=None, ori=0, units='deg',
                             color=[0.702, 0.702, 0.702], colorSpace='rgb', opacity=1,
                             languageStyle='LTR',
                             depth=-2.0)
 scale_high = visual.TextStim(win=win, name='scale_high',
                              text='default text',
                              font='Arial',
-                             pos=(2/3, -0.1), height=0.03, wrapWidth=None, ori=0, units='norm',
+                             pos=(scale_width+7, scale_y_pos), height=1, wrapWidth=None, ori=0, units='deg',
                              color=[0.702, 0.702, 0.702], colorSpace='rgb', opacity=1,
                              languageStyle='LTR',
                              depth=-3.0)
+
 slf_scale = visual.Rect(
     win=win, name='slf_scale',
-    width=(1, 0.05)[0], height=(1, 0.05)[1], ori=0, pos=(0, -0.1), units='norm',
+    width=(scale_width*2, 0)[0], height=(0.25, 0.25)[1], ori=0, pos=(0, scale_y_pos), units='deg',
     lineWidth=1, lineColor=[0.702, 0.702, 0.702], lineColorSpace='rgb',
     fillColor=[0.702, 0.702, 0.702], fillColorSpace='rgb',
     opacity=1, depth=-4.0, interpolate=True)
 slf_set = visual.Rect(
     win=win, name='slf_set',
-    width=(0.01, 0.05)[0], height=(0.01, 0.05)[1], ori=0, pos=[0, 0], units='norm',
+    width=(0.2, 0)[0], height=(0.25, 0.25)[1], ori=0, pos=(0, scale_y_pos), units='deg',
     lineWidth=1, lineColor=[-1, -1, -1], lineColorSpace='rgb',
     fillColor=[-1, -1, -1], fillColorSpace='rgb',
     opacity=1, depth=-5.0, interpolate=True)
@@ -373,6 +380,8 @@ def sendTrigger(trigStart, trigN, EEG):
 
 
 def draw_ssvep(win, duration, ti, trigNum, secondEventStart):
+    cueDuration = 0.75
+    text.color = "black"
     picStartTime = clock.getTime()
     text.pos, frameN, secondCueTime = (0, -horiz/boxdenom), 0, False
     secondCuePresented, contrastNotYetChanged, eventPos = False, True, 'first'
@@ -399,9 +408,12 @@ def draw_ssvep(win, duration, ti, trigNum, secondEventStart):
                 sendTrigger(secondCueTime, trigger, expInfo['EEG'])
 
             # Draw frame, image, subtitle box and text on top of each other
-            background.draw(
-            ), images[ti-picCount].draw(), subbox.draw(), text.draw()
+            background.draw(), images[ti-picCount].draw()
 
+            if clock.getTime()-(picStartTime+cueDuration) <= 0:
+                subbox.draw(), text.draw()
+            elif clock.getTime()-(secondCueTime+cueDuration) <= 0:
+                subbox.draw(), text.draw()
             # flip and send the trigger
             win.flip()
             if not secondCuePresented:
@@ -432,16 +444,18 @@ def draw_ssvep(win, duration, ti, trigNum, secondEventStart):
 
                 # change the frame colour
                 background.fillColor, secondCuePresented = coldic[condData['cond'][ti]][1], True
-
+                subbox.fillColor = coldic[condData['cond'][ti]][1]
         else:
             if expInfo['EEG'] == '1':
                 port.setData(0)
             core.quit()
         # update time
         time = clock.getTime() - picStartTime
-
+    text.color = "white"
 
 # fixation
+
+
 def draw_fix(win, fixation, duration, trigNum):
     # print('fix_'+ str(trigNum))
     fixStartTime = clock.getTime()
@@ -492,7 +506,7 @@ def draw_text(txt, pause_dur, mouse_resp):
             break
 
 
-def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_high, slf_scale, slf_set):
+def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_high, slf_scale, slf_set, countingQ):
 
     # Initialize components for Routine "VAS"
     VAS_startTime = clock.getTime()
@@ -500,9 +514,9 @@ def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_h
     eventPos = 'question'
     # if button is down already this ISN'T a new click
     prevButtonState = mouse.getPressed()
-    on_scale = 0
-    mouse.setPos([0, -0.2])
-    mouse.setVisible(True)
+    # on_scale = 0
+    mouse.setPos([0, scale_y_pos])
+    # mouse.setVisible(False)
     item.setText(question_text)
     scale_low.setText(label_low)
     scale_high.setText(label_high)
@@ -512,43 +526,47 @@ def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_h
                                                [ti]] + trigdic[eventPos]
     sendTrigger(VAS_startTime, trigger, expInfo['EEG'])
 
-#    if expInfo['testMonkey'] == '1':
-#        VAS_noResponse = False
-#        VAS_resp = 'test'
-#        VAS_RT = 0
+    # if expInfo['testMonkey'] == '1':
+    #     VAS_noResponse = False
+    #     VAS_resp = 'test'
+    #     VAS_RT = 0
 
     while VAS_noResponse:
         if not event.getKeys('q'):
 
             # cursor updates
             mx = mouse.getPos()
-            if mx[1] > -0.125 and mx[1] < -0.075:
-                on_scale = 1
-            mx[1] = -0.1
-            if mx[0] <= -0.5:
-                mx[0] = -0.5
-            elif mx[0] >= 0.5:
-                mx[0] = 0.5
+            mx[1] = scale_y_pos
+
+            if mx[0] <= -scale_width:
+                mx[0] = -scale_width
+            elif mx[0] >= scale_width:
+                mx[0] = scale_width
 
             buttons = mouse.getPressed()
             if buttons != prevButtonState:  # button state changed?
                 prevButtonState = buttons
                 if sum(buttons) > 0:  # state changed to a new click
                     # check if the mouse was inside our 'clickable' objects
-                    if slf_scale.contains(mouse):
-                        VAS_noResponse = False
-                        VAS_RT = clock.getTime() - VAS_startTime
-                        VAS_resp = 0.5 + mx[0]
+                    VAS_noResponse = False
+                    VAS_RT = clock.getTime() - VAS_startTime
+                    if countingQ:
+                        int(round((mx[0]/scale_width)*100))+intOnScreen[0]
+                    else:
+                        VAS_resp = (mx[0]/scale_width)*100
 
             # update/draw components on each frame
             item.draw(), scale_low.draw(), scale_high.draw(), slf_scale.draw()
             # draw cursor
-            if on_scale == 1:
-                slf_set.setPos(mx, log=False)
-                slf_set.draw()
+            slf_set.setPos(mx, log=False)
+            slf_set.draw()
+            # draw value
+            if countingQ:
+                text.pos = (mx[0], mx[1]+1)
+                text.text = int(round((mx[0]/scale_width)*100))+intOnScreen[0]
+                text.draw()
 
             win.flip()
-
         else:
             core.quit()
 
@@ -599,15 +617,44 @@ if noData:
 
 # endregion (TRAINING TRIALS)
 
+# Performe trigger test
+
+if expInfo['triggerTest'] == '1':
+    draw_text('Sündmussignaalide testimiseks vajuta palun tühikuklahvi...',
+              float('inf'), 0)  #
+
+    for expphase in {'training', 'experiment'}:
+        # print(expphase)
+        for condition in {'VAATA PILTI', 'LOENDA'}:
+            # print(condition)
+            for emo in {'NEG', 'NEUTRAL'}:
+                # print(emo)
+                for picset in {'a', 'b', 'c', 'd'}:
+                    # print(picset)
+                    for trphase in {'first', 'second', 'question'}:
+                        # print(trphase)
+                        trigger = trigdic[expphase] + trigdic[condition] + \
+                            trigdic[emo] + trigdic[picset] + trigdic[trphase]
+                        print(
+                            ' '.join([expphase, condition, emo, picset, trphase]))
+                        print(trigger)
+                        secondCueTime = clock.getTime()
+                        if expInfo['EEG'] == '1':
+                            sendTrigger(secondCueTime, trigger, expInfo['EEG'])
+                            core.wait(0.25)
+
 # region LOAD IMAGES
 draw_text('Palun oota. Laen pildid mällu...', 1, 1)  #
 
 # python_pic_dir = sys.executable[0:-10] + 'Lib\site-packages\psychopy\demos\coder\stimuli'
 
+# intro_image = PIL.Image.open(intro_dir+'\\'+introfiles[0])
+# intro_width, intro_height = intro_image.size
+
 
 intropics = []
 loadpics(intro_dir, introfiles, len(introfiles),
-         intropics, 'pix', None)
+         intropics, 'pix', None)  # [1024*1.2, 768*1.2]
 
 trainingpics = []
 loadpics(training_dir, trainingTable['imageFile'], len(trainingTable['imageFile']),
@@ -622,8 +669,7 @@ for file in newTable['trialID'][0:pauseAfterEvery]:
 
 # region PRESENT INSTRUCTIONS
 
-# only if actually testing
-if expInfo['testMonkey'] == '0':
+if expInfo['showIntro'] == '1':
     presentIntroPics, countIntroPics = True, 0
     while presentIntroPics == True:
         # for indx in range(0, len(intropics)):
@@ -640,10 +686,10 @@ if expInfo['testMonkey'] == '0':
                     port.setData(0)
                 core.quit()
             elif len(buttons) > 0:
-                if buttons[2] == 1:
+                if buttons[0] == 1:
                     countIntroPics += 1
                     presentPic = False
-                elif buttons[0] == 1:
+                elif buttons[2] == 1:
                     if countIntroPics > 0:
                         countIntroPics -= 1
                     presentPic = False
@@ -703,6 +749,7 @@ for gIndx in routinedic:
         else:
             text.setText(condic[condData['cond'][ti]][0])
 
+        subbox.fillColor = coldic[condData['cond'][ti]][0]
         background.fillColor = coldic[condData['cond'][ti]][0]
         secondCueStart = condData['secondCueTime'][ti]
         # draw the flickering picture
@@ -727,7 +774,7 @@ for gIndx in routinedic:
         # Draw QUESTION
         if condData['presentQuestion'][ti] == 1:
             draw_VAS(win, 'Kui negatiivselt sa ennast hetkel tunned?', 'Väga negatiivselt',
-                     'Üldse mitte negatiivselt', item, scale_low, scale_high, slf_scale, slf_set)
+                     'Üldse mitte negatiivselt', item, scale_low, scale_high, slf_scale, slf_set, 0)
 
         # ITI
         if expInfo['testMonkey'] == '0':
