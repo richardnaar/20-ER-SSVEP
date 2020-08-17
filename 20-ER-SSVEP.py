@@ -33,9 +33,9 @@ import numpy as np
 
 # region DEFINE PICTURE FOLDERS (and name of the condition file)
 # relative to the os.getcwd()
-intro_pictures = 'intro_pics'  # folder with the intro pictures
-training_pics = 'training_pics'  # folder with the training pictures
-ssvep_exp = 'ssvep_iaps'  # folder with the experimental pictures
+intro_pictures = 'stimuli/instructions'  # folder with the intro pictures
+training_pics = 'stimuli/practice'  # folder with the training pictures
+ssvep_exp = 'stimuli/images'  # folder with the experimental pictures
 conditionFile = 'ERSSVEP_images'  # name of the condition file
 
 # endregion DEFINE PICTURE FOLDERS
@@ -234,9 +234,8 @@ if expInfo['testMonkey'] == '1':
     monSettings = {'size': (1920/2, 1080/2), 'fullscr': False}
     boxdenom = float('inf')
 else:
-    monSettings = {'size': (1920/2, 1080/2), 'fullscr': False}
+    monSettings = {'size': (1024, 768), 'fullscr': True}
     boxdenom = 2.8
-    # monSettings = {'size': (1920, 1080), 'fullscr': True}
 
 win = visual.Window(
     size=monSettings['size'], fullscr=monSettings['fullscr'], screen=0, color='black',
@@ -324,21 +323,40 @@ subbox = visual.Rect(
     fillColor=[-1, -1, -1], fillColorSpace='rgb',
     opacity=1, depth=0.0, interpolate=True)
 
-VAS = visual.RatingScale(
-    # labels=(' ', ' '),
-    win=win, name='VAS', marker='triangle', size=1.0, stretch=1.0,
-    pos=[0.0, -0.4], low=0, high=100, precision=100, skipKeys=None,
-    showValue=False, scale=None, acceptPreText='Kliki skaalal',
-    acceptText='Salvestan', markerStart='50')
-
-VAS_text = visual.TextStim(
-    win=win, name='appraisal_text',
-    text='VAS text',
-    font='Arial',
-    pos=(0, 5), height=1, wrapWidth=None, ori=0,
-    color='white', colorSpace='rgb', opacity=1,
-    languageStyle='LTR',
-    depth=0.0)
+# Initialize components for Routine "vas"
+item = visual.TextStim(win=win, name='item',
+                       text='default text',
+                       font='Arial',
+                       pos=(0, 0.2), height=0.04, wrapWidth=1.5, ori=0, units='norm',
+                       color=[0.702, 0.702, 0.702], colorSpace='rgb', opacity=1,
+                       languageStyle='LTR',
+                       depth=-1.0)
+scale_low = visual.TextStim(win=win, name='scale_low',
+                            text='default text',
+                            font='Arial',
+                            pos=(-2/3, -0.1), height=0.03, wrapWidth=None, ori=0, units='norm',
+                            color=[0.702, 0.702, 0.702], colorSpace='rgb', opacity=1,
+                            languageStyle='LTR',
+                            depth=-2.0)
+scale_high = visual.TextStim(win=win, name='scale_high',
+                             text='default text',
+                             font='Arial',
+                             pos=(2/3, -0.1), height=0.03, wrapWidth=None, ori=0, units='norm',
+                             color=[0.702, 0.702, 0.702], colorSpace='rgb', opacity=1,
+                             languageStyle='LTR',
+                             depth=-3.0)
+slf_scale = visual.Rect(
+    win=win, name='slf_scale',
+    width=(1, 0.05)[0], height=(1, 0.05)[1], ori=0, pos=(0, -0.1), units='norm',
+    lineWidth=1, lineColor=[0.702, 0.702, 0.702], lineColorSpace='rgb',
+    fillColor=[0.702, 0.702, 0.702], fillColorSpace='rgb',
+    opacity=1, depth=-4.0, interpolate=True)
+slf_set = visual.Rect(
+    win=win, name='slf_set',
+    width=(0.01, 0.05)[0], height=(0.01, 0.05)[1], ori=0, pos=[0, 0], units='norm',
+    lineWidth=1, lineColor=[-1, -1, -1], lineColorSpace='rgb',
+    fillColor=[-1, -1, -1], fillColorSpace='rgb',
+    opacity=1, depth=-5.0, interpolate=True)
 
 # endregion (TASK COMPONENTS)
 
@@ -474,31 +492,70 @@ def draw_text(txt, pause_dur, mouse_resp):
             break
 
 
-def draw_VAS(win, VAS, VAS_text, colName):
+def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_high, slf_scale, slf_set):
+
     # Initialize components for Routine "VAS"
-    VAS.reset()
-    VASstartTime = clock.getTime()
-    mouse.setVisible(True)
+    VAS_startTime = clock.getTime()
+    VAS_noResponse = True
     eventPos = 'question'
+    # if button is down already this ISN'T a new click
+    prevButtonState = mouse.getPressed()
+    on_scale = 0
+    mouse.setPos([0, -0.2])
+    mouse.setVisible(True)
+    item.setText(question_text)
+    scale_low.setText(label_low)
+    scale_high.setText(label_high)
 
     trigger = trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][1]] + \
         trigdic[condData['emo'][ti]] + trigdic[condData['picset']
                                                [ti]] + trigdic[eventPos]
-    sendTrigger(VASstartTime, trigger, expInfo['EEG'])
+    sendTrigger(VAS_startTime, trigger, expInfo['EEG'])
 
-    if expInfo['testMonkey'] == '1':
-        VAS.noResponse = False
+#    if expInfo['testMonkey'] == '1':
+#        VAS_noResponse = False
+#        VAS_resp = 'test'
+#        VAS_RT = 0
 
-    while VAS.noResponse:
+    while VAS_noResponse:
         if not event.getKeys('q'):
-            VAS_text.draw(), VAS.draw()
+
+            # cursor updates
+            mx = mouse.getPos()
+            if mx[1] > -0.125 and mx[1] < -0.075:
+                on_scale = 1
+            mx[1] = -0.1
+            if mx[0] <= -0.5:
+                mx[0] = -0.5
+            elif mx[0] >= 0.5:
+                mx[0] = 0.5
+
+            buttons = mouse.getPressed()
+            if buttons != prevButtonState:  # button state changed?
+                prevButtonState = buttons
+                if sum(buttons) > 0:  # state changed to a new click
+                    # check if the mouse was inside our 'clickable' objects
+                    if slf_scale.contains(mouse):
+                        VAS_noResponse = False
+                        VAS_RT = clock.getTime() - VAS_startTime
+                        VAS_resp = 0.5 + mx[0]
+
+            # update/draw components on each frame
+            item.draw(), scale_low.draw(), scale_high.draw(), slf_scale.draw()
+            # draw cursor
+            if on_scale == 1:
+                slf_set.setPos(mx, log=False)
+                slf_set.draw()
+
             win.flip()
+
         else:
             core.quit()
-    mouse.setVisible(False)
+
     # save the rating and RT
-    thisExp.addData(colName, VAS.getRating()), thisExp.addData(
-        colName+'_RT', VAS.getRT())
+    thisExp.addData('vas_response', VAS_resp)
+    thisExp.addData('vas_RT', VAS_RT)
+    mouse.setVisible(False)
     core.wait(0.25)
 
 
@@ -667,6 +724,11 @@ for gIndx in routinedic:
         thisExp.addData('triaslN', ti+1), thisExp.addData('picBytes',
                                                           os.stat(current_pic_dir + '\\' + picName).st_size)
 
+        # Draw QUESTION
+        if condData['presentQuestion'][ti] == 1:
+            draw_VAS(win, 'Kui negatiivselt sa ennast hetkel tunned?', 'Väga negatiivselt',
+                     'Üldse mitte negatiivselt', item, scale_low, scale_high, slf_scale, slf_set)
+
         # ITI
         if expInfo['testMonkey'] == '0':
             iti_dur = random() + iti_dur_default
@@ -675,11 +737,6 @@ for gIndx in routinedic:
 
         trigNum += 20
         draw_iti(win, iti_dur, trigNum)
-
-        # Draw QUESTION
-        if condData['presentQuestion'][ti] == 1:
-            VAS_text.text = 'Siia tuleb küsimus...'
-            draw_VAS(win, VAS, VAS_text, 'Question_1')
 
         # PAUSE (preloading next set of N (pauseAfterEvery) images to achive better timing)
         pauseStart = clock.getTime()  # win.getFutureFlipTime(clock='ptb')
