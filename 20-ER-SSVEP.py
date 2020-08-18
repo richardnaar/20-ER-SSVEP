@@ -53,7 +53,7 @@ print('PsychoPy version: ' + psychopy.__version__)
 expName = os.path.basename(__file__)  # + data.getDateStr()
 
 expInfo = {'participant': 'Participant', 'session': '001', 'EEG': '0', 'Chemicum': '0',
-           'stimFrequency': '15', 'testMonkey': '0', 'pauseAfterEvery': '10', 'countFrames': '1', 'reExposure': '0', 'triggerTest': '0', 'showIntro': '0'}
+           'stimFrequency': '15', 'testMonkey': '0', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '0', 'triggerTest': '0', 'showIntro': '0'}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 if dlg.OK == False:
@@ -120,6 +120,12 @@ try:
     intro_dir = dirpath + '\\' + intro_pictures
     introfiles = list(
         filter(lambda x: x.endswith('.JPG'), os.listdir(intro_dir)))
+    for slide in introfiles:
+        if len(slide) < 11:  # (e.g. Slide01.JPG vs Slide1.JPG)
+            os.rename(intro_dir+'\\'+slide, intro_dir +
+                      '\\'+slide[:-5]+'0'+slide[5:])
+    introfiles = list(
+        filter(lambda x: x.endswith('.JPG'), os.listdir(intro_dir)))
     # pictures used in the training loop
     training_dir = dirpath + '\\' + training_pics
     trainingfiles = list(
@@ -133,7 +139,7 @@ except:
     example_pictures_dir = 'C:\\Program Files\\PsychoPy3\\Lib\site-packages\psychopy\demos\coder\stimuli'
     intro_dir, training_dir, pic_dir = example_pictures_dir, example_pictures_dir, example_pictures_dir
     introfiles = list(
-        filter(lambda x: x.endswith('.jpg'), os.listdir(intro_dir))).sort
+        filter(lambda x: x.endswith('.jpg'), os.listdir(intro_dir)))
     # introfiles.sort()
     # pictures used in the training loop
     trainingfiles = list(
@@ -152,7 +158,7 @@ except:
 
 # region RANDOMIZATION
 if noData == False:
-        # sort by emo and picset
+    # sort by emo and picset
     table = table.sort_values(['emo', 'picset']).reset_index(drop=True)
     # define newTable as data frame in pandas
     newTable, picsets = pd.DataFrame(), np.unique(table['picset'])
@@ -182,7 +188,7 @@ if noData == False:
             numberOfAConds = len(np.unique(emoSetInCurrent['cond']))
             rndQM = np.zeros((int(setSize/numberOfAConds), numberOfAConds))
             rndQM[randint(len(rndQM))] = 1
-            rndQM[0:len(rndQM)] = 1  # just for debugging - comment out later
+            # rndQM[0:len(rndQM)] = 1  # just for debugging - comment out later
             emoSetInCurrent['presentQuestion'] = np.squeeze(
                 np.asarray(rndQM)).reshape(-1).astype(int)
 
@@ -551,7 +557,8 @@ def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_h
                     VAS_noResponse = False
                     VAS_RT = clock.getTime() - VAS_startTime
                     if countingQ:
-                        int(round((mx[0]/scale_width)*100))+intOnScreen[0]
+                        VAS_resp = int(
+                            round((mx[0]/scale_width)*100)+intOnScreen[0])
                     else:
                         VAS_resp = (mx[0]/scale_width)*100
 
@@ -563,7 +570,7 @@ def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_h
             # draw value
             if countingQ:
                 text.pos = (mx[0], mx[1]+1)
-                text.text = int(round((mx[0]/scale_width)*100))+intOnScreen[0]
+                text.text = int(round((mx[0]/scale_width)*100)+intOnScreen[0])
                 text.draw()
 
             win.flip()
