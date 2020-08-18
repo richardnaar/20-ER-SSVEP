@@ -53,7 +53,7 @@ print('PsychoPy version: ' + psychopy.__version__)
 expName = os.path.basename(__file__)  # + data.getDateStr()
 
 expInfo = {'participant': 'Participant', 'session': '001', 'EEG': '0', 'Chemicum': '0',
-           'stimFrequency': '15', 'testMonkey': '0', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '0', 'triggerTest': '0', 'showIntro': '0'}
+           'stimFrequency': '15', 'testMonkey': '1', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '0', 'triggerTest': '0', 'showIntro': '0'}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 if dlg.OK == False:
@@ -278,13 +278,12 @@ if expInfo['countFrames'] == 0:
     A = 0.20
     expInfo['flickeringAmplitude'] = A  # save data
 else:
-    # 0.3 # can't be larger than 0.5 (min = 0.5-0.5 and max = 0.5+0.5)
     moduloNr = int(
-        np.ceil(round(float(expInfo['frameRate'])) / float(expInfo['stimFrequency'])))
+        np.ceil(round(float(expInfo['frameRate'])) / float(expInfo['stimFrequency']))*0.5)
     A = 0.20
     expInfo['contrastChange'] = A*2  # save data
     expInfo['actualFrequency'] = np.ceil(
-        round(float(expInfo['frameRate'])))/((moduloNr-1)*2)
+        round(float(expInfo['frameRate'])))/(moduloNr*2)
 
 # endregion (SETUP WINDOW)
 
@@ -401,10 +400,17 @@ def draw_ssvep(win, duration, ti, trigNum, secondEventStart):
                     (A*sin(2*pi*f * time + theta))
             elif expInfo['countFrames'] == '1':
                 if frameN % moduloNr == 0:  # waits until the remainder of the devision between frameN and moduloNr is 0
-                    images[ti-picCount].contrast, contrastNotYetChanged = 1, True
-                elif contrastNotYetChanged:
-                    images[ti-picCount].contrast, contrastNotYetChanged = 1 - \
-                        (2*A), False
+                    if contrastNotYetChanged:
+                        images[ti-picCount].contrast, contrastNotYetChanged = 1, False
+                        print('high: ' + str(frameN))
+                    else:
+                        images[ti-picCount].contrast, contrastNotYetChanged = 1 - \
+                            (2*A), True
+                        print('low: ' + str(frameN))
+                # elif contrastNotYetChanged:
+                #     images[ti-picCount].contrast, contrastNotYetChanged = 1 - \
+                #         (2*A), False
+                #     print('second: ' + str(frameN))
 
             if not secondCueTime and secondCuePresented:
                 trigger = trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][1]] + \
@@ -532,10 +538,10 @@ def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_h
                                                [ti]] + trigdic[eventPos]
     sendTrigger(VAS_startTime, trigger, expInfo['EEG'])
 
-    # if expInfo['testMonkey'] == '1':
-    #     VAS_noResponse = False
-    #     VAS_resp = 'test'
-    #     VAS_RT = 0
+    if expInfo['testMonkey'] == '1':
+        VAS_noResponse = False
+        VAS_resp = 'test'
+        VAS_RT = 0
 
     while VAS_noResponse:
         if not event.getKeys('q'):
