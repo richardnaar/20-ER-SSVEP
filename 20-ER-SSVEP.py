@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-SSVEP task 05/08/2020
+SSVEP task 21/08/2020
 monitor setting (e.g. testMonitor to smtn else)
 set up the folders (ssvep_iaps, training_pics, intro_pics)
 viewing angle: 34x28 (Hajcak jt 2013)
@@ -65,11 +65,12 @@ expInfo['expName'] = expName
 # Set durartions
 if expInfo['testMonkey'] == '1':
     fixDuration, stimDuration, iti_dur_default, secondCueTime, expInfo['participant'] = \
-        0.1,        1,              0.2,        [0.1, 0.2, 0.3], 'Monkey'
+        0.1,        1,              0.2,        [0.1, 0.2, 0.3, 0.4], 'Monkey'
 else:
     # just the first iti, later will change on every trial (random()+0.5)
     fixDuration, stimDuration, iti_dur_default, secondCueTime = \
-        1.5,        12.6,           3.5,         [6, 6.5, 7]
+        1.5,        12.6,           3.5,   [
+            6.6, 7.08, 7.56, 8.04]  # [6, 6.32, 6.64,6.96]  [6, 6.48, 6.96, 7.44]
 
 expInfo['stimDuration'] = stimDuration  # save data
 expInfo['itiDuration'] = str(iti_dur_default) + '+/- 0.5'  # save data
@@ -196,11 +197,18 @@ if noData == False:
             emoSetInCurrent[['cond', 'presentQuestion']] = emoSetInCurrent[[
                 'cond', 'presentQuestion']].sample(frac=1).reset_index(drop=True)
 
-            # define 2nd cue times similarly for each emotion category in each set separately
-            secondCueRndList = secondCueTime * \
-                int(np.ceil(setSize/len(secondCueTime)))
+            secondCueRndList = list()
+            for sndcue in range(0, int(np.ceil(setSize/len(secondCueTime)))+1):
+                shuffle(secondCueTime)
+                secondCueRndList = secondCueRndList+secondCueTime
             secondCueRndList = secondCueRndList[0:setSize]
-            shuffle(secondCueRndList)
+            # # define 2nd cue times similarly for each emotion category in each set separately
+            # secondCueRndList = secondCueTime * \
+            #     int(np.ceil(setSize/len(secondCueTime)))
+            # secondCueRndList = secondCueRndList[0:setSize]
+            # shuffle(secondCueRndList)
+            emoSetInCurrent = emoSetInCurrent.sort_values(
+                ['cond']).reset_index(drop=True)
             emoSetInCurrent['secondCueTime'] = secondCueRndList
 
             # this randomization is not strictly nessesary since 'tilist' (see below) shuffles the trials within each set already
@@ -261,9 +269,10 @@ expInfo['frameRate'] = win.getActualFrameRate()
 print(expInfo['frameRate'])
 if expInfo['frameRate'] != None:
     frameDur = round(expInfo['frameRate'])  # save data
+    print('the monitor refresh rate is: ' + str(frameDur))
 else:
     frameDur = 'NaN'  # could not measure, so NaN
-print('the monitor refresh rate is: ' + str(frameDur))
+    print('could not measure refresh rate... this should not happen')
 
 # use frameRate to add data and to define moduloNr
 
@@ -402,15 +411,11 @@ def draw_ssvep(win, duration, ti, trigNum, secondEventStart):
                 if frameN % moduloNr == 0:  # waits until the remainder of the devision between frameN and moduloNr is 0
                     if contrastNotYetChanged:
                         images[ti-picCount].contrast, contrastNotYetChanged = 1, False
-                        print('high: ' + str(frameN))
+                        # print('high: ' + str(frameN))
                     else:
                         images[ti-picCount].contrast, contrastNotYetChanged = 1 - \
                             (2*A), True
-                        print('low: ' + str(frameN))
-                # elif contrastNotYetChanged:
-                #     images[ti-picCount].contrast, contrastNotYetChanged = 1 - \
-                #         (2*A), False
-                #     print('second: ' + str(frameN))
+                        # print('low: ' + str(frameN))
 
             if not secondCueTime and secondCuePresented:
                 trigger = trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][1]] + \
