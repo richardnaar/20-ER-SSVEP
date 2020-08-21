@@ -26,7 +26,6 @@ import PIL
 
 from numpy import pi, sin, random, zeros
 from numpy.random import random, randint, shuffle
-# from PIL import Image
 
 import numpy as np
 
@@ -190,12 +189,15 @@ if noData == False:
             rndQM = np.zeros((int(setSize/numberOfAConds), numberOfAConds))
             rndQM[randint(len(rndQM))] = 1
             # rndQM[0:len(rndQM)] = 1  # just for debugging - comment out later
-            emoSetInCurrent['presentQuestion'] = np.squeeze(
+            emoSetInCurrent['presentVAS'] = np.squeeze(
                 np.asarray(rndQM)).reshape(-1).astype(int)
 
             # randomize condition and question presentation
-            emoSetInCurrent[['cond', 'presentQuestion']] = emoSetInCurrent[[
-                'cond', 'presentQuestion']].sample(frac=1).reset_index(drop=True)
+            emoSetInCurrent[['cond', 'presentVAS']] = emoSetInCurrent[[
+                'cond', 'presentVAS']].sample(frac=1).reset_index(drop=True)
+
+            # emoSetInCurrent['countingQuestion'] = zeros(setSize)
+            # emoSetInCurrent['countingQuestion'][randint(setSize)] = 1
 
             secondCueRndList = list()
             for sndcue in range(0, int(np.ceil(setSize/len(secondCueTime)))+1):
@@ -302,6 +304,15 @@ horiz, vert = 34, 28,
 picSize = (horiz, vert)
 
 pause_text = 'See on paus. Jätkamiseks vajuta palun hiireklahvi . . .'
+practice_text = 'Nüüd saad kirjeldatud ülesannet näitepiltidega harjutada.'
+
+start_text1 = "Aitäh, harjutus on läbi ja nüüd algab katse põhiosa! Oota kuni katse läbiviija on ruumist lahkunud."
+start_text2 = "Meeldetuletuseks: Tee iga pildi vaatamise ajal seda, mida eelnev märksõna ütleb. \n\n " + \
+    "VAATA PILTI: " + "Keskendu pildil kujutatule ja reageeri loomulikult. "
+"LOENDA:" + "Loenda arve etteantud arvust kahekaupa allapoole, et vähendada negatiivseid tundeid. \n\n \
+Alusta juhendi rakendamist kohe, kui pilt ekraanile ilmub. "
+
+
 start_text = 'Palun oota kuni eksperimentaator käivitab mõõtmise . . . \n\n Programmi sulgemiseks vajuta: "q"'
 goodbye_text = 'Aitäh! Katse on läbi! Kutsu katse läbiviija. \n\nPärast mõõtevahendite eemaldamist palume Sul vastata teises ruumis lühikesele küsimustikule \
 \n\nProgrammi sulgemiseks vajuta palun hiireklahvi . . . '
@@ -613,7 +624,7 @@ if noData == False:
     trainingTable.loc[:] = 'training'
 else:
     dataCols = ['imageFile', 'valence', 'arousal', 'aff_cv', 'emo', 'semantic',
-                'picset', 'cond', 'presentQuestion', 'secondCueTime', 'trialID']
+                'picset', 'cond', 'presentVAS', 'secondCueTime', 'trialID']
     trainingTable = pd.DataFrame(data=np.zeros(
         (nTrials_training, len(dataCols))), columns=dataCols)
 
@@ -622,12 +633,15 @@ trainingcondlist = list(range(1, 5)) * int(np.ceil(len(trainingfiles)/4))
 trainingQList = list(zeros(int(np.ceil(len(trainingfiles)/2)))) + \
     list(np.ones(int(np.ceil(len(trainingfiles)/2))))
 
-trainingTable['presentQuestion'], trainingTable['cond'] = trainingQList[0:len(
+trainingTable['presentVAS'], trainingTable['cond'] = trainingQList[0:len(
     trainingfiles)], trainingcondlist[0:len(trainingfiles)]
+
+# emoSetInCurrent['countingQuestion'] = zeros(nTrials_training)
+# emoSetInCurrent['countingQuestion'][randint(nTrials_training)] = 1
 
 trainingTable['imageFile'] = trainingTable['imageFile'].sample(frac=1).values
 trainingTable['cond'] = trainingTable['cond'].sample(frac=1).values.astype(str)
-trainingTable['presentQuestion'] = trainingTable['presentQuestion'].sample(
+trainingTable['presentVAS'] = trainingTable['presentVAS'].sample(
     frac=1).values
 
 if noData:
@@ -726,7 +740,7 @@ for gIndx in routinedic:
         condData, trials, nTrials, images, current_pic_dir, mouse_resp = \
             trainingTable, trainingTable['trialID'], len(
                 trials_training), trainingpics, training_dir, 1
-        instructions = 'Järgmised esitused on harjutamiseks...'
+        instructions = practice_text
     elif routinedic[gIndx] == 'experiment':
         condData, trials, nTrials, images, current_pic_dir, instructions, mouse_resp = \
             newTable, newTable['trialID'], len(
@@ -782,15 +796,14 @@ for gIndx in routinedic:
             'secondCueTime', condData['secondCueTime'][ti])
         thisExp.addData('picset', condData['picset'][ti]), thisExp.addData(
             'cond', condic[condData['cond'][ti]])
-        thisExp.addData('Question', condData['presentQuestion'][ti]), thisExp.addData(
+        thisExp.addData('Question', condData['presentVAS'][ti]), thisExp.addData(
             'valence', condData['emo'][ti])
         thisExp.addData('pictureID', picName), thisExp.addData(
             'fixDuration', fixDuration)
         thisExp.addData('triaslN', ti+1), thisExp.addData('picBytes',
                                                           os.stat(current_pic_dir + '\\' + picName).st_size)
 
-        # Draw QUESTION
-        if condData['presentQuestion'][ti] == 1:
+        if condData['presentVAS'][ti] == 1:
             draw_VAS(win, 'Kui negatiivselt sa ennast hetkel tunned?', 'Väga negatiivselt',
                      'Üldse mitte negatiivselt', item, scale_low, scale_high, slf_scale, slf_set, 0)
 
@@ -857,7 +870,7 @@ if expInfo['reExposure'] == '1':
             'secondCueTime', newTable['secondCueTime'][indx])
         thisExp.addData('picset', newTable['picset'][indx]), thisExp.addData(
             'cond', condic[newTable['cond'][indx]])
-        thisExp.addData('Question', newTable['presentQuestion'][indx]), thisExp.addData(
+        thisExp.addData('Question', newTable['presentVAS'][indx]), thisExp.addData(
             'valence', newTable['emo'][indx])
         thisExp.addData('pictureID', picName), thisExp.addData(
             'fixDuration', fixDuration)
