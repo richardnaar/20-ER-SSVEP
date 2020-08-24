@@ -742,9 +742,23 @@ if expInfo['showIntro'] == '1':
         # for indx in range(0, len(intropics)):
         core.wait(0.25)
         presentPic = True
+        picStart = clock.getTime()
+        shuffle(intOnScreen)
+        numTxt = ': ' + str(randint(intOnScreen[0], intOnScreen[0]+50))
 
         while presentPic:
-            intropics[countIntroPics].draw(), win.flip()
+            intropics[countIntroPics].draw()
+            # (countIntroPics == 5 or countIntroPics == 8 or countIntroPics == 11)
+            if (countIntroPics == 4 or countIntroPics == 6 or countIntroPics == 8) and clock.getTime()-picStart <= 0.75:
+                text.setText('VAATA PILTI')
+                subbox.fillColor = coldic['1'][1]
+                subbox.draw(), text.draw()
+                #(countIntroPics == 19 or countIntroPics == 22 or countIntroPics == 25)
+            elif (countIntroPics == 15 or countIntroPics == 17 or countIntroPics == 19) and clock.getTime()-picStart <= 0.75:
+                text.setText('LOENDA'+numTxt)
+                subbox.fillColor = coldic['3'][1]
+                subbox.draw(), text.draw()
+            win.flip()
 
             buttons, theseKeys = mouse.getPressed(
             ), event.getKeys(keyList=['q', 'space'])
@@ -761,6 +775,7 @@ if expInfo['showIntro'] == '1':
                     if countIntroPics > 0:
                         countIntroPics -= 1
                     presentPic = False
+
         if countIntroPics == len(intropics):
             presentIntroPics = False
             core.wait(0.25)
