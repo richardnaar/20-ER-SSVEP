@@ -306,32 +306,42 @@ horiz, vert = 34, 28,
 picSize = (horiz, vert)
 
 pause_text = 'See on paus. Palun oota kuni eksperimentaator taaskäivitab mõõtmise . . .'
-practice_text = 'Nüüd saad kirjeldatud ülesannet näitepiltidega harjutada.'
+practice_text1 = "Katse jooksul näidatakse Sulle ükshaaval erinevaid pilte.\n\nSinu ülesandeks on iga pildi vaatamise ajal teha seda, \
+mida pildile eelnev märksõna ütleb.\n\nVAATA PILTI: Keskendu pildil kujutatule ja reageeri loomulikult.\n\nLOENDA: Loenda etteantud \
+arvust kahekaupa allapoole, et vähendada negatiivseid tundeid.\n\nAbiks on pilti ümbritsev raam. \n\nKui raam on " + colstrdic["VAATA PILTI"] + \
+    ", siis tuleb pilti lihtsalt vaadata ja kui " + \
+    colstrdic["LOENDA"] + ", siis pildi vaatamise ajal arve loendada.\n\nKatses on pilte, kus pildi esitamise ajal ülesanne \
+muutub - esialgu tuleb märksõna VAATA PILTI ja seejärel LOENDA või vastupidi. Koos ülesande muutumisega muutub ka raami värv."
+practice_text2 = "Palun kirjelda oma sõnadega, mida Sa pead katse ajal tegema."
+practice_text3 = "Järgmiseks tutvustame sulle katse ajal esitatavat küsimust."
+# practice_text4 = "Kui negativselt sa ennast hetkel tunned?\n\n\n\n\n\n\n\n\n\n\n\nÜldse mitte negatiivselt ------------- Väga negatiivselt"
+practice_text4 = "Nüüd saad kirjeldatud ülesannet näitepiltidega harjutada."
 
-practiceTextDic = {'1': practice_text}
+practiceTextDic = {'1': practice_text1, '2': practice_text2,
+                   '3': practice_text3, '4': practice_text4}
 
 start_text1 = "Aitäh, harjutus on läbi ja nüüd algab katse põhiosa! Oota kuni katse läbiviija on ruumist lahkunud."
-# start_text2 = "Meeldetuletuseks: Tee iga pildi vaatamise ajal seda, mida eelnev märksõna ütleb. \n\n " + \
-#     "VAATA PILTI: " + "Keskendu pildil kujutatule ja reageeri loomulikult. "
-# "LOENDA:" + "Loenda arve etteantud arvust kahekaupa allapoole, et vähendada negatiivseid tundeid. \n\n \
-# Alusta juhendi rakendamist kohe, kui pilt ekraanile ilmub. "
-start_text2 = "Meeldetuletuseks: Tee iga pildi vaatamise ajal seda, mida märksõna ütleb. \n\n\
+start_text2_1 = "Meeldetuletuseks: Tee iga pildi vaatamise ajal seda, mida märksõna ütleb. \n\n\
 VAATA PILTI: Keskendu pildil kujutatule ja reageeri loomulikult. \n\n\
-LOENDA: Loenda arve etteantud arvust kahekaupa allapoole, et vähendada negatiivseid tundeid. \n\n "
-start_text3 = "Sind aitab pilti ümbritseva raami värv. \n\nKui raam on " + colstrdic["VAATA PILTI"] + \
+LOENDA: Loenda arve etteantud arvust kahekaupa allapoole, et vähendada negatiivseid tundeid. \n\n"
+start_text2_2 = "Sind aitab pilti ümbritseva raami värv. \n\nKui raam on " + colstrdic["VAATA PILTI"] + \
     ", siis vaata pilti ja kui " + \
     colstrdic["LOENDA"] + ", siis loenda. \n\nAlusta juhendi rakendamist kohe, kui pilt ekraanile ilmub. \n\n\
 Katses on pilte, kus pildi esitamise ajal ülesanne muutub.\nProovi uut juhendit rakendada kohe, kui märksõna ja raami värv muutuvad."
-start_text4 = 'Palun oota kuni eksperimentaator käivitab mõõtmise . . .'
+start_text3 = 'Palun oota kuni eksperimentaator käivitab mõõtmise . . .'
 
-expTextDic = {'1': start_text1, '2': start_text2,
-              '3': start_text3, '4': start_text4}
+expTextDic = {'1': start_text1, '2': start_text2_1+start_text2_2,
+              '3': start_text3}
 
 clickMouseText = "[Jätkamiseks vajuta hiireklahvi]"
 
 
 goodbye_text = 'Aitäh! Katse on läbi! Kutsu katse läbiviija. \n\nPärast mõõtevahendite eemaldamist palume Sul vastata teises ruumis lühikesele küsimustikule \
 \n\nProgrammi sulgemiseks vajuta palun hiireklahvi . . . '
+
+self_VAS = 'Kui negatiivselt sa ennast hetkel tunned?'
+self_VAS_min = 'Väga negatiivselt'
+self_VAS_max = 'Üldse mitte negatiivselt'
 
 # Initiate clock to keep track of time
 clock = core.Clock()
@@ -555,7 +565,7 @@ def draw_text(txt, pause_dur, mouse_resp, secondTxt):
             break
 
 
-def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_high, slf_scale, slf_set, countingQ):
+def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_high, slf_scale, slf_set, countingQ, sendTriggers):
 
     # Initialize components for Routine "VAS"
     VAS_startTime = clock.getTime()
@@ -570,10 +580,11 @@ def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_h
     scale_low.setText(label_low)
     scale_high.setText(label_high)
 
-    trigger = trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][1]] + \
-        trigdic[condData['emo'][ti]] + trigdic[condData['picset']
-                                               [ti]] + trigdic[eventPos]
-    sendTrigger(VAS_startTime, trigger, expInfo['EEG'])
+    if sendTriggers:
+        trigger = trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][1]] + \
+            trigdic[condData['emo'][ti]] + \
+            trigdic[condData['picset'][ti]] + trigdic[eventPos]
+        sendTrigger(VAS_startTime, trigger, expInfo['EEG'])
 
     if expInfo['testMonkey'] == '1':
         VAS_noResponse = False
@@ -779,7 +790,9 @@ for gIndx in routinedic:
         else:
             mouse_resp = 1
             cText = clickMouseText
-
+        if routinedic[gIndx] == 'training' and int(text2present) == len(TextDic):
+            draw_VAS(win, self_VAS, self_VAS_min, self_VAS_max, item,
+                     scale_low, scale_high, slf_scale, slf_set, 0, 0)
         draw_text(TextDic[text2present], float('inf'), mouse_resp, cText)  #
         core.wait(0.25)
 
@@ -835,8 +848,8 @@ for gIndx in routinedic:
                                                           os.stat(current_pic_dir + '\\' + picName).st_size)
 
         if condData['presentVAS'][ti] == 1:
-            draw_VAS(win, 'Kui negatiivselt sa ennast hetkel tunned?', 'Väga negatiivselt',
-                     'Üldse mitte negatiivselt', item, scale_low, scale_high, slf_scale, slf_set, 0)
+            draw_VAS(win, self_VAS, self_VAS_min,
+                     self_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 0, 1)
 
         # ITI
         if expInfo['testMonkey'] == '0':
