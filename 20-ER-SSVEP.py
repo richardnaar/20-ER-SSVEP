@@ -568,7 +568,7 @@ def draw_text(txt, pause_dur, mouse_resp, secondTxt):
 def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_high, slf_scale, slf_set, countingQ, sendTriggers):
 
     # Initialize components for Routine "VAS"
-    # VAS_startTime = clock.getTime()
+    VAS_startTime = clock.getTime()
     VAS_noResponse = True
     eventPos = 'question'
     # if button is down already this ISN'T a new click
