@@ -565,7 +565,7 @@ def draw_text(txt, pause_dur, mouse_resp, secondTxt):
             break
 
 
-def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_high, slf_scale, slf_set, countingQ, sendTriggers, VAS_startTime):
+def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_high, slf_scale, slf_set, countingQ, sendTriggers):
 
     # Initialize components for Routine "VAS"
     # VAS_startTime = clock.getTime()
@@ -863,7 +863,6 @@ for gIndx in routinedic:
                                                           os.stat(current_pic_dir + '\\' + picName).st_size)
 
         if condData['presentVAS'][ti] == 1:
-            VAS_startTime = clock.getTime()
             draw_VAS(win, self_VAS, self_VAS_min,
                      self_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 0, 1)
 
