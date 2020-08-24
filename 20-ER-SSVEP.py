@@ -6,6 +6,7 @@ SSVEP task 21/08/2020
 monitor setting (e.g. testMonitor to smtn else)
 set up the folders (ssvep_iaps, training_pics, intro_pics)
 viewing angle: 34x28 (Hajcak jt 2013)
+NB - programmi katkestamiseks vajuta klaviatuuril "q"
 """
 
 # C:\Program Files\PsychoPy3\Lib\site-packages\psychopy\demos\coder\stimuli
@@ -15,7 +16,7 @@ viewing angle: 34x28 (Hajcak jt 2013)
 # future should make it possible to run the same code under Python 2
 # from __future__ import absolute_import, division
 import psychopy
-from psychopy import locale_setup, gui, visual, core, data, event, logging, sound, monitors
+from psychopy import locale_setup, gui, visual, core, data, event, logging, monitors
 
 import os  # system and path functions
 import pandas as pd  # data structures
@@ -306,14 +307,28 @@ picSize = (horiz, vert)
 pause_text = 'See on paus. Jätkamiseks vajuta palun hiireklahvi . . .'
 practice_text = 'Nüüd saad kirjeldatud ülesannet näitepiltidega harjutada.'
 
+practiceTextDic = {'1': practice_text}
+
 start_text1 = "Aitäh, harjutus on läbi ja nüüd algab katse põhiosa! Oota kuni katse läbiviija on ruumist lahkunud."
-start_text2 = "Meeldetuletuseks: Tee iga pildi vaatamise ajal seda, mida eelnev märksõna ütleb. \n\n " + \
-    "VAATA PILTI: " + "Keskendu pildil kujutatule ja reageeri loomulikult. "
-"LOENDA:" + "Loenda arve etteantud arvust kahekaupa allapoole, et vähendada negatiivseid tundeid. \n\n \
-Alusta juhendi rakendamist kohe, kui pilt ekraanile ilmub. "
+# start_text2 = "Meeldetuletuseks: Tee iga pildi vaatamise ajal seda, mida eelnev märksõna ütleb. \n\n " + \
+#     "VAATA PILTI: " + "Keskendu pildil kujutatule ja reageeri loomulikult. "
+# "LOENDA:" + "Loenda arve etteantud arvust kahekaupa allapoole, et vähendada negatiivseid tundeid. \n\n \
+# Alusta juhendi rakendamist kohe, kui pilt ekraanile ilmub. "
+start_text2 = "Meeldetuletuseks: Tee iga pildi vaatamise ajal seda, mida märksõna ütleb. \n\n\
+VAATA PILTI: Keskendu pildil kujutatule ja reageeri loomulikult. \n\n\
+LOENDA: Loenda arve etteantud arvust kahekaupa allapoole, et vähendada negatiivseid tundeid. \n\n "
+start_text3 = "Sind aitab pilti ümbritseva raami värv. \n\nKui raam on " + colstrdic["VAATA PILTI"] + \
+    ", siis vaata pilti ja kui " + \
+    colstrdic["LOENDA"] + ", siis loenda. \n\nAlusta juhendi rakendamist kohe, kui pilt ekraanile ilmub. \n\n\
+Katses on pilte, kus pildi esitamise ajal ülesanne muutub.\nProovi uut juhendit rakendada kohe, kui märksõna ja raami värv muutuvad."
+start_text4 = 'Palun oota kuni eksperimentaator käivitab mõõtmise . . .'
+
+expTextDic = {'1': start_text1, '2': start_text2,
+              '3': start_text3, '4': start_text4}
+
+clickMouseText = "[Jätkamiseks vajuta hiireklahvi]"
 
 
-start_text = 'Palun oota kuni eksperimentaator käivitab mõõtmise . . . \n\n Programmi sulgemiseks vajuta: "q"'
 goodbye_text = 'Aitäh! Katse on läbi! Kutsu katse läbiviija. \n\nPärast mõõtevahendite eemaldamist palume Sul vastata teises ruumis lühikesele küsimustikule \
 \n\nProgrammi sulgemiseks vajuta palun hiireklahvi . . . '
 
@@ -327,6 +342,15 @@ text = visual.TextStim(win=win,
                        color='white', colorSpace='rgb', opacity=1,
                        languageStyle='LTR',
                        depth=0.0)
+
+continueText = visual.TextStim(win=win,
+                               text='insert txt here',
+                               font='Arial',
+                               pos=(15, -15), height=1, wrapWidth=30, ori=0,
+                               color='white', colorSpace='rgb', opacity=1,
+                               languageStyle='LTR',
+                               depth=0.0)
+
 fixation = visual.ShapeStim(
     win=win, name='fixation', vertices='cross',
     size=(1, 1),
@@ -399,7 +423,7 @@ def sendTrigger(trigStart, trigN, EEG):
     trigTime = clock.getTime() - trigStart
     if EEG == '1':
         if trigTime < 0.025 and trigTime > 0:  # send trigger for 25 ms and do not send the trigger before next flip time
-            port.setData(trigN)
+            port.setData(int(trigN, 2))
         else:
             port.setData(0)
 
@@ -516,13 +540,16 @@ def draw_iti(win, iti_dur, trigNum):
         time = clock.getTime() - iti_time
 
 
-def draw_text(txt, pause_dur, mouse_resp):
+def draw_text(txt, pause_dur, mouse_resp, secondTxt):
     pause_time = clock.getTime()
+
     while (clock.getTime() - pause_time) < pause_dur:
         buttons = mouse.getPressed()
         theseKeys = event.getKeys(keyList=['q', 'space'])
         if len(theseKeys) == 0 and sum(buttons) == 0:
             text.setText(txt), text.draw()
+            if len(secondTxt) > 0:
+                continueText.setText(secondTxt), continueText.draw()
             win.flip()
         elif len(theseKeys) > 0 and theseKeys[0] == 'space' and mouse_resp == 0:
             break
@@ -630,8 +657,8 @@ else:
 
 trainingTable['imageFile'], trainingTable['trialID'], trainingTable['secondCueTime'] = trainingfiles, trials_training, secondCueTime[1]
 trainingcondlist = list(range(1, 5)) * int(np.ceil(len(trainingfiles)/4))
-trainingQList = list(zeros(int(np.ceil(len(trainingfiles)/2)))) + \
-    list(np.ones(int(np.ceil(len(trainingfiles)/2))))
+trainingQList = list(np.ones(int(np.ceil(len(trainingfiles)/2)))
+                     )  # list(zeros(int(np.ceil(len(trainingfiles)/2)))) + \
 
 trainingTable['presentVAS'], trainingTable['cond'] = trainingQList[0:len(
     trainingfiles)], trainingcondlist[0:len(trainingfiles)]
@@ -653,7 +680,7 @@ if noData:
 
 if expInfo['triggerTest'] == '1':
     draw_text('Sündmussignaalide testimiseks vajuta palun tühikuklahvi...',
-              float('inf'), 0)  #
+              float('inf'), 0, [])  #
 
     for expphase in {'training', 'experiment'}:
         # print(expphase)
@@ -670,13 +697,15 @@ if expInfo['triggerTest'] == '1':
                         print(
                             ' '.join([expphase, condition, emo, picset, trphase]))
                         print(trigger)
-                        secondCueTime = clock.getTime()
+                        trigTestTime = clock.getTime()
                         if expInfo['EEG'] == '1':
-                            sendTrigger(secondCueTime, trigger, expInfo['EEG'])
+                            sendTrigger(trigTestTime, trigger, expInfo['EEG'])
                             core.wait(0.25)
+    if expInfo['EEG']:
+        port.setData(0)
 
 # region LOAD IMAGES
-draw_text('Palun oota. Laen pildid mällu...', 1, 1)  #
+draw_text('Palun oota. Laen pildid mällu...', 1, 1, [])  #
 
 # python_pic_dir = sys.executable[0:-10] + 'Lib\site-packages\psychopy\demos\coder\stimuli'
 
@@ -737,17 +766,26 @@ routinedic = {'0': 'training', '1': 'experiment'}
 for gIndx in routinedic:
     runExperiment = True
     if routinedic[gIndx] == 'training':
-        condData, trials, nTrials, images, current_pic_dir, mouse_resp = \
+        condData, trials, nTrials, images, current_pic_dir = \
             trainingTable, trainingTable['trialID'], len(
-                trials_training), trainingpics, training_dir, 1
-        instructions = practice_text
+                trials_training), trainingpics, training_dir
+        TextDic = practiceTextDic
     elif routinedic[gIndx] == 'experiment':
-        condData, trials, nTrials, images, current_pic_dir, instructions, mouse_resp = \
+        condData, trials, nTrials, images, current_pic_dir, TextDic = \
             newTable, newTable['trialID'], len(
-                newTable['trialID']), images_experiment, pic_dir, start_text, 0
+                newTable['trialID']), images_experiment, pic_dir, expTextDic
 
-    text.pos = (0, 0)  # change text position back
-    draw_text(instructions, float('inf'), mouse_resp)  #
+    text.pos = (0, 0)
+    for text2present in TextDic:
+        if routinedic[gIndx] == 'experiment' and int(text2present) == len(TextDic):
+            mouse_resp = 0
+            cText = ' '
+        else:
+            mouse_resp = 1
+            cText = clickMouseText
+
+        draw_text(TextDic[text2present], float('inf'), mouse_resp, cText)  #
+        core.wait(0.25)
 
     picCount, ti, apCounterNeg, apCounterNtr = 0, 0, 0, 0
     while runExperiment:
@@ -756,7 +794,7 @@ for gIndx in routinedic:
         if ti == nTrials and routinedic[gIndx] == 'experiment':
             # close and quit
             if expInfo['reExposure'] == '0':
-                draw_text(goodbye_text, float('inf'), 1)
+                draw_text(goodbye_text, float('inf'), 1, [])
                 if expInfo['EEG'] == '1':
                     port.setData(0), port.close()
                 win.close(), core.quit()
@@ -827,9 +865,9 @@ for gIndx in routinedic:
                 # sendTrigger(pauseStart, trigNum, expInfo['EEG'])
                 if ti < nTrials:
                     if expInfo['testMonkey'] == '0':
-                        draw_text(pause_text, float('inf'), 1)
+                        draw_text(pause_text, float('inf'), 1, [])
                     else:
-                        draw_text(pause_text, 0.2, 1)
+                        draw_text(pause_text, 0.2, 1, [])
 
                 picCount += pauseAfterEvery
                 images = []
@@ -852,7 +890,7 @@ for gIndx in routinedic:
 # region RE-EXPOSURE
 if expInfo['reExposure'] == '1':
     draw_text('Re-exposure intro (jätkamiseks vajuta tühukut)',
-              float('inf'), mouse_resp)  #
+              float('inf'), mouse_resp, [])  #
 
     reexpopics = []
     newTable = newTable.sample(frac=1).reset_index(drop=True)
@@ -896,7 +934,7 @@ if expInfo['reExposure'] == '1':
         thisExp.nextEntry()
 
     if indx == len(reexpopics)-1:
-        draw_text(goodbye_text, float('inf'), 1)
+        draw_text(goodbye_text, float('inf'), 1, [])
         if expInfo['EEG'] == '1':
             port.setData(0)
             core.quit()
