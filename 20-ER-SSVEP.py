@@ -3,7 +3,7 @@
 
 """
 SSVEP task 21/08/2020
-monitor setting (e.g. testMonitor to smtn else)
+monitor setting (e.g. testMonitor to ERSSVEP)
 set up the folders (ssvep_iaps, training_pics, intro_pics)
 viewing angle: 34x28 (Hajcak jt 2013)
 NB - programmi katkestamiseks vajuta klaviatuuril "q"
@@ -53,7 +53,7 @@ print('PsychoPy version: ' + psychopy.__version__)
 expName = os.path.basename(__file__)  # + data.getDateStr()
 
 expInfo = {'participant': 'Participant', 'session': '001', 'EEG': '0', 'Chemicum': '0',
-           'stimFrequency': '15', 'testMonkey': '1', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '0', 'triggerTest': '0', 'showIntro': '0'}
+           'stimFrequency': '15', 'testMonkey': '0', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '0', 'triggerTest': '0', 'showIntro': '1'}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 if dlg.OK == False:
@@ -256,12 +256,12 @@ if expInfo['testMonkey'] == '1':
     boxdenom = float('inf')
 else:
     # (1024, 768) (1920, 1200)
-    monSettings = {'size': (1920, 1200), 'fullscr': True}
+    monSettings = {'size': (1024, 768), 'fullscr': True}
     boxdenom = float('inf')  # 2.8
 
 win = visual.Window(
     size=monSettings['size'], fullscr=monSettings['fullscr'], screen=0, color='black',
-    blendMode='avg', useFBO=True, monitor='testMonitor',
+    blendMode='avg', useFBO=True, monitor='ERSSVEP',
     units='deg')
 
 # Hide mouse
@@ -302,7 +302,7 @@ else:
 
 # region INITIALIZE TASK COMPONENTS
 
-horiz, vert = 34, 28,
+horiz, vert = 34*0.5, 28*0.5,
 picSize = (horiz, vert)
 
 pause_text = 'See on paus. Palun oota kuni eksperimentaator taaskäivitab mõõtmise . . .'
@@ -345,19 +345,19 @@ self_VAS_max = 'Üldse mitte negatiivselt'
 
 # Initiate clock to keep track of time
 clock = core.Clock()
-
+text_h = 0.65
 text = visual.TextStim(win=win,
                        text='insert txt here',
                        font='Arial',
-                       pos=(0, 0), height=1, wrapWidth=30, ori=0,
+                       pos=(0, 0), height=text_h, wrapWidth=20, ori=0,
                        color='white', colorSpace='rgb', opacity=1,
                        languageStyle='LTR',
-                       depth=0.0)
+                       depth=0.0, alignHoriz ='center')  # 
 
 continueText = visual.TextStim(win=win,
                                text='insert txt here',
                                font='Arial',
-                               pos=(15, -15), height=1, wrapWidth=30, ori=0,
+                               pos=(15, -15), height=text_h, wrapWidth=20, ori=0,
                                color='white', colorSpace='rgb', opacity=1,
                                languageStyle='LTR',
                                depth=0.0)
@@ -380,34 +380,34 @@ background = visual.Rect(
 # subtitle box
 subbox = visual.Rect(
     win=win, units='deg',
-    width=(8, 8)[0], height=(2, 2)[1],
+    width=(5, 5)[0], height=(1, 1)[1],
     ori=0, pos=(0, -horiz/boxdenom),
     lineWidth=0, lineColor=[1, 1, 1], lineColorSpace='rgb',
     fillColor=[-1, -1, -1], fillColorSpace='rgb',
     opacity=1, depth=0.0, interpolate=True)
 
 # Initialize components for Routine "vas"
-scale_width = 10
+scale_width = 5
 scale_y_pos = -2
 
 item = visual.TextStim(win=win, name='item',
                        text='default text',
                        font='Arial',
-                       pos=(0, 10), height=1, wrapWidth=20, ori=0, units='deg',
+                       pos=(0, 5), height=text_h, wrapWidth=20, ori=0, units='deg',
                        color=[0.702, 0.702, 0.702], colorSpace='rgb', opacity=1,
                        languageStyle='LTR',
                        depth=-1.0)
 scale_low = visual.TextStim(win=win, name='scale_low',
                             text='default text',
                             font='Arial',
-                            pos=(-scale_width-5, scale_y_pos), height=1, wrapWidth=None, ori=0, units='deg',
+                            pos=(-scale_width-3, scale_y_pos), height=text_h, wrapWidth=3, ori=0, units='deg',
                             color=[0.702, 0.702, 0.702], colorSpace='rgb', opacity=1,
                             languageStyle='LTR',
                             depth=-2.0)
 scale_high = visual.TextStim(win=win, name='scale_high',
                              text='default text',
                              font='Arial',
-                             pos=(scale_width+7, scale_y_pos), height=1, wrapWidth=None, ori=0, units='deg',
+                             pos=(scale_width+4, scale_y_pos), height=text_h, wrapWidth=3, ori=0, units='deg',
                              color=[0.702, 0.702, 0.702], colorSpace='rgb', opacity=1,
                              languageStyle='LTR',
                              depth=-3.0)
@@ -415,13 +415,13 @@ scale_high = visual.TextStim(win=win, name='scale_high',
 slf_scale = visual.Rect(
     win=win, name='slf_scale',
     width=(scale_width*2, 0)[0], height=(0.25, 0.25)[1], ori=0, pos=(0, scale_y_pos), units='deg',
-    lineWidth=1, lineColor=[0.702, 0.702, 0.702], lineColorSpace='rgb',
+    lineWidth=text_h, lineColor=[0.702, 0.702, 0.702], lineColorSpace='rgb',
     fillColor=[0.702, 0.702, 0.702], fillColorSpace='rgb',
     opacity=1, depth=-4.0, interpolate=True)
 slf_set = visual.Rect(
     win=win, name='slf_set',
     width=(0.2, 0)[0], height=(0.25, 0.25)[1], ori=0, pos=(0, scale_y_pos), units='deg',
-    lineWidth=1, lineColor=[-1, -1, -1], lineColorSpace='rgb',
+    lineWidth=text_h, lineColor=[-1, -1, -1], lineColorSpace='rgb',
     fillColor=[-1, -1, -1], fillColorSpace='rgb',
     opacity=1, depth=-5.0, interpolate=True)
 
@@ -737,6 +737,7 @@ for file in newTable['trialID'][0:pauseAfterEvery]:
 # region PRESENT INSTRUCTIONS
 
 if expInfo['showIntro'] == '1':
+    text.color = 'black'
     presentIntroPics, countIntroPics = True, 0
     while presentIntroPics == True:
         # for indx in range(0, len(intropics)):
@@ -782,7 +783,7 @@ if expInfo['showIntro'] == '1':
 # endregion (PRESENT INSTRUCTIONS)
 
 # region THIS IS THE EXPERIMENT LOOP
-
+text.color = 'white'
 routinedic = {'0': 'training', '1': 'experiment'}
 
 for gIndx in routinedic:
