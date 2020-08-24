@@ -65,7 +65,8 @@ expInfo['expName'] = expName
 # Set durartions
 if expInfo['testMonkey'] == '1':
     fixDuration, stimDuration, iti_dur_default, secondCueTime, expInfo['participant'] = \
-        0.1,        1,              0.2,        [0.1, 0.2, 0.3, 0.4], 'Monkey'
+        1.5,        12.6,           3.5,   [
+            6.6, 7.08, 7.56, 8.04], 'Monkey'  # 0.1,        1,              0.2,        [0.1, 0.2, 0.3, 0.4], 'Monkey'
 else:
     # just the first iti, later will change on every trial (random()+0.5)
     fixDuration, stimDuration, iti_dur_default, secondCueTime = \
@@ -96,13 +97,13 @@ thisExp = data.ExperimentHandler(
 # region EEG PORT SETUP
 
 if expInfo['EEG'] == '1':
-    from psychopy import parallel
-    if expInfo['Chemicum'] == '1':
-        port = parallel.ParallelPort(address=0x378)
-    else:
-        port = parallel.ParallelPort(address=0xe010)
-        port.setData(0)
-    trigNum = 0
+    print('set port')
+    # from psychopy import parallel
+    # if expInfo['Chemicum'] == '1':
+    #     port = parallel.ParallelPort(address=0x378)
+    # else:
+    #     port = parallel.ParallelPort(address=0xe010)
+    #     port.setData(0)
 
 trigdic = {'training': '0', 'experiment': '1', 'VAATA PILTI': '1', 'LOENDA': '0', 'NEG': '1', 'NEUTRAL': '0',
            'a': '00', 'b': '10', 'c': '01', 'd': '11', 'first': '00', 'second': '10', 'question': '11'}
@@ -304,7 +305,7 @@ else:
 horiz, vert = 34, 28,
 picSize = (horiz, vert)
 
-pause_text = 'See on paus. Jätkamiseks vajuta palun hiireklahvi . . .'
+pause_text = 'See on paus. Palun oota kuni eksperimentaator taaskäivitab mõõtmise . . .'
 practice_text = 'Nüüd saad kirjeldatud ülesannet näitepiltidega harjutada.'
 
 practiceTextDic = {'1': practice_text}
@@ -422,13 +423,14 @@ slf_set = visual.Rect(
 def sendTrigger(trigStart, trigN, EEG):
     trigTime = clock.getTime() - trigStart
     if EEG == '1':
-        if trigTime < 0.025 and trigTime > 0:  # send trigger for 25 ms and do not send the trigger before next flip time
-            port.setData(int(trigN, 2))
-        else:
-            port.setData(0)
+        if trigTime < 0.05 and trigTime > 0:  # send trigger for 50 ms and do not send the trigger before next flip time
+            #     port.setData(int(trigN, 2))
+            print(trigN)
+        # else:
+        #     port.setData(0)
 
 
-def draw_ssvep(win, duration, ti, trigNum, secondEventStart):
+def draw_ssvep(win, duration, ti, secondEventStart):
     cueDuration = 0.75
     text.color = "black"
     picStartTime = clock.getTime()
@@ -446,18 +448,9 @@ def draw_ssvep(win, duration, ti, trigNum, secondEventStart):
                 if frameN % moduloNr == 0:  # waits until the remainder of the devision between frameN and moduloNr is 0
                     if contrastNotYetChanged:
                         images[ti-picCount].contrast, contrastNotYetChanged = 1, False
-                        # print('high: ' + str(frameN))
                     else:
                         images[ti-picCount].contrast, contrastNotYetChanged = 1 - \
                             (2*A), True
-                        # print('low: ' + str(frameN))
-
-            if not secondCueTime and secondCuePresented:
-                trigger = trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][1]] + \
-                    trigdic[condData['emo'][ti]] + trigdic[condData['picset']
-                                                           [ti]] + trigdic[eventPos]
-                secondCueTime = clock.getTime()
-                sendTrigger(secondCueTime, trigger, expInfo['EEG'])
 
             # Draw frame, image, subtitle box and text on top of each other
             background.draw(), images[ti-picCount].draw()
@@ -469,23 +462,25 @@ def draw_ssvep(win, duration, ti, trigNum, secondEventStart):
             # flip and send the trigger
             win.flip()
             if not secondCuePresented:
-                eventPos = 'second'
+                eventPos = 'first'
                 trigger = trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + \
                     trigdic[condData['emo'][ti]] + trigdic[condData['picset']
                                                            [ti]] + trigdic[eventPos]
                 sendTrigger(picStartTime, trigger, expInfo['EEG'])
+                firstCue = True
+            else:
+                if firstCue:
+                    secondCueTime = clock.getTime()
+                eventPos = 'second'
+                trigger = trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + \
+                    trigdic[condData['emo'][ti]] + \
+                    trigdic[condData['picset'][ti]] + trigdic[eventPos]
+                sendTrigger(secondCueTime, trigger, expInfo['EEG'])
+                firstCue = False
 
             # present 2nd cue at secondEventStart time
             if (clock.getTime() - picStartTime) > secondEventStart and not secondCuePresented:
-                trigNum += 10
-                # print('secondCue_'+ str(trigNum))
-                cueTime = win.getFutureFlipTime(
-                    clock='ptb')
-                # send the trigger and present the random integer
-                trigger = trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + \
-                    trigdic[condData['emo'][ti]] + trigdic[condData['picset']
-                                                           [ti]] + trigdic[eventPos]
-                sendTrigger(cueTime, trigger, expInfo['EEG'])
+
                 if condic[condData['cond'][ti]][1] == 'LOENDA':
                     shuffle(intOnScreen)
                     numTxt = ': ' + \
@@ -499,7 +494,8 @@ def draw_ssvep(win, duration, ti, trigNum, secondEventStart):
                 subbox.fillColor = coldic[condData['cond'][ti]][1]
         else:
             if expInfo['EEG'] == '1':
-                port.setData(0)
+                # port.setData(0)
+                print('port quit')
             core.quit()
         # update time
         time = clock.getTime() - picStartTime
@@ -508,8 +504,7 @@ def draw_ssvep(win, duration, ti, trigNum, secondEventStart):
 # fixation
 
 
-def draw_fix(win, fixation, duration, trigNum):
-    # print('fix_'+ str(trigNum))
+def draw_fix(win, fixation, duration):
     fixStartTime = clock.getTime()
     time = clock.getTime() - fixStartTime
     while (time) < duration:
@@ -518,25 +513,23 @@ def draw_fix(win, fixation, duration, trigNum):
             fixation.draw()
             # flip and send the trigger
             win.flip()
-            # sendTrigger(fixStartTime, trigNum, expInfo['EEG'])
         else:
             if expInfo['EEG'] == '1':
-                port.setData(0)
+                # port.setData(0)
+                print('port quit')
             core.quit()
         time = clock.getTime() - fixStartTime
 
 # inter-trial-interval
 
 
-def draw_iti(win, iti_dur, trigNum):
-    # print('iti_'+str(trigNum))
+def draw_iti(win, iti_dur):
     iti_time = clock.getTime()  # win.getFutureFlipTime(clock='ptb')  #
     time = clock.getTime() - iti_time
     while (time) < iti_dur:
 
         # flip and send the trigger
         win.flip()
-        # sendTrigger(iti_time, trigNum, expInfo['EEG'])
         time = clock.getTime() - iti_time
 
 
@@ -555,7 +548,8 @@ def draw_text(txt, pause_dur, mouse_resp, secondTxt):
             break
         elif len(theseKeys) > 0 and theseKeys[0] == 'q':
             if expInfo['EEG'] == '1':
-                port.setData(0)
+                # port.setData(0)
+                print('port quit')
             core.quit()
         elif sum(buttons) > 0 and mouse_resp == 1:
             break
@@ -700,9 +694,10 @@ if expInfo['triggerTest'] == '1':
                         trigTestTime = clock.getTime()
                         if expInfo['EEG'] == '1':
                             sendTrigger(trigTestTime, trigger, expInfo['EEG'])
-                            core.wait(0.25)
-    if expInfo['EEG']:
-        port.setData(0)
+                            core.wait(0.05)
+                            # port.setData(0)
+                            print('port quit')
+
 
 # region LOAD IMAGES
 draw_text('Palun oota. Laen pildid mällu...', 1, 1, [])  #
@@ -744,7 +739,8 @@ if expInfo['showIntro'] == '1':
             ), event.getKeys(keyList=['q', 'space'])
             if len(theseKeys) > 0 and theseKeys[0] == 'q':
                 if expInfo['EEG'] == '1':
-                    port.setData(0)
+                    # port.setData(0)
+                    print('port quit')
                 core.quit()
             elif len(buttons) > 0:
                 if buttons[0] == 1:
@@ -796,22 +792,19 @@ for gIndx in routinedic:
             if expInfo['reExposure'] == '0':
                 draw_text(goodbye_text, float('inf'), 1, [])
                 if expInfo['EEG'] == '1':
-                    port.setData(0), port.close()
+                    # port.setData(0), port.close()
+                    print('port quit')
                 win.close(), core.quit()
             else:
                 break
         elif ti == nTrials:
             break
 
-        # NB! Triggering is deprecated, but I keep them for now since they may come in handy later on...
-        trigNum = 1
         # Draw FIXATION
-        trigNum += 10
-        draw_fix(win, fixation, fixDuration, trigNum)
+        draw_fix(win, fixation, fixDuration)
 
         # Draw flickering PICTURE
 
-        trigNum += 10
         if condic[condData['cond'][ti]][0] == 'LOENDA':
             shuffle(intOnScreen)
             numTxt = ': ' + str(randint(intOnScreen[0], intOnScreen[0]+50))
@@ -823,7 +816,7 @@ for gIndx in routinedic:
         background.fillColor = coldic[condData['cond'][ti]][0]
         secondCueStart = condData['secondCueTime'][ti]
         # draw the flickering picture
-        draw_ssvep(win, stimDuration, ti, trigNum, secondCueStart)
+        draw_ssvep(win, stimDuration, ti, secondCueStart)
         text.pos = (0, 0)  # change text position back
 
         # Define picture name for saving
@@ -851,23 +844,19 @@ for gIndx in routinedic:
         else:
             iti_dur = iti_dur_default
 
-        trigNum += 20
-        draw_iti(win, iti_dur, trigNum)
+        draw_iti(win, iti_dur)
 
         # PAUSE (preloading next set of N (pauseAfterEvery) images to achive better timing)
         pauseStart = clock.getTime()  # win.getFutureFlipTime(clock='ptb')
         try:
             if (ti+1) % pauseAfterEvery == 0:
-                trigNum += 10
-                # print('pause_'+str(trigNum))
-
-                text.pos = (0, 0)  # change text position back
-                # sendTrigger(pauseStart, trigNum, expInfo['EEG'])
+                # text.pos = (0, 0)  # change text position back
                 if ti < nTrials:
                     if expInfo['testMonkey'] == '0':
-                        draw_text(pause_text, float('inf'), 1, [])
+                        draw_text(pause_text, float('inf'), 0, [])
+                        draw_text(clickMouseText, float('inf'), 1, [])
                     else:
-                        draw_text(pause_text, 0.2, 1, [])
+                        draw_text(pause_text, 0.2, 0, [])
 
                 picCount += pauseAfterEvery
                 images = []
@@ -924,7 +913,8 @@ if expInfo['reExposure'] == '1':
 
             if len(theseKeys) > 0 and theseKeys[0] == 'q':
                 if expInfo['EEG'] == '1':
-                    port.setData(0)
+                    # port.setData(0)
+                    print('port quit')
                 core.quit()
 
         # draw iti
@@ -936,7 +926,8 @@ if expInfo['reExposure'] == '1':
     if indx == len(reexpopics)-1:
         draw_text(goodbye_text, float('inf'), 1, [])
         if expInfo['EEG'] == '1':
-            port.setData(0)
+            # port.setData(0)
+            print('port quit')
             core.quit()
     # draw VAS
     # VAS_text.text = 'Siia tuleb küsimus...'
