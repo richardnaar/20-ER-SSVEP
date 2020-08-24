@@ -52,7 +52,7 @@ print('PsychoPy version: ' + psychopy.__version__)
 # filename of the script
 expName = os.path.basename(__file__)  # + data.getDateStr()
 
-expInfo = {'participant': 'Participant', 'session': '001', 'EEG': '0', 'Chemicum': '0',
+expInfo = {'participant': 'Participant', 'EEG': '0', 'Chemicum': '0',
            'stimFrequency': '15', 'testMonkey': '0', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '0', 'triggerTest': '0', 'showIntro': '1'}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
@@ -345,14 +345,14 @@ self_VAS_max = 'Üldse mitte negatiivselt'
 
 # Initiate clock to keep track of time
 clock = core.Clock()
-text_h = 0.65
+text_h = 0.7
 text = visual.TextStim(win=win,
                        text='insert txt here',
                        font='Arial',
                        pos=(0, 0), height=text_h, wrapWidth=20, ori=0,
                        color='white', colorSpace='rgb', opacity=1,
                        languageStyle='LTR',
-                       depth=0.0, alignHoriz ='center')  # 
+                       depth=0.0, alignHoriz='center')  #
 
 continueText = visual.TextStim(win=win,
                                text='insert txt here',
@@ -565,10 +565,10 @@ def draw_text(txt, pause_dur, mouse_resp, secondTxt):
             break
 
 
-def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_high, slf_scale, slf_set, countingQ, sendTriggers):
+def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_high, slf_scale, slf_set, countingQ, sendTriggers, VAS_startTime):
 
     # Initialize components for Routine "VAS"
-    VAS_startTime = clock.getTime()
+    # VAS_startTime = clock.getTime()
     VAS_noResponse = True
     eventPos = 'question'
     # if button is down already this ISN'T a new click
@@ -579,12 +579,6 @@ def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_h
     item.setText(question_text)
     scale_low.setText(label_low)
     scale_high.setText(label_high)
-
-    if sendTriggers:
-        trigger = trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][1]] + \
-            trigdic[condData['emo'][ti]] + \
-            trigdic[condData['picset'][ti]] + trigdic[eventPos]
-        sendTrigger(VAS_startTime, trigger, expInfo['EEG'])
 
     if expInfo['testMonkey'] == '1':
         VAS_noResponse = False
@@ -628,6 +622,11 @@ def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_h
                 text.draw()
 
             win.flip()
+            if sendTriggers:
+                trigger = trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][1]] + \
+                    trigdic[condData['emo'][ti]] + \
+                    trigdic[condData['picset'][ti]] + trigdic[eventPos]
+                sendTrigger(VAS_startTime, trigger, expInfo['EEG'])
         else:
             core.quit()
 
@@ -864,6 +863,7 @@ for gIndx in routinedic:
                                                           os.stat(current_pic_dir + '\\' + picName).st_size)
 
         if condData['presentVAS'][ti] == 1:
+            VAS_startTime = clock.getTime()
             draw_VAS(win, self_VAS, self_VAS_min,
                      self_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 0, 1)
 
