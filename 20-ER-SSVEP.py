@@ -97,13 +97,13 @@ thisExp = data.ExperimentHandler(
 # region EEG PORT SETUP
 
 if expInfo['EEG'] == '1':
-    print('set port')
-    # from psychopy import parallel
-    # if expInfo['Chemicum'] == '1':
-    #     port = parallel.ParallelPort(address=0x378)
-    # else:
-    #     port = parallel.ParallelPort(address=0xe010)
-    #     port.setData(0)
+    # print('set port')
+    from psychopy import parallel
+    if expInfo['Chemicum'] == '1':
+        port = parallel.ParallelPort(address=0x378)
+    else:
+        port = parallel.ParallelPort(address=0xe010)
+        port.setData(0)
 
 trigdic = {'training': '0', 'experiment': '1', 'VAATA PILTI': '1', 'LOENDA': '0', 'NEG': '1', 'NEUTRAL': '0',
            'a': '00', 'b': '10', 'c': '01', 'd': '11', 'first': '00', 'second': '10', 'question': '11'}
@@ -424,10 +424,10 @@ def sendTrigger(trigStart, trigN, EEG):
     trigTime = clock.getTime() - trigStart
     if EEG == '1':
         if trigTime < 0.05 and trigTime > 0:  # send trigger for 50 ms and do not send the trigger before next flip time
-            #     port.setData(int(trigN, 2))
-            print(trigN)
-        # else:
-        #     port.setData(0)
+            port.setData(int(trigN, 2))
+            # print(trigN)
+        else:
+            port.setData(0)
 
 
 def draw_ssvep(win, duration, ti, secondEventStart):
@@ -494,8 +494,8 @@ def draw_ssvep(win, duration, ti, secondEventStart):
                 subbox.fillColor = coldic[condData['cond'][ti]][1]
         else:
             if expInfo['EEG'] == '1':
-                # port.setData(0)
-                print('port quit')
+                port.setData(0)
+                # print('port quit')
             core.quit()
         # update time
         time = clock.getTime() - picStartTime
@@ -515,8 +515,8 @@ def draw_fix(win, fixation, duration):
             win.flip()
         else:
             if expInfo['EEG'] == '1':
-                # port.setData(0)
-                print('port quit')
+                port.setData(0)
+                # print('port quit')
             core.quit()
         time = clock.getTime() - fixStartTime
 
@@ -548,8 +548,8 @@ def draw_text(txt, pause_dur, mouse_resp, secondTxt):
             break
         elif len(theseKeys) > 0 and theseKeys[0] == 'q':
             if expInfo['EEG'] == '1':
-                # port.setData(0)
-                print('port quit')
+                port.setData(0)
+                # print('port quit')
             core.quit()
         elif sum(buttons) > 0 and mouse_resp == 1:
             break
@@ -695,8 +695,8 @@ if expInfo['triggerTest'] == '1':
                         if expInfo['EEG'] == '1':
                             sendTrigger(trigTestTime, trigger, expInfo['EEG'])
                             core.wait(0.05)
-                            # port.setData(0)
-                            print('port quit')
+                            port.setData(0)
+                            # print('port quit')
 
 
 # region LOAD IMAGES
@@ -739,8 +739,8 @@ if expInfo['showIntro'] == '1':
             ), event.getKeys(keyList=['q', 'space'])
             if len(theseKeys) > 0 and theseKeys[0] == 'q':
                 if expInfo['EEG'] == '1':
-                    # port.setData(0)
-                    print('port quit')
+                    port.setData(0)
+                    # print('port quit')
                 core.quit()
             elif len(buttons) > 0:
                 if buttons[0] == 1:
@@ -792,8 +792,8 @@ for gIndx in routinedic:
             if expInfo['reExposure'] == '0':
                 draw_text(goodbye_text, float('inf'), 1, [])
                 if expInfo['EEG'] == '1':
-                    # port.setData(0), port.close()
-                    print('port quit')
+                    port.setData(0), port.close()
+                    # print('port quit')
                 win.close(), core.quit()
             else:
                 break
@@ -913,8 +913,8 @@ if expInfo['reExposure'] == '1':
 
             if len(theseKeys) > 0 and theseKeys[0] == 'q':
                 if expInfo['EEG'] == '1':
-                    # port.setData(0)
-                    print('port quit')
+                    port.setData(0)
+                    # print('port quit')
                 core.quit()
 
         # draw iti
@@ -926,8 +926,8 @@ if expInfo['reExposure'] == '1':
     if indx == len(reexpopics)-1:
         draw_text(goodbye_text, float('inf'), 1, [])
         if expInfo['EEG'] == '1':
-            # port.setData(0)
-            print('port quit')
+            port.setData(0)
+            # print('port quit')
             core.quit()
     # draw VAS
     # VAS_text.text = 'Siia tuleb küsimus...'
