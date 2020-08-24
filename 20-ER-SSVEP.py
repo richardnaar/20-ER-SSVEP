@@ -662,7 +662,7 @@ else:
 
 trainingTable['imageFile'], trainingTable['trialID'], trainingTable['secondCueTime'] = trainingfiles, trials_training, secondCueTime[1]
 trainingcondlist = list(range(1, 5)) * int(np.ceil(len(trainingfiles)/4))
-trainingQList = list(np.ones(int(np.ceil(len(trainingfiles)/2)))
+trainingQList = list(np.ones(int(np.ceil(len(trainingfiles))))
                      )  # list(zeros(int(np.ceil(len(trainingfiles)/2)))) + \
 
 trainingTable['presentVAS'], trainingTable['cond'] = trainingQList[0:len(
