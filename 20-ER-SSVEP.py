@@ -439,6 +439,8 @@ def sendTrigger(trigStart, trigN, EEG):
         else:
             port.setData(0)
 
+# trigger1 trigger2
+
 
 def draw_ssvep(win, duration, ti, secondEventStart):
     cueDuration = 0.75
@@ -473,19 +475,19 @@ def draw_ssvep(win, duration, ti, secondEventStart):
             win.flip()
             if not secondCuePresented:
                 eventPos = 'first'
-                trigger = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + \
-                    trigdic[condData['emo'][ti]] + trigdic[condData['picset']
-                                                           [ti]] + trigdic[eventPos]
-                sendTrigger(picStartTime, trigger, expInfo['EEG'])
+                # trigger = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + \
+                #     trigdic[condData['emo'][ti]] + trigdic[condData['picset']
+                #                                            [ti]] + trigdic[eventPos]
+                # sendTrigger(picStartTime, trigger, expInfo['EEG'])
                 firstCue = True
             else:
                 if firstCue:
                     secondCueTime = clock.getTime()
                 eventPos = 'second'
-                trigger = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + \
-                    trigdic[condData['emo'][ti]] + \
-                    trigdic[condData['picset'][ti]] + trigdic[eventPos]
-                sendTrigger(secondCueTime, trigger, expInfo['EEG'])
+                # trigger = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + \
+                #     trigdic[condData['emo'][ti]] + \
+                #     trigdic[condData['picset'][ti]] + trigdic[eventPos]
+                # sendTrigger(secondCueTime, trigger, expInfo['EEG'])
                 firstCue = False
 
             # present 2nd cue at secondEventStart time
@@ -495,13 +497,17 @@ def draw_ssvep(win, duration, ti, secondEventStart):
                     shuffle(intOnScreen)
                     numTxt = ': ' + \
                         str(randint(intOnScreen[0], intOnScreen[0]+50))
-                    text.setText(condic[condData['cond'][ti]][1] + numTxt)
+                    # text.setText(condic[condData['cond'][ti]][1] + numTxt)
+                    text.setText('PROOV')
                 else:
-                    text.setText(condic[condData['cond'][ti]][1])
+                    # text.setText(condic[condData['cond'][ti]][1])
+                    text.setText('PROOV2')
 
                 # change the frame colour
-                background.fillColor, secondCuePresented = coldic[condData['cond'][ti]][1], True
-                subbox.fillColor = coldic[condData['cond'][ti]][1]
+                # background.fillColor, secondCuePresented = coldic[condData['cond'][ti]][1], True
+                # subbox.fillColor = coldic[condData['cond'][ti]][1]
+                subbox.fillColor = [-1, -1, -1]
+                secondCuePresented = True
         else:
             if expInfo['EEG'] == '1':
                 port.setData(0)
