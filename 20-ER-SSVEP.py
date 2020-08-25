@@ -861,6 +861,8 @@ for gIndx in routinedic:
             'fixDuration', fixDuration)
         thisExp.addData('triaslN', ti+1), thisExp.addData('picBytes',
                                                           os.stat(current_pic_dir + '\\' + picName).st_size)
+        thisExp.addData('first cue', condic[condData['cond'][ti]][0])
+        thisExp.addData('second cue', condic[condData['cond'][ti]][1])
 
         if condData['presentVAS'][ti] == 1:
             draw_VAS(win, self_VAS, self_VAS_min,
