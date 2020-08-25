@@ -473,7 +473,7 @@ def draw_ssvep(win, duration, ti, secondEventStart):
             win.flip()
             if not secondCuePresented:
                 eventPos = 'first'
-                trigger = trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + \
+                trigger = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + \
                     trigdic[condData['emo'][ti]] + trigdic[condData['picset']
                                                            [ti]] + trigdic[eventPos]
                 sendTrigger(picStartTime, trigger, expInfo['EEG'])
@@ -482,7 +482,7 @@ def draw_ssvep(win, duration, ti, secondEventStart):
                 if firstCue:
                     secondCueTime = clock.getTime()
                 eventPos = 'second'
-                trigger = trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + \
+                trigger = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + \
                     trigdic[condData['emo'][ti]] + \
                     trigdic[condData['picset'][ti]] + trigdic[eventPos]
                 sendTrigger(secondCueTime, trigger, expInfo['EEG'])
@@ -623,7 +623,7 @@ def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_h
 
             win.flip()
             if sendTriggers:
-                trigger = trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][1]] + \
+                trigger = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][1]] + \
                     trigdic[condData['emo'][ti]] + \
                     trigdic[condData['picset'][ti]] + trigdic[eventPos]
                 sendTrigger(VAS_startTime, trigger, expInfo['EEG'])
@@ -696,7 +696,7 @@ if expInfo['triggerTest'] == '1':
                     # print(picset)
                     for trphase in {'first', 'second', 'question'}:
                         # print(trphase)
-                        trigger = trigdic[expphase] + trigdic[condition] + \
+                        trigger = '1' + trigdic[expphase] + trigdic[condition] + \
                             trigdic[emo] + trigdic[picset] + trigdic[trphase]
                         print(
                             ' '.join([expphase, condition, emo, picset, trphase]))
