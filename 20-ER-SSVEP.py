@@ -7,6 +7,7 @@ monitor setting (e.g. testMonitor to ERSSVEP)
 set up the folders (ssvep_iaps, training_pics, intro_pics)
 viewing angle: 34x28 (Hajcak jt 2013)
 NB - programmi katkestamiseks vajuta klaviatuuril "q"
+muudatus
 """
 
 # C:\Program Files\PsychoPy3\Lib\site-packages\psychopy\demos\coder\stimuli
