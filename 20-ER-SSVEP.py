@@ -7,7 +7,7 @@ monitor setting (e.g. testMonitor to ERSSVEP)
 set up the folders (ssvep_iaps, training_pics, intro_pics)
 viewing angle: 34x28 (Hajcak jt 2013)
 NB - programmi katkestamiseks vajuta klaviatuuril "q"
-muudatus
+muudatused: anna draw_ssveple 1 pilt korraga, jm, triggerid,win.flip iti ja mujal võiks olla 1 x
 """
 
 # C:\Program Files\PsychoPy3\Lib\site-packages\psychopy\demos\coder\stimuli
@@ -33,9 +33,22 @@ import numpy as np
 
 # endregion (IMPORT MODULES )
 
+boxcols = [[1.000, 0.804, 0.004], [-1.000, 0.686, 0.639]]
+shuffle(boxcols)
+# colstrdic can be used in the instructions
+if boxcols[0][0] > 0:
+    colstrdic = {'VAATA PILTI': 'kollane', 'LOENDA': 'sinine'}
+    # folder with the intro pictures
+    intro_pictures = 'stimuli\\instructions\\vaata-kollane'
+else:
+    colstrdic = {'VAATA PILTI': 'sinine', 'LOENDA': 'kollane'}
+    # folder with the intro pictures
+    intro_pictures = 'stimuli\\instructions\\vaata-sinine'
+
 # region DEFINE PICTURE FOLDERS (and name of the condition file)
 # relative to the os.getcwd()
-intro_pictures = 'stimuli\\instructions'  # folder with the intro pictures
+# intro_pictures = 'stimuli\\instructions'  # folder with the intro pictures
+
 training_pics = 'stimuli\\practice'  # folder with the training pictures
 ssvep_exp = 'stimuli\\images'  # folder with the experimental pictures
 conditionFile = 'ERSSVEP_images'  # name of the condition file
@@ -65,14 +78,19 @@ expInfo['expName'] = expName
 
 # Set durartions
 if expInfo['testMonkey'] == '1':
+    greyDur = 0.24
     fixDuration, stimDuration, iti_dur_default, secondCueTime, expInfo['participant'] = \
         1.5,        12.6,           3.5,   [
-            6.6, 7.08, 7.56, 8.04], 'Monkey'  # 0.1,        1,              0.2,        [0.1, 0.2, 0.3, 0.4], 'Monkey'
+            6.6+greyDur, 7.08+greyDur, 7.56+greyDur, 8.04+greyDur], 'Monkey'
+    # 0.1,        1,              0.2,        [0.1, 0.2, 0.3, 0.4], 'Monkey'
 else:
     # just the first iti, later will change on every trial (random()+0.5)
+    # [6, 6.32, 6.64,6.96]  [6, 6.48, 6.96, 7.44]
+    greyDur = 0.48
     fixDuration, stimDuration, iti_dur_default, secondCueTime = \
-        1.5,        12.6,           3.5,   [
-            6.6, 7.08, 7.56, 8.04]  # [6, 6.32, 6.64,6.96]  [6, 6.48, 6.96, 7.44]
+        1.5,        12.6 + \
+        greyDur,           3.5,   [6.6+greyDur,
+                                   7.08+greyDur, 7.56+greyDur, 8.04+greyDur]
 
 expInfo['stimDuration'] = stimDuration  # save data
 expInfo['itiDuration'] = str(iti_dur_default) + '+/- 0.5'  # save data
@@ -199,6 +217,10 @@ if noData == False:
             emoSetInCurrent[['cond', 'presentVAS']] = emoSetInCurrent[[
                 'cond', 'presentVAS']].sample(frac=1).reset_index(drop=True)
 
+            rndControlQ = np.zeros(int(setSize))
+            rndControlQ[np.random.choice(range(setSize), 2, replace=False)] = 1
+
+            emoSetInCurrent['presentVAS_control'] = rndControlQ
             # emoSetInCurrent['countingQuestion'] = zeros(setSize)
             # emoSetInCurrent['countingQuestion'][randint(setSize)] = 1
 
@@ -231,14 +253,6 @@ if noData == False:
     picSeries = newTable['imageFile']
 
 
-# define box colors and randomize
-boxcols = [[1.000, 0.804, 0.004], [-1.000, 0.686, 0.639]]
-shuffle(boxcols)
-# colstrdic can be used in the instructions
-if boxcols[0][0] > 0:
-    colstrdic = {'VAATA PILTI': 'kollane', 'LOENDA': 'sinine'}
-else:
-    colstrdic = {'VAATA PILTI': 'sinine', 'LOENDA': 'kollane'}
 # these two dictionaries are used to set the box colour and to present appraisal cue according to the conditions 1 to 4
 coldic = {'1': [boxcols[0], boxcols[0]], '2': [boxcols[0], boxcols[1]],
           '3': [boxcols[1], boxcols[1]], '4': [boxcols[1], boxcols[0]]}
@@ -262,8 +276,8 @@ else:
 
 win = visual.Window(
     size=monSettings['size'], fullscr=monSettings['fullscr'], screen=0, color='black',
-    blendMode='avg', useFBO=True, monitor='ERSSVEP',
-    units='deg')
+    blendMode='avg', useFBO=False, monitor='ERSSVEP',
+    units='deg', waitBlanking=True)
 
 # Hide mouse
 
@@ -282,7 +296,7 @@ else:
 # use frameRate to add data and to define moduloNr
 
 pauseAfterEvery = int(expInfo['pauseAfterEvery'])  # save data
-if expInfo['countFrames'] == 0:
+if expInfo['countFrames'] == '0':
     # define parameters used to draw the flickering stimuli
     theta = pi/2  # constant phase offset
     f = float(expInfo['stimFrequency'])  # in Hz # save data
@@ -294,7 +308,7 @@ if expInfo['countFrames'] == 0:
 else:
     moduloNr = int(
         np.ceil(round(float(expInfo['frameRate'])) / float(expInfo['stimFrequency']))*0.5)
-    A = 0.20
+    A = 0.25
     expInfo['contrastChange'] = A*2  # save data
     expInfo['actualFrequency'] = np.ceil(
         round(float(expInfo['frameRate'])))/(moduloNr*2)
@@ -341,9 +355,12 @@ goodbye_text = 'Aitäh! Katse on läbi! Kutsu katse läbiviija. \n\nPärast mõ�
 \n\nProgrammi sulgemiseks vajuta palun hiireklahvi . . . '
 
 self_VAS = 'Kui negatiivselt sa ennast hetkel tunned?'
-self_VAS_min = 'Väga negatiivselt'
-self_VAS_max = 'Üldse mitte negatiivselt'
+self_VAS_min = 'Üldse mitte negatiivselt'
+self_VAS_max = 'Väga negatiivselt'
 
+control_VAS = 'Millist juhendit Sa pildi vaatamise ajal viimasena rakendasid?'
+control_VAS_min = 'VAATA PILTI'
+control_VAS_max = 'MÕTLE MUUST'
 # Initiate clock to keep track of time
 clock = core.Clock()
 text_h = 0.7
@@ -377,6 +394,13 @@ background = visual.Rect(
     ori=0, pos=(0, 0),
     lineWidth=0, lineColor=[1, 1, 1], lineColorSpace='rgb',
     fillColor=[1, 1, 1], fillColorSpace='rgb',
+    opacity=1, depth=0.0, interpolate=True)
+background_black = visual.Rect(
+    win=win, units='deg',
+    width=(horiz, horiz)[0], height=(vert, vert)[1],
+    ori=0, pos=(0, 0),
+    lineWidth=0, lineColor=[1, 1, 1], lineColorSpace='rgb',
+    fillColor=[-1, -1, -1], fillColorSpace='rgb',
     opacity=1, depth=0.0, interpolate=True)
 # subtitle box
 subbox = visual.Rect(
@@ -443,8 +467,8 @@ def sendTrigger(trigStart, trigN, EEG):
 # trigger1 trigger2
 
 
-def draw_ssvep(win, duration, ti, secondEventStart):
-    cueDuration = 0.75
+def draw_ssvep(win, duration, ti, secondEventStart, current_image, sndHalfCond):
+    cueDuration = 1  # on training trials only
     text.color = "black"
     picStartTime = clock.getTime()
     text.pos, frameN, secondCueTime = (0, -horiz/boxdenom), 0, False
@@ -455,60 +479,51 @@ def draw_ssvep(win, duration, ti, secondEventStart):
         if not event.getKeys('q'):
             if expInfo['countFrames'] == '0':
                 time = clock.getTime() - picStartTime  # win.getFutureFlipTime(clock='ptb')
-                images[ti-picCount].contrast = (1-A) + \
-                    (A*sin(2*pi*f * time + theta))
+                current_image.contrast = (1-A) + (A*sin(2*pi*f * time + theta))
             elif expInfo['countFrames'] == '1':
                 if frameN % moduloNr == 0:  # waits until the remainder of the devision between frameN and moduloNr is 0
                     if contrastNotYetChanged:
-                        images[ti-picCount].contrast, contrastNotYetChanged = 1, False
+                        current_image.contrast, contrastNotYetChanged = 1, False
                     else:
-                        images[ti-picCount].contrast, contrastNotYetChanged = 1 - \
+                        current_image.contrast, contrastNotYetChanged = 1 - \
                             (2*A), True
 
             # Draw frame, image, subtitle box and text on top of each other
-            background.draw(), images[ti-picCount].draw()
+            background.draw(), background_black.draw(), current_image.draw()
 
-            if clock.getTime()-(picStartTime+cueDuration) <= 0:
-                subbox.draw(), text.draw()
-            elif clock.getTime()-(secondCueTime+cueDuration) <= 0:
-                subbox.draw(), text.draw()
+            if routinedic[gIndx] == 'training':
+                if clock.getTime()-(picStartTime+cueDuration) <= 0:
+                    subbox.draw(), text.draw()
+                elif clock.getTime()-(secondCueTime+cueDuration) <= 0:
+                    subbox.draw(), text.draw()
             # flip and send the trigger
             win.flip()
             if not secondCuePresented:
-                eventPos = 'first'
-                # trigger = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + \
-                #     trigdic[condData['emo'][ti]] + trigdic[condData['picset']
-                #                                            [ti]] + trigdic[eventPos]
-                # sendTrigger(picStartTime, trigger, expInfo['EEG'])
+                sendTrigger(picStartTime, trigger_first, expInfo['EEG'])
                 firstCue = True
             else:
                 if firstCue:
                     secondCueTime = clock.getTime()
-                eventPos = 'second'
-                # trigger = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + \
-                #     trigdic[condData['emo'][ti]] + \
-                #     trigdic[condData['picset'][ti]] + trigdic[eventPos]
-                # sendTrigger(secondCueTime, trigger, expInfo['EEG'])
+                sendTrigger(secondCueTime, trigger_second, expInfo['EEG'])
                 firstCue = False
 
             # present 2nd cue at secondEventStart time
             if (clock.getTime() - picStartTime) > secondEventStart and not secondCuePresented:
 
-                if condic[condData['cond'][ti]][1] == 'LOENDA':
-                    shuffle(intOnScreen)
-                    numTxt = ': ' + \
-                        str(randint(intOnScreen[0], intOnScreen[0]+50))
-                    # text.setText(condic[condData['cond'][ti]][1] + numTxt)
-                    text.setText('PROOV')
-                else:
-                    # text.setText(condic[condData['cond'][ti]][1])
-                    text.setText('PROOV2')
+                if routinedic[gIndx] == 'training':
+                    if condic[sndHalfCond][1] == 'LOENDA':
+                        shuffle(intOnScreen)
+                        numTxt = ': ' + \
+                            str(randint(intOnScreen[0], intOnScreen[0]+50))
+                        text.setText(condic[sndHalfCond][1] + numTxt)
+                    else:
+                        text.setText(condic[sndHalfCond][1])
 
                 # change the frame colour
-                # background.fillColor, secondCuePresented = coldic[condData['cond'][ti]][1], True
-                # subbox.fillColor = coldic[condData['cond'][ti]][1]
-                subbox.fillColor = [-1, -1, -1]
-                secondCuePresented = True
+                background.fillColor, secondCuePresented = coldic[sndHalfCond][1], True
+                subbox.fillColor = coldic[sndHalfCond][1]
+            if (clock.getTime() - picStartTime) >= secondEventStart-greyDur and (clock.getTime() - picStartTime) <= secondEventStart:
+                background.fillColor = [0, 0, 0]
         else:
             if expInfo['EEG'] == '1':
                 port.setData(0)
@@ -662,7 +677,7 @@ if noData == False:
     trainingTable.loc[:] = 'training'
 else:
     dataCols = ['imageFile', 'valence', 'arousal', 'aff_cv', 'emo', 'semantic',
-                'picset', 'cond', 'presentVAS', 'secondCueTime', 'trialID']
+                'picset', 'cond', 'presentVAS', 'presentVAS_control', 'secondCueTime', 'trialID']
     trainingTable = pd.DataFrame(data=np.zeros(
         (nTrials_training, len(dataCols))), columns=dataCols)
 
@@ -673,14 +688,15 @@ trainingQList = list(np.ones(int(np.ceil(len(trainingfiles))))
 
 trainingTable['presentVAS'], trainingTable['cond'] = trainingQList[0:len(
     trainingfiles)], trainingcondlist[0:len(trainingfiles)]
+trainingTable['presentVAS_control'] = trainingQList[0:len(trainingfiles)]
 
 # emoSetInCurrent['countingQuestion'] = zeros(nTrials_training)
 # emoSetInCurrent['countingQuestion'][randint(nTrials_training)] = 1
 
 trainingTable['imageFile'] = trainingTable['imageFile'].sample(frac=1).values
 trainingTable['cond'] = trainingTable['cond'].sample(frac=1).values.astype(str)
-trainingTable['presentVAS'] = trainingTable['presentVAS'].sample(
-    frac=1).values
+# trainingTable['presentVAS'] = trainingTable['presentVAS'].sample(
+# frac=1).values
 
 if noData:
     newTable = trainingTable
@@ -768,7 +784,7 @@ if expInfo['showIntro'] == '1':
             win.flip()
 
             buttons, theseKeys = mouse.getPressed(
-            ), event.getKeys(keyList=['q', 'space'])
+            ), event.getKeys(keyList=['q', 'left'])
             if len(theseKeys) > 0 and theseKeys[0] == 'q':
                 if expInfo['EEG'] == '1':
                     port.setData(0)
@@ -778,7 +794,7 @@ if expInfo['showIntro'] == '1':
                 if buttons[0] == 1:
                     countIntroPics += 1
                     presentPic = False
-                elif buttons[2] == 1:
+                elif len(theseKeys) > 0 and theseKeys[0] == 'left':
                     if countIntroPics > 0:
                         countIntroPics -= 1
                     presentPic = False
@@ -838,7 +854,7 @@ for gIndx in routinedic:
         # Draw FIXATION
         draw_fix(win, fixation, fixDuration)
 
-        # Draw flickering PICTURE
+        # Start of flickering PICTURE
 
         if condic[condData['cond'][ti]][0] == 'LOENDA':
             shuffle(intOnScreen)
@@ -850,8 +866,26 @@ for gIndx in routinedic:
         subbox.fillColor = coldic[condData['cond'][ti]][0]
         background.fillColor = coldic[condData['cond'][ti]][0]
         secondCueStart = condData['secondCueTime'][ti]
+
+        # triggers
+
+        trigger_first = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + \
+            trigdic[condData['emo'][ti]] + \
+            trigdic[condData['picset'][ti]] + trigdic['first']
+
+        trigger_second = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + trigdic[condData['emo'][ti]] + \
+            trigdic[condData['picset'][ti]] + trigdic['second']
+
+        # current image and information about the second half
+        current_image = images[ti-picCount]
+        sndHalfCond = condData['cond'][ti]
+
         # draw the flickering picture
-        draw_ssvep(win, stimDuration, ti, secondCueStart)
+        draw_ssvep(win, stimDuration, ti, secondCueStart,
+                   current_image, sndHalfCond)
+
+        # End of flickering PICTURE
+
         text.pos = (0, 0)  # change text position back
 
         # Define picture name for saving
@@ -874,6 +908,10 @@ for gIndx in routinedic:
         if condData['presentVAS'][ti] == 1:
             draw_VAS(win, self_VAS, self_VAS_min,
                      self_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 0, 1)
+
+        if condData['presentVAS_control'][ti] == 1:
+            draw_VAS(win, control_VAS, control_VAS_min,
+                     control_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 0, 1)
 
         # ITI
         if expInfo['testMonkey'] == '0':
