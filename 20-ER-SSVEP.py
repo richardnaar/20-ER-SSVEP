@@ -637,7 +637,7 @@ def draw_text(txt, pause_dur, mouse_resp, secondTxt):
             break
 
 
-def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_high, slf_scale, slf_set, sendTriggers):
+def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_high, slf_scale, slf_set, controlQ, sendTriggers):
 
     # Initialize components for Routine "VAS"
     VAS_startTime = clock.getTime()
@@ -694,8 +694,12 @@ def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_h
             core.quit()
 
     # save the rating and RT
-    thisExp.addData('vas_response', VAS_resp)
-    thisExp.addData('vas_RT', VAS_RT)
+    if controlQ == 1:
+        thisExp.addData('vas_response_slf', VAS_resp)
+        thisExp.addData('vas_RT_slf', VAS_RT)
+    else:
+        thisExp.addData('vas_response_control', VAS_resp)
+        thisExp.addData('vas_RT_control', VAS_RT)
     mouse.setVisible(False)
     core.wait(0.25)
 
@@ -871,9 +875,9 @@ for gIndx in routinedic:
             cText = clickMouseText
         if routinedic[gIndx] == 'training' and int(text2present) == len(TextDic):
             draw_VAS(win, self_VAS, self_VAS_min, self_VAS_max, item,
-                     scale_low, scale_high, slf_scale, slf_set, 0)
+                     scale_low, scale_high, slf_scale, slf_set, 0, 0)
             draw_VAS(win, control_VAS, control_VAS_min,
-                     control_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 0)
+                     control_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 1, 0)
         draw_text(TextDic[text2present], float('inf'), mouse_resp, cText)  #
         core.wait(0.25)
 
@@ -950,11 +954,11 @@ for gIndx in routinedic:
 
         if condData['presentVAS'][ti] == 1:
             draw_VAS(win, self_VAS, self_VAS_min,
-                     self_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 1)
+                     self_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 0, 1)
 
         if condData['presentVAS_control'][ti] == 1:
             draw_VAS(win, control_VAS, control_VAS_min,
-                     control_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 1)
+                     control_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 1, 1)
 
         # ITI
         if expInfo['testMonkey'] == '0':
@@ -1049,7 +1053,6 @@ if expInfo['reExposure'] == '1':
             core.quit()
     # draw VAS
     # VAS_text.text = 'Siia tuleb küsimus...'
-    # draw_VAS(win, VAS, VAS_text, 'Question_1')
 
 # endregion (RE-EXPOSURE)
 
