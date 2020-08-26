@@ -37,11 +37,11 @@ boxcols = [[1.000, 0.804, 0.004], [-1.000, 0.686, 0.639]]
 shuffle(boxcols)
 # colstrdic can be used in the instructions
 if boxcols[0][0] > 0:
-    colstrdic = {'VAATA PILTI': 'kollane', 'LOENDA': 'sinine'}
+    colstrdic = {'VAATA PILTI': 'kollane', 'MÕTLE MUUST': 'sinine'}
     # folder with the intro pictures
     intro_pictures = 'stimuli\\instructions\\vaata-kollane'
 else:
-    colstrdic = {'VAATA PILTI': 'sinine', 'LOENDA': 'kollane'}
+    colstrdic = {'VAATA PILTI': 'sinine', 'MÕTLE MUUST': 'kollane'}
     # folder with the intro pictures
     intro_pictures = 'stimuli\\instructions\\vaata-sinine'
 
@@ -124,7 +124,7 @@ if expInfo['EEG'] == '1':
         port = parallel.ParallelPort(address=0xe010)
         port.setData(0)
 
-trigdic = {'training': '0', 'experiment': '1', 'VAATA PILTI': '1', 'LOENDA': '0', 'NEG': '1', 'NEUTRAL': '0',
+trigdic = {'training': '0', 'experiment': '1', 'VAATA PILTI': '1', 'MÕTLE MUUST': '0', 'NEG': '1', 'NEUTRAL': '0',
            'a': '00', 'b': '10', 'c': '01', 'd': '11', 'first': '00', 'second': '10', 'question': '11'}
 
 trigger = str()
@@ -256,8 +256,8 @@ if noData == False:
 # these two dictionaries are used to set the box colour and to present appraisal cue according to the conditions 1 to 4
 coldic = {'1': [boxcols[0], boxcols[0]], '2': [boxcols[0], boxcols[1]],
           '3': [boxcols[1], boxcols[1]], '4': [boxcols[1], boxcols[0]]}
-condic = {'1': ['VAATA PILTI', 'VAATA PILTI'], '2': ['VAATA PILTI', 'LOENDA'],
-          '3': ['LOENDA', 'LOENDA'], '4': ['LOENDA', 'VAATA PILTI']}
+condic = {'1': ['VAATA PILTI', 'VAATA PILTI'], '2': ['VAATA PILTI', 'MÕTLE MUUST'],
+          '3': ['MÕTLE MUUST', 'MÕTLE MUUST'], '4': ['MÕTLE MUUST', 'VAATA PILTI']}
 # this will be used to print digits from the upper half on the screen randomly
 intOnScreen = np.linspace(150, 950, 9)
 
@@ -325,7 +325,7 @@ practice_text1 = "Katse jooksul näidatakse Sulle ükshaaval erinevaid pilte.\n\
 mida pildile eelnev märksõna ütleb.\n\nVAATA PILTI: Keskendu pildil kujutatule ja reageeri loomulikult.\n\nLOENDA: Loenda etteantud \
 arvust kahekaupa allapoole, et vähendada negatiivseid tundeid.\n\nAbiks on pilti ümbritsev raam. \n\nKui raam on " + colstrdic["VAATA PILTI"] + \
     ", siis tuleb pilti lihtsalt vaadata ja kui " + \
-    colstrdic["LOENDA"] + ", siis pildi vaatamise ajal arve loendada.\n\nKatses on pilte, kus pildi esitamise ajal ülesanne \
+    colstrdic["MÕTLE MUUST"] + ", siis pildi vaatamise ajal arve loendada.\n\nKatses on pilte, kus pildi esitamise ajal ülesanne \
 muutub - esialgu tuleb märksõna VAATA PILTI ja seejärel LOENDA või vastupidi. Koos ülesande muutumisega muutub ka raami värv."
 practice_text2 = "Palun kirjelda oma sõnadega, mida Sa pead katse ajal tegema."
 practice_text3 = "Järgmiseks tutvustame sulle katse ajal esitatavat küsimust."
@@ -341,7 +341,7 @@ VAATA PILTI: Keskendu pildil kujutatule ja reageeri loomulikult. \n\n\
 LOENDA: Loenda arve etteantud arvust kahekaupa allapoole, et vähendada negatiivseid tundeid. \n\n"
 start_text2_2 = "Sind aitab pilti ümbritseva raami värv. \n\nKui raam on " + colstrdic["VAATA PILTI"] + \
     ", siis vaata pilti ja kui " + \
-    colstrdic["LOENDA"] + ", siis loenda. \n\nAlusta juhendi rakendamist kohe, kui pilt ekraanile ilmub. \n\n\
+    colstrdic["MÕTLE MUUST"] + ", siis loenda. \n\nAlusta juhendi rakendamist kohe, kui pilt ekraanile ilmub. \n\n\
 Katses on pilte, kus pildi esitamise ajal ülesanne muutub.\nProovi uut juhendit rakendada kohe, kui märksõna ja raami värv muutuvad."
 start_text3 = 'Palun oota kuni eksperimentaator käivitab mõõtmise . . .'
 
@@ -364,6 +364,7 @@ control_VAS_max = 'MÕTLE MUUST'
 # Initiate clock to keep track of time
 clock = core.Clock()
 text_h = 0.7
+
 text = visual.TextStim(win=win,
                        text='insert txt here',
                        font='Arial',
@@ -371,6 +372,22 @@ text = visual.TextStim(win=win,
                        color='white', colorSpace='rgb', opacity=1,
                        languageStyle='LTR',
                        depth=0.0, alignHoriz='center')  #
+
+text_high = visual.TextStim(win=win,
+                            text='insert txt here',
+                            font='Arial',
+                            pos=(0, 1), height=text_h, wrapWidth=20, ori=0,
+                            color='black', colorSpace='rgb', opacity=1,
+                            languageStyle='LTR',
+                            depth=0.0, alignHoriz='center')  #
+
+text_low = visual.TextStim(win=win,
+                           text='insert txt here',
+                           font='Arial',
+                           pos=(0, -1), height=text_h, wrapWidth=20, ori=0,
+                           color='black', colorSpace='rgb', opacity=1,
+                           languageStyle='LTR',
+                           depth=0.0, alignHoriz='center')  #
 
 continueText = visual.TextStim(win=win,
                                text='insert txt here',
@@ -405,8 +422,22 @@ background_black = visual.Rect(
 # subtitle box
 subbox = visual.Rect(
     win=win, units='deg',
-    width=(5, 5)[0], height=(1, 1)[1],
+    width=(6, 6)[0], height=(1, 1)[1],
     ori=0, pos=(0, -horiz/boxdenom),
+    lineWidth=0, lineColor=[1, 1, 1], lineColorSpace='rgb',
+    fillColor=[-1, -1, -1], fillColorSpace='rgb',
+    opacity=1, depth=0.0, interpolate=True)
+subboxFixLow = visual.Rect(
+    win=win, units='deg',
+    width=(6, 6)[0], height=(1, 1)[1],
+    ori=0, pos=(0, -1),
+    lineWidth=0, lineColor=[1, 1, 1], lineColorSpace='rgb',
+    fillColor=[-1, -1, -1], fillColorSpace='rgb',
+    opacity=1, depth=0.0, interpolate=True)
+subboxFixHigh = visual.Rect(
+    win=win, units='deg',
+    width=(6, 6)[0], height=(1, 1)[1],
+    ori=0, pos=(0, 1),
     lineWidth=0, lineColor=[1, 1, 1], lineColorSpace='rgb',
     fillColor=[-1, -1, -1], fillColorSpace='rgb',
     opacity=1, depth=0.0, interpolate=True)
@@ -511,11 +542,11 @@ def draw_ssvep(win, duration, ti, secondEventStart, current_image, sndHalfCond):
             if (clock.getTime() - picStartTime) > secondEventStart and not secondCuePresented:
 
                 if routinedic[gIndx] == 'training':
-                    if condic[sndHalfCond][1] == 'LOENDA':
+                    if condic[sndHalfCond][1] == 'MÕTLE MUUST':
                         shuffle(intOnScreen)
-                        numTxt = ': ' + \
-                            str(randint(intOnScreen[0], intOnScreen[0]+50))
-                        text.setText(condic[sndHalfCond][1] + numTxt)
+                        # numTxt = ': ' + \
+                        #     str(randint(intOnScreen[0], intOnScreen[0]+50))
+                        text.setText(condic[sndHalfCond][1])
                     else:
                         text.setText(condic[sndHalfCond][1])
 
@@ -539,10 +570,19 @@ def draw_ssvep(win, duration, ti, secondEventStart, current_image, sndHalfCond):
 def draw_fix(win, fixation, duration):
     fixStartTime = clock.getTime()
     time = clock.getTime() - fixStartTime
+    # rndpos = np.random.choice(range(2), 2, replace=False)
     while (time) < duration:
         if not event.getKeys('q'):
 
+            # subboxFixHigh.fillColor = coldic['2'][rndpos[0]]
+            # text_high.setText(condic['2'][rndpos[0]])
+
+            # subboxFixLow.fillColor = coldic['2'][rndpos[1]]
+            # text_low.setText(condic['2'][rndpos[1]])
+
             fixation.draw()
+            # subboxFixHigh.draw(), subboxFixLow.draw()
+            # text_high.draw(), text_low.draw()
             # flip and send the trigger
             win.flip()
         else:
@@ -556,11 +596,21 @@ def draw_fix(win, fixation, duration):
 
 
 def draw_iti(win, iti_dur):
+    rndpos = np.random.choice(range(2), 2, replace=False)
     iti_time = clock.getTime()  # win.getFutureFlipTime(clock='ptb')  #
     time = clock.getTime() - iti_time
     while (time) < iti_dur:
 
         # flip and send the trigger
+        subboxFixHigh.fillColor = coldic['2'][rndpos[0]]
+        text_high.setText(condic['2'][rndpos[0]])
+
+        subboxFixLow.fillColor = coldic['2'][rndpos[1]]
+        text_low.setText(condic['2'][rndpos[1]])
+
+        subboxFixHigh.draw(), subboxFixLow.draw()
+        text_high.draw(), text_low.draw()
+
         win.flip()
         time = clock.getTime() - iti_time
 
@@ -587,7 +637,7 @@ def draw_text(txt, pause_dur, mouse_resp, secondTxt):
             break
 
 
-def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_high, slf_scale, slf_set, countingQ, sendTriggers):
+def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_high, slf_scale, slf_set, sendTriggers):
 
     # Initialize components for Routine "VAS"
     VAS_startTime = clock.getTime()
@@ -626,22 +676,13 @@ def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_h
                     # check if the mouse was inside our 'clickable' objects
                     VAS_noResponse = False
                     VAS_RT = clock.getTime() - VAS_startTime
-                    if countingQ:
-                        VAS_resp = int(
-                            round((mx[0]/scale_width)*100)+intOnScreen[0])
-                    else:
-                        VAS_resp = (mx[0]/scale_width)*100
+                    VAS_resp = (mx[0]/scale_width)*100
 
             # update/draw components on each frame
             item.draw(), scale_low.draw(), scale_high.draw(), slf_scale.draw()
             # draw cursor
             slf_set.setPos(mx, log=False)
             slf_set.draw()
-            # draw value
-            if countingQ:
-                text.pos = (mx[0], mx[1]+1)
-                text.text = int(round((mx[0]/scale_width)*100)+intOnScreen[0])
-                text.draw()
 
             win.flip()
             if sendTriggers:
@@ -711,7 +752,7 @@ if expInfo['triggerTest'] == '1':
 
     for expphase in {'training', 'experiment'}:
         # print(expphase)
-        for condition in {'VAATA PILTI', 'LOENDA'}:
+        for condition in {'VAATA PILTI', 'MÕTLE MUUST'}:
             # print(condition)
             for emo in {'NEG', 'NEUTRAL'}:
                 # print(emo)
@@ -766,19 +807,19 @@ if expInfo['showIntro'] == '1':
         core.wait(0.25)
         presentPic = True
         picStart = clock.getTime()
-        shuffle(intOnScreen)
-        numTxt = ': ' + str(randint(intOnScreen[0], intOnScreen[0]+50))
+        # shuffle(intOnScreen)
+        # numTxt = ': ' + str(randint(intOnScreen[0], intOnScreen[0]+50))
 
         while presentPic:
             intropics[countIntroPics].draw()
             # (countIntroPics == 5 or countIntroPics == 8 or countIntroPics == 11)
-            if (countIntroPics == 4 or countIntroPics == 6 or countIntroPics == 8) and clock.getTime()-picStart <= 0.75:
+            if (countIntroPics == 4 or countIntroPics == 6 or countIntroPics == 8) and clock.getTime()-picStart <= 1:
                 text.setText('VAATA PILTI')
                 subbox.fillColor = coldic['1'][1]
                 subbox.draw(), text.draw()
                 #(countIntroPics == 19 or countIntroPics == 22 or countIntroPics == 25)
-            elif (countIntroPics == 15 or countIntroPics == 17 or countIntroPics == 19) and clock.getTime()-picStart <= 0.75:
-                text.setText('LOENDA'+numTxt)
+            elif (countIntroPics == 15 or countIntroPics == 17 or countIntroPics == 19) and clock.getTime()-picStart <= 1:
+                text.setText('MÕTLE MUUST')
                 subbox.fillColor = coldic['3'][1]
                 subbox.draw(), text.draw()
             win.flip()
@@ -830,7 +871,9 @@ for gIndx in routinedic:
             cText = clickMouseText
         if routinedic[gIndx] == 'training' and int(text2present) == len(TextDic):
             draw_VAS(win, self_VAS, self_VAS_min, self_VAS_max, item,
-                     scale_low, scale_high, slf_scale, slf_set, 0, 0)
+                     scale_low, scale_high, slf_scale, slf_set, 0)
+            draw_VAS(win, control_VAS, control_VAS_min,
+                     control_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 0)
         draw_text(TextDic[text2present], float('inf'), mouse_resp, cText)  #
         core.wait(0.25)
 
@@ -856,7 +899,7 @@ for gIndx in routinedic:
 
         # Start of flickering PICTURE
 
-        if condic[condData['cond'][ti]][0] == 'LOENDA':
+        if condic[condData['cond'][ti]][0] == 'MÕTLE MUUST':
             shuffle(intOnScreen)
             numTxt = ': ' + str(randint(intOnScreen[0], intOnScreen[0]+50))
             text.setText(condic[condData['cond'][ti]][0] + numTxt)
@@ -907,11 +950,11 @@ for gIndx in routinedic:
 
         if condData['presentVAS'][ti] == 1:
             draw_VAS(win, self_VAS, self_VAS_min,
-                     self_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 0, 1)
+                     self_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 1)
 
         if condData['presentVAS_control'][ti] == 1:
             draw_VAS(win, control_VAS, control_VAS_min,
-                     control_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 0, 1)
+                     control_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 1)
 
         # ITI
         if expInfo['testMonkey'] == '0':
