@@ -37,11 +37,11 @@ boxcols = [[1.000, 0.804, 0.004], [-1.000, 0.686, 0.639]]
 shuffle(boxcols)
 # colstrdic can be used in the instructions
 if boxcols[0][0] > 0:
-    colstrdic = {'VAATA PILTI': 'kollane', 'MÕTLE MUUST': 'sinine'}
+    colstrdic = {'VAATA PILTI': 'KOLLANE', 'MÕTLE MUUST': 'SININE'}
     # folder with the intro pictures
     intro_pictures = 'stimuli\\instructions\\vaata-kollane'
 else:
-    colstrdic = {'VAATA PILTI': 'sinine', 'MÕTLE MUUST': 'kollane'}
+    colstrdic = {'VAATA PILTI': 'SININE', 'MÕTLE MUUST': 'KOLLANE'}
     # folder with the intro pictures
     intro_pictures = 'stimuli\\instructions\\vaata-sinine'
 
@@ -321,31 +321,28 @@ horiz, vert = 34*0.5, 28*0.5,
 picSize = (horiz, vert)
 
 pause_text = 'See on paus. Palun oota kuni eksperimentaator taaskäivitab mõõtmise . . .'
-practice_text1 = "Katse jooksul näidatakse Sulle ükshaaval erinevaid pilte.\n\nSinu ülesandeks on iga pildi vaatamise ajal teha seda, \
-mida pildile eelnev märksõna ütleb.\n\nVAATA PILTI: Keskendu pildil kujutatule ja reageeri loomulikult.\n\nLOENDA: Loenda etteantud \
-arvust kahekaupa allapoole, et vähendada negatiivseid tundeid.\n\nAbiks on pilti ümbritsev raam. \n\nKui raam on " + colstrdic["VAATA PILTI"] + \
-    ", siis tuleb pilti lihtsalt vaadata ja kui " + \
-    colstrdic["MÕTLE MUUST"] + ", siis pildi vaatamise ajal arve loendada.\n\nKatses on pilte, kus pildi esitamise ajal ülesanne \
-muutub - esialgu tuleb märksõna VAATA PILTI ja seejärel LOENDA või vastupidi. Koos ülesande muutumisega muutub ka raami värv."
-practice_text2 = "Palun kirjelda oma sõnadega, mida Sa pead katse ajal tegema."
-practice_text3 = "Järgmiseks tutvustame sulle katse ajal esitatavat küsimust."
+# practice_text1 = "Katse jooksul näidatakse Sulle ükshaaval erinevaid pilte.\n\nSinu ülesandeks on iga pildi vaatamise ajal teha seda, \
+# mida pildile eelnev märksõna ütleb.\n\nVAATA PILTI: Keskendu pildil kujutatule ja reageeri loomulikult.\n\nLOENDA: Loenda etteantud \
+# arvust kahekaupa allapoole, et vähendada negatiivseid tundeid.\n\nAbiks on pilti ümbritsev raam. \n\nKui raam on " + colstrdic["VAATA PILTI"] + \
+#     ", siis tuleb pilti lihtsalt vaadata ja kui " + \
+#     colstrdic["MÕTLE MUUST"] + ", siis pildi vaatamise ajal arve loendada.\n\nKatses on pilte, kus pildi esitamise ajal ülesanne \
+# muutub - esialgu tuleb märksõna VAATA PILTI ja seejärel LOENDA või vastupidi. Koos ülesande muutumisega muutub ka raami värv."
+# practice_text2 = "Palun kirjelda oma sõnadega, mida Sa pead katse ajal tegema."
+practice_text1 = "Järgmiseks tutvustame sulle katse ajal esitatavat küsimust."
 # practice_text4 = "Kui negativselt sa ennast hetkel tunned?\n\n\n\n\n\n\n\n\n\n\n\nÜldse mitte negatiivselt ------------- Väga negatiivselt"
-practice_text4 = "Nüüd saad kirjeldatud ülesannet näitepiltidega harjutada."
+practice_text2 = "Nüüd saad kirjeldatud ülesannet näitepiltidega harjutada."
 
-practiceTextDic = {'1': practice_text1, '2': practice_text2,
-                   '3': practice_text3, '4': practice_text4}
+# '3': practice_text3, '4': practice_text4
+practiceTextDic = {'1': practice_text1, '2': practice_text2}
 
 start_text1 = "Aitäh, harjutus on läbi ja nüüd algab katse põhiosa! Oota kuni katse läbiviija on ruumist lahkunud."
-start_text2_1 = "Meeldetuletuseks: Tee iga pildi vaatamise ajal seda, mida märksõna ütleb. \n\n\
-VAATA PILTI: Keskendu pildil kujutatule ja reageeri loomulikult. \n\n\
-LOENDA: Loenda arve etteantud arvust kahekaupa allapoole, et vähendada negatiivseid tundeid. \n\n"
-start_text2_2 = "Sind aitab pilti ümbritseva raami värv. \n\nKui raam on " + colstrdic["VAATA PILTI"] + \
-    ", siis vaata pilti ja kui " + \
-    colstrdic["MÕTLE MUUST"] + ", siis loenda. \n\nAlusta juhendi rakendamist kohe, kui pilt ekraanile ilmub. \n\n\
-Katses on pilte, kus pildi esitamise ajal ülesanne muutub.\nProovi uut juhendit rakendada kohe, kui märksõna ja raami värv muutuvad."
+start_text2 = "Meeldetuletuseks: Tee iga pildi vaatamise ajal seda, mida pildi raami värv ütleb. \n\n" + colstrdic["VAATA PILTI"] + \
+    ": Keskendu pildil kujutatule ja reageeri loomulikult. \n\n " + colstrdic["MÕTLE MUUST"] + ": Mõtle pildiga mitteseotud neutraalsele tegevusele või esemele, et vähendada negatiivseid tundeid. \n\n\
+Alusta juhendi rakendamist kohe, kui pilt ekraanile ilmub. \n\nHoia mõlema juhendi rakendamise ajal pilk ekraanil. \n\n" \
++ "Katses on pilte, kus pildi esitamise ajal ülesanne muutub.\nProovi uut juhendit rakendada kohe, kui märksõna ja raami värv muutuvad."
 start_text3 = 'Palun oota kuni eksperimentaator käivitab mõõtmise . . .'
 
-expTextDic = {'1': start_text1, '2': start_text2_1+start_text2_2,
+expTextDic = {'1': start_text1, '2': start_text2,
               '3': start_text3}
 
 clickMouseText = "[Jätkamiseks vajuta hiireklahvi]"
@@ -601,15 +598,15 @@ def draw_iti(win, iti_dur):
     time = clock.getTime() - iti_time
     while (time) < iti_dur:
 
-        # flip and send the trigger
-        subboxFixHigh.fillColor = coldic['2'][rndpos[0]]
-        text_high.setText(condic['2'][rndpos[0]])
+        # show cues during iti
+        # subboxFixHigh.fillColor = coldic['2'][rndpos[0]]
+        # text_high.setText(condic['2'][rndpos[0]])
 
-        subboxFixLow.fillColor = coldic['2'][rndpos[1]]
-        text_low.setText(condic['2'][rndpos[1]])
+        # subboxFixLow.fillColor = coldic['2'][rndpos[1]]
+        # text_low.setText(condic['2'][rndpos[1]])
 
-        subboxFixHigh.draw(), subboxFixLow.draw()
-        text_high.draw(), text_low.draw()
+        # subboxFixHigh.draw(), subboxFixLow.draw()
+        # text_high.draw(), text_low.draw()
 
         win.flip()
         time = clock.getTime() - iti_time
@@ -822,7 +819,7 @@ if expInfo['showIntro'] == '1':
                 subbox.fillColor = coldic['1'][1]
                 subbox.draw(), text.draw()
                 #(countIntroPics == 19 or countIntroPics == 22 or countIntroPics == 25)
-            elif (countIntroPics == 15 or countIntroPics == 17 or countIntroPics == 19) and clock.getTime()-picStart <= 1:
+            elif (countIntroPics == 18 or countIntroPics == 20 or countIntroPics == 22) and clock.getTime()-picStart <= 1:
                 text.setText('MÕTLE MUUST')
                 subbox.fillColor = coldic['3'][1]
                 subbox.draw(), text.draw()
