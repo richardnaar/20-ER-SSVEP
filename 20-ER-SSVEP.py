@@ -328,7 +328,7 @@ pause_text = 'See on paus. Palun oota kuni eksperimentaator taaskäivitab mõõt
 #     colstrdic["MÕTLE MUUST"] + ", siis pildi vaatamise ajal arve loendada.\n\nKatses on pilte, kus pildi esitamise ajal ülesanne \
 # muutub - esialgu tuleb märksõna VAATA PILTI ja seejärel LOENDA või vastupidi. Koos ülesande muutumisega muutub ka raami värv."
 # practice_text2 = "Palun kirjelda oma sõnadega, mida Sa pead katse ajal tegema."
-practice_text1 = "Järgmiseks tutvustame sulle katse ajal esitatavat küsimust."
+practice_text1 = "Järgmiseks tutvustame sulle katse ajal esitatavaid küsimusi."
 # practice_text4 = "Kui negativselt sa ennast hetkel tunned?\n\n\n\n\n\n\n\n\n\n\n\nÜldse mitte negatiivselt ------------- Väga negatiivselt"
 practice_text2 = "Nüüd saad kirjeldatud ülesannet näitepiltidega harjutada."
 
@@ -337,7 +337,7 @@ practiceTextDic = {'1': practice_text1, '2': practice_text2}
 
 start_text1 = "Aitäh, harjutus on läbi ja nüüd algab katse põhiosa! Oota kuni katse läbiviija on ruumist lahkunud."
 start_text2 = "Meeldetuletuseks: Tee iga pildi vaatamise ajal seda, mida pildi raami värv ütleb. \n\n" + colstrdic["VAATA PILTI"] + \
-    ": Keskendu pildil kujutatule ja reageeri loomulikult. \n\n " + colstrdic["MÕTLE MUUST"] + ": Mõtle pildiga mitteseotud neutraalsele tegevusele või esemele, et vähendada negatiivseid tundeid. \n\n\
+    ": Keskendu pildil kujutatule ja reageeri loomulikult. \n\n" + colstrdic["MÕTLE MUUST"] + ": Mõtle pildiga mitteseotud neutraalsele tegevusele või esemele, et vähendada negatiivseid tundeid. \n\n\
 Alusta juhendi rakendamist kohe, kui pilt ekraanile ilmub. \n\nHoia mõlema juhendi rakendamise ajal pilk ekraanil. \n\n" \
 + "Katses on pilte, kus pildi esitamise ajal ülesanne muutub.\nProovi uut juhendit rakendada kohe, kui märksõna ja raami värv muutuvad."
 start_text3 = 'Palun oota kuni eksperimentaator käivitab mõõtmise . . .'
@@ -592,21 +592,22 @@ def draw_fix(win, fixation, duration):
 # inter-trial-interval
 
 
-def draw_iti(win, iti_dur):
+def draw_iti(win, iti_dur, showHint):
     rndpos = np.random.choice(range(2), 2, replace=False)
     iti_time = clock.getTime()  # win.getFutureFlipTime(clock='ptb')  #
     time = clock.getTime() - iti_time
     while (time) < iti_dur:
 
-        # show cues during iti
-        # subboxFixHigh.fillColor = coldic['2'][rndpos[0]]
-        # text_high.setText(condic['2'][rndpos[0]])
+        # show hint during iti
+        if showHint == 1:
+            subboxFixHigh.fillColor = coldic['2'][rndpos[0]]
+            text_high.setText(condic['2'][rndpos[0]])
 
-        # subboxFixLow.fillColor = coldic['2'][rndpos[1]]
-        # text_low.setText(condic['2'][rndpos[1]])
+            subboxFixLow.fillColor = coldic['2'][rndpos[1]]
+            text_low.setText(condic['2'][rndpos[1]])
 
-        # subboxFixHigh.draw(), subboxFixLow.draw()
-        # text_high.draw(), text_low.draw()
+            subboxFixHigh.draw(), subboxFixLow.draw()
+            text_high.draw(), text_low.draw()
 
         win.flip()
         time = clock.getTime() - iti_time
@@ -963,7 +964,12 @@ for gIndx in routinedic:
         else:
             iti_dur = iti_dur_default
 
-        draw_iti(win, iti_dur)
+        if np.random.choice(2, 1) == 0:  # 10 & 8
+            showHint = 1
+        else:
+            showHint = 0
+
+        draw_iti(win, iti_dur, showHint)
 
         # PAUSE (preloading next set of N (pauseAfterEvery) images to achive better timing)
         pauseStart = clock.getTime()  # win.getFutureFlipTime(clock='ptb')
@@ -973,7 +979,10 @@ for gIndx in routinedic:
                 if ti < nTrials:
                     if expInfo['testMonkey'] == '0':
                         draw_text(pause_text, float('inf'), 0, [])
-                        draw_text(clickMouseText, float('inf'), 1, [])
+                        draw_text(start_text2, float('inf'),
+                                  mouse_resp, clickMouseText)  #
+                        core.wait(0.25)
+                        # draw_text(clickMouseText, float('inf'), 1, [])
                     else:
                         draw_text(pause_text, 0.2, 0, [])
 
