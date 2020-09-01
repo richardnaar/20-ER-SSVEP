@@ -7,22 +7,22 @@ eeglabDir = ' C:\Program Files\MATLAB\R2014a\toolbox\eeglab13_6_5b\';           
 locfile =   ' C:\Program Files\MATLAB\R2014a\toolbox\eeglab13_6_5b\32_4EOG.ced';                                    % dir of the electrode location file 
 
 %% IMPORT LIGHT SENSOR DATA
-lightSensor = 1;
+lightSensor = 0;
 
-if lightSensor == 1; impdir = [datDir, 'Pilot\']; else impdir = [datDir, 'Pilot\']; end                                                % import directory
+if lightSensor == 1; impdir = [datDir, 'Light\']; else impdir = [datDir, 'Pilot\']; end                                                % import directory
 
 cleandir = [datDir, 'Clean\'];
 
 implist = dir([impdir, '*.bdf']);                                           % make a fresh list of the contents of the raw files directory (input of this loop)
 
-%%
-events = {'pic'}; % 'pic_non-distr_pos'
-segment = {'first', 'first-second', 'second'};
-valence = {'ntr', 'neg'};
-distrCond = {'non-distr', 'distr'};
-
-
-dataStruct = {{implist.name}', segment', valence', distrCond'};
+% %%
+% events = {'pic'}; % 'pic_non-distr_pos'
+% segment = {'first', 'first-second', 'second'};
+% valence = {'ntr', 'neg'};
+% distrCond = {'non-distr', 'distr'};
+% 
+% 
+% dataStruct = {{implist.name}', segment', valence', distrCond'};
 
 %% Import and find events
 
@@ -44,11 +44,14 @@ EEG = pop_biosig([impdir, implist(subi).name], 'ref',exg1+4:exg1+5);       % ref
  
 [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, CURRENTSET, 'setname', implist(subi).name(1:end-4));% imporditud andmestiku salvestamine
 
-EEG.data = EEG.data([1:64 exg1:exg1+3],:); EEG.nbchan = 68;                 % mittevajalike kanalite eemaldamine (32 peakanalit, 4 silma, täiendav EMG kanal, GSR 1 ja 2, Pletüsmograf)
+EEG.data = EEG.data([1:32 exg1:exg1+3],:); EEG.nbchan = 32;                 % mittevajalike kanalite eemaldamine (32 peakanalit, 4 silma, täiendav EMG kanal, GSR 1 ja 2, Pletüsmograf)
 [ALLEEG EEG CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET); 
 
-EEG = pop_chanedit(EEG, 'load',{[datDir 'BioSemi64_4.loc'] 'filetype' 'autodetect'});     % Edit the channel locations structure of an EEGLAB dataset, EEG.chanlocs. 
+% IMPORT CHANNEL LOCATIONS
+EEG = pop_chanedit(EEG, 'load',{'32_4EOG.ced' 'filetype' 'autodetect'});     % Edit the channel locations structure of an EEGLAB dataset, EEG.chanlocs. 
 [ALLEEG EEG CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET); 
+% EEG = pop_chanedit(EEG, 'load',{[datDir 'BioSemi64_4.loc'] 'filetype' 'autodetect'});     % Edit the channel locations structure of an EEGLAB dataset, EEG.chanlocs. 
+% [ALLEEG EEG CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET); 
 
 else
 EEG.data = EEG.data(erg1,:); EEG.chanlocs = EEG.chanlocs(erg1,:); EEG.nbchan = 1;
@@ -73,7 +76,9 @@ for eventi = 1:length(EEG.event)
     EEG.event(eventi).valence = trig.valence{ strcmp(trigger(4), trig.valence(:,2)),1};
     EEG.event(eventi).picSet = trig.picSet{ strcmp(trigger(5:6), trig.picSet(:,2)),1};
     EEG.event(eventi).trialEvent = trig.trialEvent{ strcmp(trigger(7:8), trig.trialEvent(:,2)),1};
-    
+%     EEG.event(eventi).type = [trig.instruction{ strcmp(trigger(3), trig.instruction(:,2)),1},... 
+%         trig.valence{ strcmp(trigger(4), trig.valence(:,2)),1}, trig.trialEvent{ strcmp(trigger(7:8), trig.trialEvent(:,2)),1}];
+%         
 end
 
 % eegplot(EEG.data, 'events', EEG.event) % see the raw file
