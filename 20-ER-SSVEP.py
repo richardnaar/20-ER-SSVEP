@@ -336,11 +336,11 @@ practice_text2 = "Nüüd saad kirjeldatud ülesannet näitepiltidega harjutada."
 practiceTextDic = {'1': practice_text1, '2': practice_text2}
 
 start_text1 = "Aitäh, harjutus on läbi ja nüüd algab katse põhiosa! Oota kuni katse läbiviija on ruumist lahkunud."
-start_text2 = "Meeldetuletuseks: Tee iga pildi vaatamise ajal seda, mida pildi raami värv ütleb. \n\n" + colstrdic["VAATA PILTI"] + \
+start_text3 = "Meeldetuletuseks: Tee iga pildi vaatamise ajal seda, mida pildi raami värv ütleb. \n\n" + colstrdic["VAATA PILTI"] + \
     ": Keskendu pildil kujutatule ja reageeri loomulikult. \n\n" + colstrdic["MÕTLE MUUST"] + ": Mõtle pildiga mitteseotud neutraalsele tegevusele või esemele, et vähendada negatiivseid tundeid. \n\n\
 Alusta juhendi rakendamist kohe, kui pilt ekraanile ilmub. \n\nHoia mõlema juhendi rakendamise ajal pilk ekraanil. \n\n" \
 + "Katses on pilte, kus pildi esitamise ajal ülesanne muutub.\nProovi uut juhendit rakendada kohe, kui märksõna ja raami värv muutuvad."
-start_text3 = 'Palun oota kuni eksperimentaator käivitab mõõtmise . . .'
+start_text2 = 'Palun oota kuni eksperimentaator käivitab mõõtmise . . .'
 
 expTextDic = {'1': start_text1, '2': start_text2,
               '3': start_text3}
@@ -389,7 +389,7 @@ text_low = visual.TextStim(win=win,
 continueText = visual.TextStim(win=win,
                                text='insert txt here',
                                font='Arial',
-                               pos=(15, -15), height=text_h, wrapWidth=20, ori=0,
+                               pos=(12.5, -12.5), height=text_h, wrapWidth=20, ori=0,
                                color='white', colorSpace='rgb', opacity=1,
                                languageStyle='LTR',
                                depth=0.0)
@@ -500,7 +500,7 @@ def draw_ssvep(win, duration, ti, secondEventStart, current_image, sndHalfCond):
     text.color = "black"
     picStartTime = clock.getTime()
     text.pos, frameN, secondCueTime = (0, -horiz/boxdenom), 0, False
-    secondCuePresented, contrastNotYetChanged, eventPos = False, True, 'first'
+    secondCuePresented, contrastNotYetChanged, picPresented, eventPos = False, True, False, 'first'
     time = clock.getTime() - picStartTime
     while (time) < duration:
         frameN += 1
@@ -529,6 +529,9 @@ def draw_ssvep(win, duration, ti, secondEventStart, current_image, sndHalfCond):
             if not secondCuePresented:
                 sendTrigger(picStartTime, trigger_first, expInfo['EEG'])
                 firstCue = True
+                if not picPresented:
+                    thisExp.addData('picStartTime', clock.getTime())
+                    fixPresented = True
             else:
                 if firstCue:
                     secondCueTime = clock.getTime()
@@ -567,6 +570,7 @@ def draw_ssvep(win, duration, ti, secondEventStart, current_image, sndHalfCond):
 def draw_fix(win, fixation, duration):
     fixStartTime = clock.getTime()
     time = clock.getTime() - fixStartTime
+    fixPresented = False
     # rndpos = np.random.choice(range(2), 2, replace=False)
     while (time) < duration:
         if not event.getKeys('q'):
@@ -582,6 +586,9 @@ def draw_fix(win, fixation, duration):
             # text_high.draw(), text_low.draw()
             # flip and send the trigger
             win.flip()
+            if not fixPresented:
+                thisExp.addData('fixStartTime', clock.getTime())
+                fixPresented = True
         else:
             if expInfo['EEG'] == '1':
                 port.setData(0)
@@ -595,6 +602,7 @@ def draw_fix(win, fixation, duration):
 def draw_iti(win, iti_dur, showHint):
     rndpos = np.random.choice(range(2), 2, replace=False)
     iti_time = clock.getTime()  # win.getFutureFlipTime(clock='ptb')  #
+    itiPresented = False
     time = clock.getTime() - iti_time
     while (time) < iti_dur:
 
@@ -610,6 +618,10 @@ def draw_iti(win, iti_dur, showHint):
             text_high.draw(), text_low.draw()
 
         win.flip()
+        if not itiPresented:
+            thisExp.addData('itiStartTime', clock.getTime())
+            fixPresented = True
+
         time = clock.getTime() - iti_time
 
 
@@ -865,7 +877,7 @@ for gIndx in routinedic:
 
     text.pos = (0, 0)
     for text2present in TextDic:
-        if routinedic[gIndx] == 'experiment' and int(text2present) == len(TextDic):
+        if routinedic[gIndx] == 'experiment' and int(text2present) == len(TextDic)-1:
             mouse_resp = 0
             cText = ' '
         else:
@@ -964,11 +976,12 @@ for gIndx in routinedic:
         else:
             iti_dur = iti_dur_default
 
-        if np.random.choice(2, 1) == 0:  # 10 & 8
+        if np.random.choice(10, 1) == 8:  #
             showHint = 1
         else:
             showHint = 0
 
+        thisExp.addData('ItiDurActual', iti_dur)
         draw_iti(win, iti_dur, showHint)
 
         # PAUSE (preloading next set of N (pauseAfterEvery) images to achive better timing)
@@ -979,8 +992,8 @@ for gIndx in routinedic:
                 if ti < nTrials:
                     if expInfo['testMonkey'] == '0':
                         draw_text(pause_text, float('inf'), 0, [])
-                        draw_text(start_text2, float('inf'),
-                                  mouse_resp, clickMouseText)  #
+                        draw_text(start_text2, float(
+                            'inf'), 1, clickMouseText)  #
                         core.wait(0.25)
                         # draw_text(clickMouseText, float('inf'), 1, [])
                     else:
