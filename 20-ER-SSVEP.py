@@ -473,23 +473,6 @@ slf_set = visual.Rect(
     fillColor=[-1, -1, -1], fillColorSpace='rgb',
     opacity=1, depth=-5.0, interpolate=True)
 
-VAS = visual.RatingScale(
-    # labels=(' ', ' '),
-    win=win, name='VAS', marker='triangle', size=1.0, stretch=1.0,
-    pos=[0.0, -0.4], low=0, high=100, precision=100, skipKeys=None,
-    showValue=False, scale=None, acceptPreText='Kliki skaalal',
-    acceptText='Salvestan', markerStart='50')
-
-VAS_text = visual.TextStim(
-    win=win, name='appraisal_text',
-    text='VAS text',
-    font='Arial',
-    pos=(0, 5), height=1, wrapWidth=None, ori=0,
-    color='white', colorSpace='rgb', opacity=1,
-    languageStyle='LTR',
-    depth=0.0)
-
-
 # endregion (TASK COMPONENTS)
 
 # region DEFINE FUNCTIONS
@@ -593,6 +576,7 @@ def draw_fix(win, fixation, duration):
 
             # subboxFixLow.fillColor = coldic['2'][rndpos[1]]
             # text_low.setText(condic['2'][rndpos[1]])
+            # fixation.ori = time*pi
             fixation.draw()
             # subboxFixHigh.draw(), subboxFixLow.draw()
             # text_high.draw(), text_low.draw()
@@ -659,107 +643,72 @@ def draw_text(txt, pause_dur, mouse_resp, secondTxt):
             break
 
 
-# def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_high, slf_scale, slf_set, controlQ, sendTriggers):
+def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_high, slf_scale, slf_set, controlQ, sendTriggers):
 
-#     # Initialize components for Routine "VAS"
-#     VAS_startTime = clock.getTime()
-#     VAS_noResponse = True
-#     eventPos = 'question'
-#     # if button is down already this ISN'T a new click
-#     prevButtonState = mouse.getPressed()
-#     # on_scale = 0
-#     mouse.setPos([0, scale_y_pos])
-#     # mouse.setVisible(False)
-#     item.setText(question_text)
-#     scale_low.setText(label_low)
-#     scale_high.setText(label_high)
-
-#     if expInfo['testMonkey'] == '1':
-#         VAS_noResponse = False
-#         VAS_resp = 'test'
-#         VAS_RT = 0
-
-#     while VAS_noResponse:
-#         if not event.getKeys('q'):
-
-#             # cursor updates
-#             mx = mouse.getPos()
-#             mx[1] = scale_y_pos
-
-#             if mx[0] <= -scale_width:
-#                 mx[0] = -scale_width
-#             elif mx[0] >= scale_width:
-#                 mx[0] = scale_width
-
-#             buttons = mouse.getPressed()
-#             if buttons != prevButtonState:  # button state changed?
-#                 prevButtonState = buttons
-#                 if sum(buttons) > 0:  # state changed to a new click
-#                     # check if the mouse was inside our 'clickable' objects
-#                     VAS_noResponse = False
-#                     VAS_RT = clock.getTime() - VAS_startTime
-#                     VAS_resp = (mx[0]/scale_width)*100
-
-#             # update/draw components on each frame
-#             item.draw(), scale_low.draw(), scale_high.draw(), slf_scale.draw()
-#             # draw cursor
-#             slf_set.setPos(mx, log=False)
-#             slf_set.draw()
-
-#             win.flip()
-#             if sendTriggers:
-#                 trigger = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][1]] + \
-#                     trigdic[condData['emo'][ti]] + \
-#                     trigdic[condData['picset'][ti]] + trigdic[eventPos]
-#                 sendTrigger(VAS_startTime, trigger, expInfo['EEG'])
-#         else:
-#             core.quit()
-#     win.flip()
-
-#     # save the rating and RT
-#     if controlQ == 1:
-#         thisExp.addData('vas_response_slf', VAS_resp)
-#         thisExp.addData('vas_RT_slf', VAS_RT)
-#     else:
-#         thisExp.addData('vas_response_control', VAS_resp)
-#         thisExp.addData('vas_RT_control', VAS_RT)
-#     mouse.setVisible(False)
-#     core.wait(0.25)
-
-def draw_VAS(win, VAS, VAS_text, colName, controlQ, sendTriggers):
     # Initialize components for Routine "VAS"
-    VAS.reset()
     VAS_startTime = clock.getTime()
-    mouse.setVisible(True)
+    VAS_noResponse = True
     eventPos = 'question'
+    # if button is down already this ISN'T a new click
+    prevButtonState = mouse.getPressed()
+    # on_scale = 0
+    mouse.setPos([0, scale_y_pos])
+    # mouse.setVisible(False)
+    item.setText(question_text)
+    scale_low.setText(label_low)
+    scale_high.setText(label_high)
 
     if expInfo['testMonkey'] == '1':
-        VAS.noResponse = False
+        VAS_noResponse = False
+        VAS_resp = 'test'
+        VAS_RT = 0
 
-    while VAS.noResponse:
+    while VAS_noResponse:
         if not event.getKeys('q'):
-            VAS_text.draw(), VAS.draw()
+
+            # cursor updates
+            mx = mouse.getPos()
+            mx[1] = scale_y_pos
+
+            if mx[0] <= -scale_width:
+                mx[0] = -scale_width
+            elif mx[0] >= scale_width:
+                mx[0] = scale_width
+
+            buttons = mouse.getPressed()
+            if buttons != prevButtonState:  # button state changed?
+                prevButtonState = buttons
+                if sum(buttons) > 0:  # state changed to a new click
+                    # check if the mouse was inside our 'clickable' objects
+                    VAS_noResponse = False
+                    VAS_RT = clock.getTime() - VAS_startTime
+                    VAS_resp = (mx[0]/scale_width)*100
+
+            # update/draw components on each frame
+            item.draw(), scale_low.draw(), scale_high.draw(), slf_scale.draw()
+            # draw cursor
+            slf_set.setPos(mx, log=False)
+            slf_set.draw()
+
             win.flip()
+            if sendTriggers:
+                trigger = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][1]] + \
+                    trigdic[condData['emo'][ti]] + \
+                    trigdic[condData['picset'][ti]] + trigdic[eventPos]
+                sendTrigger(VAS_startTime, trigger, expInfo['EEG'])
         else:
             core.quit()
-    if sendTriggers:
-        trigger = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][1]] + \
-            trigdic[condData['emo'][ti]] + \
-            trigdic[condData['picset'][ti]] + trigdic[eventPos]
-        sendTrigger(VAS_startTime, trigger, expInfo['EEG'])
+    win.flip()
 
-    mouse.setVisible(False)
     # save the rating and RT
-    thisExp.addData(colName, VAS.getRating()), thisExp.addData(
-        colName+'_RT', VAS.getRT())
+    if controlQ == 1:
+        thisExp.addData('vas_response_slf', VAS_resp)
+        thisExp.addData('vas_RT_slf', VAS_RT)
+    else:
+        thisExp.addData('vas_response_control', VAS_resp)
+        thisExp.addData('vas_RT_control', VAS_RT)
+    mouse.setVisible(False)
     core.wait(0.25)
-    #  # save the rating and RT
-    #  if controlQ == 1:
-    #      thisExp.addData('vas_response_slf', VAS_resp)
-    #      thisExp.addData('vas_RT_slf', VAS_RT)
-    #  else:
-    #      thisExp.addData('vas_response_control', VAS_resp)
-    #      thisExp.addData('vas_RT_control', VAS_RT)
 
 
 def loadpics(picture_directory, pics, endindx, listname, units, picSize):
@@ -942,12 +891,10 @@ for gIndx in routinedic:
             mouse_resp = 1
             cText = clickMouseText
         if routinedic[gIndx] == 'training' and int(text2present) == len(TextDic):
-            # draw_VAS(win, self_VAS, self_VAS_min, self_VAS_max, item,
-            #          scale_low, scale_high, slf_scale, slf_set, 0, 0)
-            # draw_VAS(win, control_VAS, control_VAS_min,
-            #          control_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 1, 0)
-            VAS_text.text = 'Siia tuleb küsimus...'
-            draw_VAS(win, VAS, VAS_text, 'Question_1', 0, 0)
+            draw_VAS(win, self_VAS, self_VAS_min, self_VAS_max, item,
+                     scale_low, scale_high, slf_scale, slf_set, 0, 0)
+            draw_VAS(win, control_VAS, control_VAS_min,
+                     control_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 1, 0)
         draw_text(TextDic[text2present], float('inf'), mouse_resp, cText)  #
         core.wait(0.25)
 
@@ -1024,16 +971,13 @@ for gIndx in routinedic:
         thisExp.addData('second cue', condic[condData['cond'][ti]][1])
 
         if condData['presentVAS'][ti] == 1:
-            # draw_VAS(win, self_VAS, self_VAS_min,
-            #          self_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 0, 1)
-            VAS_text.text = 'Siia tuleb küsimus...'
-            draw_VAS(win, VAS, VAS_text, 'Question_1', 0, 1)
+            draw_VAS(win, self_VAS, self_VAS_min,
+                     self_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 0, 1)
 
         if condData['presentVAS_control'][ti] == 1:
-            # draw_VAS(win, control_VAS, control_VAS_min,
-            #          control_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 1, 1)
-            VAS_text.text = 'Siia tuleb küsimus...'
-            draw_VAS(win, VAS, VAS_text, 'Question_1', 1, 1)
+            draw_VAS(win, control_VAS, control_VAS_min,
+                     control_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 1, 1)
+
         # ITI
         if expInfo['testMonkey'] == '0':
             iti_dur = random() + iti_dur_default
