@@ -776,9 +776,9 @@ if expInfo['triggerTest'] == '1':
                         # print(trphase)
                         trigger = '1' + trigdic[expphase] + trigdic[condition] + \
                             trigdic[emo] + trigdic[picset] + trigdic[trphase]
-                        print(
-                            ' '.join([expphase, condition, emo, picset, trphase]))
-                        print(trigger)
+                        # print(
+                        # ' '.join([expphase, condition, emo, picset, trphase]))
+                        # print(trigger)
                         trigTestTime = clock.getTime()
                         if expInfo['EEG'] == '1':
                             sendTrigger(trigTestTime, trigger, expInfo['EEG'])
