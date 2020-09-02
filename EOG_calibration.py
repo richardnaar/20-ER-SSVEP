@@ -23,7 +23,16 @@ import psychopy
 from psychopy import locale_setup, visual, core, data, event, logging, monitors, gui
 
 
-expInfo = {'participant': 'Participant', 'EEG': '0'}
+expInfo = {'participant': 'Participant', 'EEG': '1', 'Chemicum': '1'}
+
+if expInfo['EEG'] == '1':
+    # print('set port')
+    from psychopy import parallel
+    if expInfo['Chemicum'] == '1':
+        port = parallel.ParallelPort(address=0x378)
+    else:
+        port = parallel.ParallelPort(address=0xe010)
+        port.setData(0)
 
 dirpath = os.getcwd()
 dataDir = dirpath + '\\data\\'
