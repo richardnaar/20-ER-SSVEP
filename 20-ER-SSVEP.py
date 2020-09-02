@@ -698,6 +698,7 @@ def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_h
                 sendTrigger(VAS_startTime, trigger, expInfo['EEG'])
         else:
             core.quit()
+    win.flip()
     core.wait(0.4)
 
     # save the rating and RT
