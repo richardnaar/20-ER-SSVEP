@@ -1001,7 +1001,7 @@ for gIndx in routinedic:
                     if expInfo['testMonkey'] == '0':
                         playSounds()
                         draw_text(pause_text, float('inf'), 0, [])
-                        draw_text(start_text2, float(
+                        draw_text(start_text3, float(
                             'inf'), 1, clickMouseText)  #
                         # draw_text(clickMouseText, float('inf'), 1, [])
                     else:
