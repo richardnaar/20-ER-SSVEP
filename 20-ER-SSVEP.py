@@ -17,7 +17,8 @@ muudatused: anna draw_ssveple 1 pilt korraga, jm, triggerid,win.flip iti ja muja
 # future should make it possible to run the same code under Python 2
 # from __future__ import absolute_import, division
 import psychopy
-from psychopy import locale_setup, gui, visual, core, data, event, logging, monitors
+from psychopy import locale_setup, gui, visual, core, data, event, logging, monitors, sound
+from psychopy.sound import backend_pygame
 
 import os  # system and path functions
 import pandas as pd  # data structures
@@ -317,22 +318,13 @@ else:
 
 # region INITIALIZE TASK COMPONENTS
 
-horiz, vert = 34*0.5, 28*0.5,
+horiz, vert = 34*0.62, 28*0.62,
 picSize = (horiz, vert)
 
 pause_text = 'See on paus. Palun oota kuni eksperimentaator taaskäivitab mõõtmise . . .'
-# practice_text1 = "Katse jooksul näidatakse Sulle ükshaaval erinevaid pilte.\n\nSinu ülesandeks on iga pildi vaatamise ajal teha seda, \
-# mida pildile eelnev märksõna ütleb.\n\nVAATA PILTI: Keskendu pildil kujutatule ja reageeri loomulikult.\n\nLOENDA: Loenda etteantud \
-# arvust kahekaupa allapoole, et vähendada negatiivseid tundeid.\n\nAbiks on pilti ümbritsev raam. \n\nKui raam on " + colstrdic["VAATA PILTI"] + \
-#     ", siis tuleb pilti lihtsalt vaadata ja kui " + \
-#     colstrdic["MÕTLE MUUST"] + ", siis pildi vaatamise ajal arve loendada.\n\nKatses on pilte, kus pildi esitamise ajal ülesanne \
-# muutub - esialgu tuleb märksõna VAATA PILTI ja seejärel LOENDA või vastupidi. Koos ülesande muutumisega muutub ka raami värv."
-# practice_text2 = "Palun kirjelda oma sõnadega, mida Sa pead katse ajal tegema."
 practice_text1 = "Järgmiseks tutvustame sulle katse ajal esitatavaid küsimusi."
-# practice_text4 = "Kui negativselt sa ennast hetkel tunned?\n\n\n\n\n\n\n\n\n\n\n\nÜldse mitte negatiivselt ------------- Väga negatiivselt"
 practice_text2 = "Nüüd saad kirjeldatud ülesannet näitepiltidega harjutada."
 
-# '3': practice_text3, '4': practice_text4
 practiceTextDic = {'1': practice_text1, '2': practice_text2}
 
 start_text1 = "Aitäh, harjutus on läbi ja nüüd algab katse põhiosa! Oota kuni katse läbiviija on ruumist lahkunud."
@@ -392,7 +384,7 @@ continueText = visual.TextStim(win=win,
                                pos=(12.5, -12.5), height=text_h, wrapWidth=20, ori=0,
                                color='white', colorSpace='rgb', opacity=1,
                                languageStyle='LTR',
-                               depth=0.0)
+                               depth=0.0)  # 6, -8
 
 fixation = visual.ShapeStim(
     win=win, name='fixation', vertices='cross',
@@ -519,11 +511,12 @@ def draw_ssvep(win, duration, ti, secondEventStart, current_image, sndHalfCond):
             # Draw frame, image, subtitle box and text on top of each other
             background.draw(), background_black.draw(), current_image.draw()
 
-            if routinedic[gIndx] == 'training':
-                if clock.getTime()-(picStartTime+cueDuration) <= 0:
-                    subbox.draw(), text.draw()
-                elif clock.getTime()-(secondCueTime+cueDuration) <= 0:
-                    subbox.draw(), text.draw()
+            # if routinedic[gIndx] == 'training':
+            #     if clock.getTime()-(picStartTime+cueDuration) <= 0:
+            #         subbox.draw(), text.draw()
+            #     elif clock.getTime()-(secondCueTime+cueDuration) <= 0:
+            #         subbox.draw(), text.draw()
+
             # flip and send the trigger
             win.flip()
             if not secondCuePresented:
@@ -719,6 +712,16 @@ def loadpics(picture_directory, pics, endindx, listname, units, picSize):
         listname.append(visual.ImageStim(win=win, image=picture_directory + '\\' + str(
             pics[file]), units=units, size=picSize, name=str(pics[file])))
 
+
+def playSounds():
+    short, long = 0.5, 1
+    note_c = sound.Sound(value="C", secs=short, octave=4, hamming=True)
+    note_e = sound.Sound(value="E", secs=short, octave=4, hamming=True)
+    note_d = sound.Sound(value="D", secs=short, octave=4, hamming=True)
+    note_ee = sound.Sound(value="E", secs=long, octave=4, hamming=True)
+
+    note_e.play(), core.wait(short), note_c.play(), core.wait(
+        short), note_d.play(), core.wait(short), note_ee.play()
 # endregion (DEFINE FUNCTIONS)
 
 
@@ -899,8 +902,9 @@ for gIndx in routinedic:
             # close and quit
             if expInfo['reExposure'] == '0':
                 draw_text(goodbye_text, float('inf'), 1, [])
+                playSounds()
                 if expInfo['EEG'] == '1':
-                    port.setData(0), port.close()
+                    port.setData(0)  # port.close()
                     # print('port quit')
                 win.close(), core.quit()
             else:
@@ -976,7 +980,7 @@ for gIndx in routinedic:
         else:
             iti_dur = iti_dur_default
 
-        if np.random.choice(10, 1) == 8:  #
+        if np.random.choice(10, 1) == 8 or routinedic[gIndx] == 'training':  #
             showHint = 1
         else:
             showHint = 0
@@ -989,12 +993,12 @@ for gIndx in routinedic:
         try:
             if (ti+1) % pauseAfterEvery == 0:
                 # text.pos = (0, 0)  # change text position back
-                if ti < nTrials:
+                if ti+1 < nTrials:
                     if expInfo['testMonkey'] == '0':
                         draw_text(pause_text, float('inf'), 0, [])
                         draw_text(start_text2, float(
                             'inf'), 1, clickMouseText)  #
-                        core.wait(0.25)
+                        playSounds()
                         # draw_text(clickMouseText, float('inf'), 1, [])
                     else:
                         draw_text(pause_text, 0.2, 0, [])
