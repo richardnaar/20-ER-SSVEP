@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-SSVEP task 21/08/2020
+SSVEP task 02/08/2020
 monitor setting (e.g. testMonitor to ERSSVEP)
 set up the folders (ssvep_iaps, training_pics, intro_pics)
 viewing angle: 34x28 (Hajcak jt 2013)
