@@ -87,11 +87,14 @@ if expInfo['testMonkey'] == '1':
 else:
     # just the first iti, later will change on every trial (random()+0.5)
     # [6, 6.32, 6.64,6.96]  [6, 6.48, 6.96, 7.44]
-    greyDur = 0.48
+    # greyDur = 0.48
+    # fixDuration, stimDuration, iti_dur_default, secondCueTime = \
+    #     1.5,      12.6 + greyDur,  3.5,   [6.6+greyDur,
+    #                                7.08+greyDur, 7.56+greyDur, 8.04+greyDur]
+    greyDur = 0.4  # 85 Hz
     fixDuration, stimDuration, iti_dur_default, secondCueTime = \
-        1.5,        12.6 + \
-        greyDur,           3.5,   [6.6+greyDur,
-                                   7.08+greyDur, 7.56+greyDur, 8.04+greyDur]
+        1.5,      12.6 + greyDur,  3.5,   [6.6+greyDur,
+                                           7.2+greyDur, 7.8+greyDur, 8.2+greyDur]
 
 expInfo['stimDuration'] = stimDuration  # save data
 expInfo['itiDuration'] = str(iti_dur_default) + '+/- 0.5'  # save data

@@ -18,11 +18,25 @@ import numpy as np
 from numpy import pi, sin
 from numpy.random import random, randint, shuffle
 
-
+import os  # system and path functions
 import psychopy
 from psychopy import locale_setup, visual, core, data, event, logging, monitors, gui
 
-EEG = 0
+
+expInfo = {'participant': 'Participant', 'EEG': '0'}
+
+dirpath = os.getcwd()
+dataDir = dirpath + '\\data\\'
+date = data.getDateStr()
+filename = expInfo['participant'] + '-EOG-calib' + date + '.txt'
+
+with open(dataDir+filename, 'a') as file_object:
+    file_object.write('Participant' + ',' +
+                      'Position' + ',' + 'x' + ',' + 'y' + '\n')
+
+dlg = gui.DlgFromDict(dictionary=expInfo, title='EOG-calibration')
+if dlg.OK == False:
+    core.quit()  # user pressed cancel
 
 introText = 'Siia tuleb intro tekst...'
 clickMouseText = "[Jätkamiseks vajuta hiireklahvi]"
@@ -80,9 +94,9 @@ def draw_text(txt, pause_dur, mouse_resp, secondTxt):
             break
 
 
-def sendTrigger(trigStart, trigN, EEG):
+def sendTrigger(trigStart, trigN):
     trigTime = clock.getTime() - trigStart
-    if EEG == 1:
+    if expInfo['EEG'] == '1':
         if trigTime < 0.05 and trigTime > 0:  # send trigger for 50 ms and do not send the trigger before next flip time
             port.setData(trigN)
             # print(trigN)
@@ -99,12 +113,12 @@ def draw_calibDot(win, dotDur, position, trigN):
         outerCircle.pos, innerCircle.pos = position, position
         outerCircle.draw(), innerCircle.draw()
         win.flip()
-        sendTrigger(startTime, trigN, EEG)
+        sendTrigger(startTime, trigN)
 
         theseKeys = event.getKeys(keyList=['q', 'space'])
 
         if len(theseKeys) > 0 and theseKeys[0] == 'q':
-            if EEG == 1:
+            if expInfo['EEG'] == '1':
                 port.setData(0)
                 calibrate = False
             core.quit()
@@ -140,28 +154,26 @@ for posy in np.flip(v):
     for posx in h:
         counter += 1
         posDic[str(counter)] = (posx, posy)
-        # if counter % 2 == 0:
-        #     trigDic[str(counter)] = '1'
-        # else:
-        #     trigDic[str(counter)] = '0'
 
 randPosList = list(range(1, len(posDic)))
 shuffle(randPosList)
 
 draw_text(introText, float('inf'), 1, clickMouseText)
 
+# with open(dataDir+filename, 'a') as file_object:
+#     file_object.write("\nI love making games.")
+
 while calibrate:
     for position in randPosList:
         draw_calibDot(win, 2, posDic[str(position)], position)
+        win.flip()
+        with open(dataDir+filename, 'a') as file_object:
+            file_object.write(
+                expInfo['participant'] + ',' + str(position) + ',' + str(posDic[str(position)][0]) + ',' + str(posDic[str(position)][1]) + '\n')
         core.wait(1)
         if position == randPosList[-1]:
             calibrate = False
             # close and quit
-            if EEG == 1:
-                port.setData(0), port.close()
+            if expInfo['EEG'] == '1':
+                port.setData(0)
                 win.close(), core.quit()
-
-    # t = time-clock.getTime()
-    # outerCircle.size = sin(2*pi*t*0.25)
-    # outerCircle.draw(), innerCircle.draw()
-    # win.flip()
