@@ -698,6 +698,7 @@ def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_h
                 sendTrigger(VAS_startTime, trigger, expInfo['EEG'])
         else:
             core.quit()
+    core.wait(0.4)
 
     # save the rating and RT
     if controlQ == 1:
@@ -904,8 +905,8 @@ for gIndx in routinedic:
         if ti == nTrials and routinedic[gIndx] == 'experiment':
             # close and quit
             if expInfo['reExposure'] == '0':
-                draw_text(goodbye_text, float('inf'), 1, [])
                 playSounds()
+                draw_text(goodbye_text, float('inf'), 1, [])
                 if expInfo['EEG'] == '1':
                     port.setData(0)  # port.close()
                     # print('port quit')
@@ -998,10 +999,10 @@ for gIndx in routinedic:
                 # text.pos = (0, 0)  # change text position back
                 if ti+1 < nTrials:
                     if expInfo['testMonkey'] == '0':
+                        playSounds()
                         draw_text(pause_text, float('inf'), 0, [])
                         draw_text(start_text2, float(
                             'inf'), 1, clickMouseText)  #
-                        playSounds()
                         # draw_text(clickMouseText, float('inf'), 1, [])
                     else:
                         draw_text(pause_text, 0.2, 0, [])
