@@ -914,9 +914,9 @@ for gIndx in routinedic:
         # Start of flickering PICTURE
 
         if condic[condData['cond'][ti]][0] == 'MÕTLE MUUST':
-            shuffle(intOnScreen)
-            numTxt = ': ' + str(randint(intOnScreen[0], intOnScreen[0]+50))
-            text.setText(condic[condData['cond'][ti]][0] + numTxt)
+            # shuffle(intOnScreen)
+            # numTxt = ': ' + str(randint(intOnScreen[0], intOnScreen[0]+50))
+            text.setText(condic[condData['cond'][ti]][0])  # + numTxt
         else:
             text.setText(condic[condData['cond'][ti]][0])
 
