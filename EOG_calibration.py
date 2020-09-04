@@ -47,10 +47,10 @@ dlg = gui.DlgFromDict(dictionary=expInfo, title='EOG-calibration')
 if dlg.OK == False:
     core.quit()  # user pressed cancel
 
-introText = 'Siia tuleb intro tekst...'
+introText = 'Tere tulemast katsesse!\n\n Selles katseosas seadistame Sinu näole asetatud elektroode.\n\n Kalibreerimise õnnestumiseks jälgi palun hoolikalt eraanile ilmuvaid ringe.'
 clickMouseText = "[Jätkamiseks vajuta hiireklahvi]"
 
-monSettings = {'size': (1024, 768), 'fullscr': False}
+monSettings = {'size': (1024, 768), 'fullscr': True}
 
 win = visual.Window(
     size=monSettings['size'], fullscr=monSettings['fullscr'], screen=0, color='black',
