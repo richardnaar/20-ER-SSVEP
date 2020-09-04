@@ -798,7 +798,7 @@ draw_text('Palun oota. Laen pildid mällu...', 1, 1, [])  #
 
 intropics = []
 loadpics(intro_dir, introfiles, len(introfiles),
-         intropics, 'pix', None)  # [1024*1.2, 768*1.2]
+         intropics, 'pix', None)  # None, [800, 600]
 
 trainingpics = []
 loadpics(training_dir, trainingTable['imageFile'], len(trainingTable['imageFile']),
