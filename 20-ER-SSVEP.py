@@ -84,14 +84,14 @@ if expInfo['testMonkey'] == '1':
     reExpoFixDur, reExpStimDur, reExpItiDur = 1, 2.6, 2.5
     greyDur = 0.4
     fixDuration, stimDuration, iti_dur_default, secondCueTime = \
-        1.4,    12.6 + greyDur,  3.5,  [6.6+greyDur,
-                                        7.2+greyDur, 7.8+greyDur, 8.2+greyDur]
+        1.4,    12.6 + greyDur,  2.5,  [6.6+greyDur,
+                                        7+greyDur, 7.4+greyDur, 7.8+greyDur]
 else:
-    reExpoFixDur, reExpStimDur, reExpItiDur = 1, 2.6, 2.5
+    reExpoFixDur, reExpStimDur, reExpItiDur = 1, 2.6, 1.5
     greyDur = 0.4  # 85 Hz
     fixDuration, stimDuration, iti_dur_default,  secondCueTime = \
-        1.4,  12.6 + greyDur,  3.5,  [6.6+greyDur,
-                                      7.2+greyDur, 7.8+greyDur, 8.2+greyDur]
+        1.4,  12.6 + greyDur,  2.5,  [6.6+greyDur,
+                                      7+greyDur, 7.4+greyDur, 7.8+greyDur]
 
 expInfo['stimDuration'] = stimDuration  # save data
 expInfo['itiDuration'] = str(iti_dur_default) + '+/- 0.5'  # save data
@@ -413,12 +413,12 @@ background = visual.Rect(
     lineWidth=0, lineColor=[1, 1, 1], lineColorSpace='rgb',
     fillColor=[1, 1, 1], fillColorSpace='rgb',
     opacity=1, depth=0.0, interpolate=True)
-background_black = visual.Rect(
+background_grey = visual.Rect(
     win=win, units='deg',
     width=(horiz, horiz)[0], height=(vert, vert)[1],
     ori=0, pos=(0, 0),
     lineWidth=0, lineColor=[1, 1, 1], lineColorSpace='rgb',
-    fillColor=[-1, -1, -1], fillColorSpace='rgb',
+    fillColor=[0, 0, 0], fillColorSpace='rgb',
     opacity=1, depth=0.0, interpolate=True)
 # subtitle box
 subbox = visual.Rect(
@@ -521,7 +521,7 @@ def draw_ssvep(win, duration, ti, secondEventStart, current_image, sndHalfCond):
                             (2*A), True
 
             # Draw frame, image, subtitle box and text on top of each other
-            background.draw(), background_black.draw(), current_image.draw()
+            background.draw(), background_grey.draw(), current_image.draw()
 
             # flip and send the trigger
             win.flip()
@@ -560,7 +560,7 @@ def draw_ssvep(win, duration, ti, secondEventStart, current_image, sndHalfCond):
         # update time
         time = clock.getTime() - picStartTime
     text.color = "white"
-
+    thisExp.addData('framNsum', frameN)
 # fixation
 
 
