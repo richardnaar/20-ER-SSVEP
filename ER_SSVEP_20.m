@@ -26,7 +26,7 @@ implist = dir([impdir, '*.bdf']);                                           % ma
 
 %% Import and find events
 
-for subi = 3:length(implist);
+for subi = 5:length(implist);
 fprintf('loading participant: %s \n', implist(subi).name);
 
 ALLEEG = []; EEG = []; CURRENTSET = [];                                     % erase anything in the eeglab. 
@@ -64,7 +64,7 @@ trig.blockType =        {'Training'  '0'; 'Experiment' '1';};
 trig.instruction =      {'Vaata' '1'; 'Mõtle muust' '0'};
 trig.valence =          {'Neg' '1'; 'Ntr' '0'};
 trig.picSet =           {'A' '00'; 'B' '10'; 'C' '01'; 'D' '11'};
-trig.trialEvent =       {'FirstCue' '00'; 'SecondCue' '10'; 'Question' '11'};
+trig.trialEvent =       {'FirstCue' '00'; 'SecondCue' '10'; 'Question' '11'; 'reExpo' '01'};
 
 
 for eventi = 1:length(EEG.event)
@@ -78,14 +78,22 @@ for eventi = 1:length(EEG.event)
     EEG.event(eventi).trialEvent = trig.trialEvent{ strcmp(trigger(7:8), trig.trialEvent(:,2)),1};
 %     EEG.event(eventi).type = [trig.instruction{ strcmp(trigger(3), trig.instruction(:,2)),1},... 
 %         trig.valence{ strcmp(trigger(4), trig.valence(:,2)),1}, trig.trialEvent{ strcmp(trigger(7:8), trig.trialEvent(:,2)),1}];
-%         
+end
+
+counter = 0;
+times = [];
+for ij = 1:length(EEG.event)
+    if strcmp(EEG.event(ij).trialEvent, 'FirstCue')
+        counter = counter + 1;
+        times(counter) = EEG.times( EEG.event(ij+1).latency )- EEG.times( EEG.event(ij).latency );
+    end
 end
 
 % eegplot(EEG.data, 'events', EEG.event) % see the raw file
 %%
 counter = 0;
 for ij = 1:length(EEG.event)
-    if strcmp(EEG.event(ij).instruction, 'Vaata') && strcmp(EEG.event(ij).valence,'Neg') && strcmp(EEG.event(ij).trialEvent, 'FirstCue')
+    if strcmp(EEG.event(ij).instruction, 'Vaata') && strcmp(EEG.event(ij).trialEvent, 'FirstCue') && strcmp(EEG.event(ij).valence,'Neg')
         counter = counter + 1;
     end
 end    
