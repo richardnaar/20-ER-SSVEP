@@ -68,7 +68,7 @@ print('PsychoPy version: ' + psychopy.__version__)
 expName = os.path.basename(__file__)  # + data.getDateStr()
 
 expInfo = {'participant': 'Participant', 'EEG': '0', 'Chemicum': '0',
-           'stimFrequency': '30', 'testMonkey': '0', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '0',
+           'stimFrequency': '30', 'testMonkey': '0', 'pauseAfterEvery': '43', 'countFrames': '1', 'reExposure': '0',
            'triggerTest': '0', 'showIntro': '1', 'defaultFrameRate': '85', 'skipSSVEP': '0'}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
@@ -329,14 +329,16 @@ expInfo['boxSize'] = boxSize
 
 pause_text = 'See on paus. Palun oota kuni eksperimentaator taaskäivitab mõõtmise . . .'
 reExpoText = 'Algamas on katse viimane plokk, kus sa ei pea enam pilte raami värvi alusel erineval moel vaatama.\nSelles plokis näed lühidalt varem nähtud pilte uuesti ning me \
-    palume sul hinnata, kui negatiivset tunnet nähtud pilt sinus hetkel tekitab. \nNegatiivsuse hindamiseks saad kasutada juba tuttavat vastuseskaalat. Lähtu vastamisel tundest,\
-    mille pilt sinus siin ja praegu tekitab. \n\n Palun oota, kuni eksperimentaator taaskäivitab mõõtmise...'
+    palume sul hinnata, kui negatiivset tunnet nähtud pilt sinus hetkel tekitab.\nNegatiivsuse hindamiseks saad kasutada juba tuttavat vastuseskaalat. Lähtu vastamisel tundest,\
+    mille pilt sinus siin ja praegu tekitab.\n\n Palun oota, kuni eksperimentaator taaskäivitab mõõtmise...'
 
 
 practice_text1 = "Järgmiseks tutvustame sulle katse ajal esitatavaid küsimusi."
 practice_text2 = "Nüüd saad kirjeldatud ülesannet näitepiltidega harjutada."
 
 practiceTextDic = {'1': practice_text1, '2': practice_text2}
+
+practiceTrialText = 'Palun kirjelda katse läbiviijale, millist ülesannet/ülesandeid Sa viimase pildi vaatamise ajal täitsid.'
 
 start_text1 = "Aitäh, harjutus on läbi ja nüüd algab katse põhiosa! Oota kuni katse läbiviija on ruumist lahkunud."
 start_text3 = "Meeldetuletuseks: Tee iga pildi vaatamise ajal seda, mida pildi raami värv ütleb. \n\n" + colstrdic["VAATA PILTI"] + \
@@ -823,7 +825,7 @@ if expInfo['skipSSVEP'] == '0':
         presentIntroPics, countIntroPics = True, 0
         while presentIntroPics == True:
             # for indx in range(0, len(intropics)):
-            core.wait(0.25)
+            core.wait(0.8)
             presentPic = True
             picStart = clock.getTime()
 
@@ -840,6 +842,7 @@ if expInfo['skipSSVEP'] == '0':
                     subbox.fillColor = coldic['3'][1]
                     subbox.draw(), text.draw()
                 win.flip()
+                # core.wait(0.25)
 
                 buttons, theseKeys = mouse.getPressed(
                 ), event.getKeys(keyList=['q', 'left'])
@@ -985,6 +988,9 @@ if expInfo['skipSSVEP'] == '0':
             else:
                 showHint = 0
 
+            if routinedic[gIndx] == 'training':
+                draw_text(practiceTrialText, float('inf'), 1, [])
+
             thisExp.addData('ItiDurActual', iti_dur)
             draw_iti(win, iti_dur, showHint)
 
@@ -1038,12 +1044,13 @@ if expInfo['reExposure'] == '1':
     # loadpics(pic_dir, newTable['imageFile'], len(newTable['imageFile']),
     #          reexpopics, 'deg', (picSize[0], picSize[1]))
 
-    draw_text(clickMouseText, float('inf'), 1, clickMouseText)  #
+    draw_text(clickMouseText, float('inf'), 1, [])  #
 
     for tindx in range(0, len(reexpopics)):
 
         # draw fixation
         draw_fix(win, fixation, reExpoFixDur)
+        reexpopics[tindx].contrast = 1-A
         reexpopics[tindx].draw(), win.flip()
 
         picName = reexpopics[tindx].name

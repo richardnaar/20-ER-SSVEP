@@ -47,8 +47,10 @@ dlg = gui.DlgFromDict(dictionary=expInfo, title='EOG-calibration')
 if dlg.OK == False:
     core.quit()  # user pressed cancel
 
-introText = 'Tere tulemast katsesse!\n\nSelles katseosas seadistame Sinu näole asetatud elektroode.\n\nKalibreerimise õnnestumiseks jälgi palun hoolikalt eraanile ilmuvaid ringe.'
+introText = 'Tere tulemast katsesse!\n\nSelles katseosas seadistame Sinu näole asetatud elektroode.\n\nKalibreerimise õnnestumiseks jälgi palun hoolikalt eraanile ilmuvaid ringe.\
+    \n\n\n\nPalun oota kuni eksperimentaator käivitab katse...'
 clickMouseText = "[Jätkamiseks vajuta hiireklahvi]"
+byeTxt = 'Kalibreerimine on lõppenud'
 
 monSettings = {'size': (1024, 768), 'fullscr': False}
 
@@ -134,6 +136,17 @@ def draw_calibDot(win, dotDur, position, trigN):
             core.quit()
 
 
+def playSounds():
+    short, long = 0.5, 1
+    note_c = sound.Sound(value="C", secs=short, octave=4, hamming=True)
+    note_e = sound.Sound(value="E", secs=short, octave=4, hamming=True)
+    note_d = sound.Sound(value="D", secs=short, octave=4, hamming=True)
+    note_ee = sound.Sound(value="E", secs=long, octave=4, hamming=True)
+
+    note_e.play(), core.wait(short), note_c.play(), core.wait(
+        short), note_d.play(), core.wait(short), note_ee.play()
+
+
 innerCircle = visual.Polygon(
     win=win, name='innerCircle', edges=99,
     size=(0.25, 0.25),
@@ -168,7 +181,7 @@ for posy in np.flip(v):
 randPosList = list(range(1, len(posDic)+1))
 shuffle(randPosList)
 
-draw_text(introText, float('inf'), 1, clickMouseText)
+draw_text(introText, float('inf'), 0, [])
 
 # with open(dataDir+filename, 'a') as file_object:
 #     file_object.write("\nI love making games.")
@@ -183,6 +196,8 @@ while calibrate:
                 expInfo['participant'] + ',' + str(position) + ',' + str(posDic[str(position)][0]) + ',' + str(posDic[str(position)][1]) + '\n')
         core.wait(0.5)
         if position == randPosList[-1]:
+            draw_text(byeTxt,  float('inf'), 1, clickMouseText)
+            playSounds()
             doc = clock.getTime()
             print('aeg: ' + str(doc-tic))
             calibrate = False
