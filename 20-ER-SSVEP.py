@@ -68,7 +68,8 @@ print('PsychoPy version: ' + psychopy.__version__)
 expName = os.path.basename(__file__)  # + data.getDateStr()
 
 expInfo = {'participant': 'Participant', 'EEG': '0', 'Chemicum': '0',
-           'stimFrequency': '30', 'testMonkey': '0', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '0', 'triggerTest': '0', 'showIntro': '1', 'defaultFrameRate': '85'}
+           'stimFrequency': '30', 'testMonkey': '0', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '0',
+           'triggerTest': '0', 'showIntro': '1', 'defaultFrameRate': '85', 'skipSSVEP': '1'}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 if dlg.OK == False:
@@ -806,6 +807,213 @@ if expInfo['reExposure'] == '1':
 # endregion (LOAD IMAGES)
 
 
+if expInfo['skipSSVEP'] == '0':
+    # region PRESENT INSTRUCTIONS
+
+    if expInfo['showIntro'] == '1':
+        text.color = 'black'
+        presentIntroPics, countIntroPics = True, 0
+        while presentIntroPics == True:
+            # for indx in range(0, len(intropics)):
+            core.wait(0.25)
+            presentPic = True
+            picStart = clock.getTime()
+
+            while presentPic:
+                intropics[countIntroPics].draw()
+                # (countIntroPics == 5 or countIntroPics == 8 or countIntroPics == 11)
+                if (countIntroPics == 4 or countIntroPics == 6 or countIntroPics == 8) and clock.getTime()-picStart <= 1:
+                    text.setText('VAATA PILTI')
+                    subbox.fillColor = coldic['1'][1]
+                    subbox.draw(), text.draw()
+                    #(countIntroPics == 19 or countIntroPics == 22 or countIntroPics == 25)
+                elif (countIntroPics == 18 or countIntroPics == 20 or countIntroPics == 22) and clock.getTime()-picStart <= 1:
+                    text.setText('MÕTLE MUUST')
+                    subbox.fillColor = coldic['3'][1]
+                    subbox.draw(), text.draw()
+                win.flip()
+
+                buttons, theseKeys = mouse.getPressed(
+                ), event.getKeys(keyList=['q', 'left'])
+                if len(theseKeys) > 0 and theseKeys[0] == 'q':
+                    if expInfo['EEG'] == '1':
+                        port.setData(0)
+                        # print('port quit')
+                    core.quit()
+                elif len(buttons) > 0:
+                    if buttons[0] == 1:
+                        countIntroPics += 1
+                        presentPic = False
+                    elif len(theseKeys) > 0 and theseKeys[0] == 'left':
+                        if countIntroPics > 0:
+                            countIntroPics -= 1
+                        presentPic = False
+
+            if countIntroPics == len(intropics):
+                presentIntroPics = False
+                core.wait(0.25)
+    # endregion (PRESENT INSTRUCTIONS)
+
+    # region THIS IS THE EXPERIMENT LOOP
+    text.color = 'white'
+
+    for gIndx in routinedic:
+        runExperiment = True
+        if routinedic[gIndx] == 'training':
+            condData, trials, nTrials, images, current_pic_dir = \
+                trainingTable, trainingTable['trialID'], len(
+                    trials_training), trainingpics, training_dir
+            TextDic = practiceTextDic
+        elif routinedic[gIndx] == 'experiment':
+            condData, trials, nTrials, images, current_pic_dir, TextDic = \
+                newTable, newTable['trialID'], len(
+                    newTable['trialID']), images_experiment, pic_dir, expTextDic
+
+        text.pos = (0, 0)
+        for text2present in TextDic:
+            if routinedic[gIndx] == 'experiment' and int(text2present) == len(TextDic)-1:
+                mouse_resp = 0
+                cText = ' '
+            else:
+                mouse_resp = 1
+                cText = clickMouseText
+            if routinedic[gIndx] == 'training' and int(text2present) == len(TextDic):
+                draw_VAS(win, self_VAS, self_VAS_min, self_VAS_max, item,
+                         scale_low, scale_high, slf_scale, slf_set, 0, 0)
+                draw_VAS(win, control_VAS, control_VAS_min,
+                         control_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 1, 0)
+            draw_text(TextDic[text2present], float(
+                'inf'), mouse_resp, cText)  #
+            core.wait(0.25)
+
+        picCount, ti, apCounterNeg, apCounterNtr = 0, 0, 0, 0
+        while runExperiment:
+            expInfo['globalTime'] = clock.getTime()  # save data
+            mouse.setVisible(False)  # hide the cursor
+            if ti == nTrials and routinedic[gIndx] == 'experiment':
+                # close and quit
+                if expInfo['reExposure'] == '0':
+                    playSounds()
+                    draw_text(goodbye_text, float('inf'), 1, [])
+                    if expInfo['EEG'] == '1':
+                        port.setData(0)  # port.close()
+                        # print('port quit')
+                    win.close(), core.quit()
+                else:
+                    break
+            elif ti == nTrials:
+                break
+
+            # Draw FIXATION
+            draw_fix(win, fixation, fixDuration)
+
+            # Start of flickering PICTURE
+
+            if condic[condData['cond'][ti]][0] == 'MÕTLE MUUST':
+                text.setText(condic[condData['cond'][ti]][0])  # + numTxt
+            else:
+                text.setText(condic[condData['cond'][ti]][0])
+
+            subbox.fillColor = coldic[condData['cond'][ti]][0]
+            background.fillColor = coldic[condData['cond'][ti]][0]
+            secondCueStart = condData['secondCueTime'][ti]
+
+            # triggers
+
+            trigger_first = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + \
+                trigdic[condData['emo'][ti]] + \
+                trigdic[condData['picset'][ti]] + trigdic['first']
+
+            trigger_second = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + trigdic[condData['emo'][ti]] + \
+                trigdic[condData['picset'][ti]] + trigdic['second']
+
+            # current image and information about the second half
+            current_image = images[ti-picCount]
+            sndHalfCond = condData['cond'][ti]
+
+            # draw the flickering picture
+            draw_ssvep(win, stimDuration, ti, secondCueStart,
+                       current_image, sndHalfCond)
+
+            # End of flickering PICTURE
+
+            text.pos = (0, 0)  # change text position back
+
+            # Define picture name for saving
+            picName = images[ti-picCount].name
+
+            # SAVE SOME DATA
+            thisExp.addData('trialType', routinedic[gIndx]),
+            thisExp.addData('secondCueTime', condData['secondCueTime'][ti])
+            thisExp.addData('picset', condData['picset'][ti])
+            thisExp.addData('cond', condic[condData['cond'][ti]])
+            thisExp.addData('Question', condData['presentVAS'][ti])
+            thisExp.addData('valence', condData['emo'][ti])
+            thisExp.addData('pictureID', picName)
+            thisExp.addData('fixDuration', fixDuration)
+            thisExp.addData('triaslN', ti+1)
+            thisExp.addData('first cue', condic[condData['cond'][ti]][0])
+            thisExp.addData('second cue', condic[condData['cond'][ti]][1])
+            thisExp.addData('picBytes', os.stat(
+                current_pic_dir + '\\' + picName).st_size)
+
+            if condData['presentVAS'][ti] == 1:
+                draw_VAS(win, self_VAS, self_VAS_min,
+                         self_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 0, 1)
+
+            if condData['presentVAS_control'][ti] == 1:
+                draw_VAS(win, control_VAS, control_VAS_min,
+                         control_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 1, 1)
+
+            # ITI
+            if expInfo['testMonkey'] == '0':
+                iti_dur = random() + iti_dur_default
+            else:
+                iti_dur = iti_dur_default
+
+            #
+            if np.random.choice(10, 1) == 8 or routinedic[gIndx] == 'training':
+                showHint = 1
+            else:
+                showHint = 0
+
+            thisExp.addData('ItiDurActual', iti_dur)
+            draw_iti(win, iti_dur, showHint)
+
+            # PAUSE (preloading next set of N (pauseAfterEvery) images to achive better timing)
+            pauseStart = clock.getTime()  # win.getFutureFlipTime(clock='ptb')
+            try:
+                if (ti+1) % pauseAfterEvery == 0:
+                    # text.pos = (0, 0)  # change text position back
+                    if ti+1 < nTrials:
+                        if expInfo['testMonkey'] == '0':
+                            playSounds()
+                            draw_text(pause_text, float('inf'), 0, [])
+                            draw_text(start_text3, float(
+                                'inf'), 1, clickMouseText)  #
+                            # draw_text(clickMouseText, float('inf'), 1, [])
+                        else:
+                            draw_text(pause_text, 0.2, 0, [])
+
+                    picCount += pauseAfterEvery
+                    images = []
+                    start = ti+1
+                    end = start+pauseAfterEvery
+
+                    if end > nTrials:
+                        end = nTrials
+                    # PRELOAD PICTURES FOR EACH BLOCK
+                    for file in condData['trialID'][start:end]:
+                        images.append(visual.ImageStim(win=win, image=current_pic_dir + '\\' + str(
+                            condData['imageFile'][file]), units='deg', size=picSize, name=str(condData['imageFile'][file])))  # + '.jpg'
+            except:
+                print(
+                    'Variable "pauseAfterEvery" empty or smaller than 1 - pause will be skipped')
+            thisExp.nextEntry()
+            ti += 1
+    # endregion (EXPERIMENT LOOP)
+
+
 # region RE-EXPOSURE
 if expInfo['reExposure'] == '1':
     gIndx, reExposure = '1', True
@@ -875,265 +1083,3 @@ if expInfo['reExposure'] == '1':
     # VAS_text.text = 'Siia tuleb küsimus...'
 
 # endregion (RE-EXPOSURE)
-
-
-# region PRESENT INSTRUCTIONS
-
-if expInfo['showIntro'] == '1':
-    text.color = 'black'
-    presentIntroPics, countIntroPics = True, 0
-    while presentIntroPics == True:
-        # for indx in range(0, len(intropics)):
-        core.wait(0.25)
-        presentPic = True
-        picStart = clock.getTime()
-
-        while presentPic:
-            intropics[countIntroPics].draw()
-            # (countIntroPics == 5 or countIntroPics == 8 or countIntroPics == 11)
-            if (countIntroPics == 4 or countIntroPics == 6 or countIntroPics == 8) and clock.getTime()-picStart <= 1:
-                text.setText('VAATA PILTI')
-                subbox.fillColor = coldic['1'][1]
-                subbox.draw(), text.draw()
-                #(countIntroPics == 19 or countIntroPics == 22 or countIntroPics == 25)
-            elif (countIntroPics == 18 or countIntroPics == 20 or countIntroPics == 22) and clock.getTime()-picStart <= 1:
-                text.setText('MÕTLE MUUST')
-                subbox.fillColor = coldic['3'][1]
-                subbox.draw(), text.draw()
-            win.flip()
-
-            buttons, theseKeys = mouse.getPressed(
-            ), event.getKeys(keyList=['q', 'left'])
-            if len(theseKeys) > 0 and theseKeys[0] == 'q':
-                if expInfo['EEG'] == '1':
-                    port.setData(0)
-                    # print('port quit')
-                core.quit()
-            elif len(buttons) > 0:
-                if buttons[0] == 1:
-                    countIntroPics += 1
-                    presentPic = False
-                elif len(theseKeys) > 0 and theseKeys[0] == 'left':
-                    if countIntroPics > 0:
-                        countIntroPics -= 1
-                    presentPic = False
-
-        if countIntroPics == len(intropics):
-            presentIntroPics = False
-            core.wait(0.25)
-# endregion (PRESENT INSTRUCTIONS)
-
-# region THIS IS THE EXPERIMENT LOOP
-text.color = 'white'
-
-for gIndx in routinedic:
-    runExperiment = True
-    if routinedic[gIndx] == 'training':
-        condData, trials, nTrials, images, current_pic_dir = \
-            trainingTable, trainingTable['trialID'], len(
-                trials_training), trainingpics, training_dir
-        TextDic = practiceTextDic
-    elif routinedic[gIndx] == 'experiment':
-        condData, trials, nTrials, images, current_pic_dir, TextDic = \
-            newTable, newTable['trialID'], len(
-                newTable['trialID']), images_experiment, pic_dir, expTextDic
-
-    text.pos = (0, 0)
-    for text2present in TextDic:
-        if routinedic[gIndx] == 'experiment' and int(text2present) == len(TextDic)-1:
-            mouse_resp = 0
-            cText = ' '
-        else:
-            mouse_resp = 1
-            cText = clickMouseText
-        if routinedic[gIndx] == 'training' and int(text2present) == len(TextDic):
-            draw_VAS(win, self_VAS, self_VAS_min, self_VAS_max, item,
-                     scale_low, scale_high, slf_scale, slf_set, 0, 0)
-            draw_VAS(win, control_VAS, control_VAS_min,
-                     control_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 1, 0)
-        draw_text(TextDic[text2present], float('inf'), mouse_resp, cText)  #
-        core.wait(0.25)
-
-    picCount, ti, apCounterNeg, apCounterNtr = 0, 0, 0, 0
-    while runExperiment:
-        expInfo['globalTime'] = clock.getTime()  # save data
-        mouse.setVisible(False)  # hide the cursor
-        if ti == nTrials and routinedic[gIndx] == 'experiment':
-            # close and quit
-            if expInfo['reExposure'] == '0':
-                playSounds()
-                draw_text(goodbye_text, float('inf'), 1, [])
-                if expInfo['EEG'] == '1':
-                    port.setData(0)  # port.close()
-                    # print('port quit')
-                win.close(), core.quit()
-            else:
-                break
-        elif ti == nTrials:
-            break
-
-        # Draw FIXATION
-        draw_fix(win, fixation, fixDuration)
-
-        # Start of flickering PICTURE
-
-        if condic[condData['cond'][ti]][0] == 'MÕTLE MUUST':
-            text.setText(condic[condData['cond'][ti]][0])  # + numTxt
-        else:
-            text.setText(condic[condData['cond'][ti]][0])
-
-        subbox.fillColor = coldic[condData['cond'][ti]][0]
-        background.fillColor = coldic[condData['cond'][ti]][0]
-        secondCueStart = condData['secondCueTime'][ti]
-
-        # triggers
-
-        trigger_first = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + \
-            trigdic[condData['emo'][ti]] + \
-            trigdic[condData['picset'][ti]] + trigdic['first']
-
-        trigger_second = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + trigdic[condData['emo'][ti]] + \
-            trigdic[condData['picset'][ti]] + trigdic['second']
-
-        # current image and information about the second half
-        current_image = images[ti-picCount]
-        sndHalfCond = condData['cond'][ti]
-
-        # draw the flickering picture
-        draw_ssvep(win, stimDuration, ti, secondCueStart,
-                   current_image, sndHalfCond)
-
-        # End of flickering PICTURE
-
-        text.pos = (0, 0)  # change text position back
-
-        # Define picture name for saving
-        picName = images[ti-picCount].name
-
-        # SAVE SOME DATA
-        thisExp.addData('trialType', routinedic[gIndx]),
-        thisExp.addData('secondCueTime', condData['secondCueTime'][ti])
-        thisExp.addData('picset', condData['picset'][ti])
-        thisExp.addData('cond', condic[condData['cond'][ti]])
-        thisExp.addData('Question', condData['presentVAS'][ti])
-        thisExp.addData('valence', condData['emo'][ti])
-        thisExp.addData('pictureID', picName)
-        thisExp.addData('fixDuration', fixDuration)
-        thisExp.addData('triaslN', ti+1)
-        thisExp.addData('first cue', condic[condData['cond'][ti]][0])
-        thisExp.addData('second cue', condic[condData['cond'][ti]][1])
-        thisExp.addData('picBytes', os.stat(
-            current_pic_dir + '\\' + picName).st_size)
-
-        if condData['presentVAS'][ti] == 1:
-            draw_VAS(win, self_VAS, self_VAS_min,
-                     self_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 0, 1)
-
-        if condData['presentVAS_control'][ti] == 1:
-            draw_VAS(win, control_VAS, control_VAS_min,
-                     control_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 1, 1)
-
-        # ITI
-        if expInfo['testMonkey'] == '0':
-            iti_dur = random() + iti_dur_default
-        else:
-            iti_dur = iti_dur_default
-
-        if np.random.choice(10, 1) == 8 or routinedic[gIndx] == 'training':  #
-            showHint = 1
-        else:
-            showHint = 0
-
-        thisExp.addData('ItiDurActual', iti_dur)
-        draw_iti(win, iti_dur, showHint)
-
-        # PAUSE (preloading next set of N (pauseAfterEvery) images to achive better timing)
-        pauseStart = clock.getTime()  # win.getFutureFlipTime(clock='ptb')
-        try:
-            if (ti+1) % pauseAfterEvery == 0:
-                # text.pos = (0, 0)  # change text position back
-                if ti+1 < nTrials:
-                    if expInfo['testMonkey'] == '0':
-                        playSounds()
-                        draw_text(pause_text, float('inf'), 0, [])
-                        draw_text(start_text3, float(
-                            'inf'), 1, clickMouseText)  #
-                        # draw_text(clickMouseText, float('inf'), 1, [])
-                    else:
-                        draw_text(pause_text, 0.2, 0, [])
-
-                picCount += pauseAfterEvery
-                images = []
-                start = ti+1
-                end = start+pauseAfterEvery
-
-                if end > nTrials:
-                    end = nTrials
-                # PRELOAD PICTURES FOR EACH BLOCK
-                for file in condData['trialID'][start:end]:
-                    images.append(visual.ImageStim(win=win, image=current_pic_dir + '\\' + str(
-                        condData['imageFile'][file]), units='deg', size=picSize, name=str(condData['imageFile'][file])))  # + '.jpg'
-        except:
-            print(
-                'Variable "pauseAfterEvery" empty or smaller than 1 - pause will be skipped')
-        thisExp.nextEntry()
-        ti += 1
-# endregion (EXPERIMENT LOOP)
-
-# # region RE-EXPOSURE
-# if expInfo['reExposure'] == '1':
-#     draw_text(pause_text, float('inf'), 0, [])
-#     draw_text('Re-exposure intro', float('inf'), mouse_resp, clickMouseText)  #
-
-#     reexpopics = []
-#     newTable = newTable.sample(frac=1).reset_index(drop=True)
-#     loadpics(pic_dir, newTable['imageFile'], len(newTable['imageFile']),
-#              reexpopics, 'deg', (picSize[0], picSize[1]))
-
-#     for indx in range(0, len(reexpopics)):
-
-#         # draw fixation
-#         draw_fix(win, fixation, 0.5, 0)
-#         reexpopics[indx].draw(), win.flip()
-
-#         # SAVE SOME DATA
-#         thisExp.addData('trialType', 're-exposure'), thisExp.addData(
-#             'secondCueTime', newTable['secondCueTime'][indx])
-#         thisExp.addData('picset', newTable['picset'][indx]), thisExp.addData(
-#             'cond', condic[newTable['cond'][indx]])
-#         thisExp.addData('Question', newTable['presentVAS'][indx]), thisExp.addData(
-#             'valence', newTable['emo'][indx])
-#         thisExp.addData('pictureID', picName), thisExp.addData(
-#             'fixDuration', fixDuration)
-#         thisExp.addData('triaslN', indx+1), thisExp.addData('picBytes',
-#                                                             os.stat(current_pic_dir + '\\' + picName).st_size)
-
-#         pause_time, pause_dur = clock.getTime(), 3.5
-#         while (clock.getTime() - pause_time) < pause_dur:
-#             reexpopics[indx].draw(), win.flip()
-
-#             buttons, theseKeys = mouse.getPressed(
-#             ), event.getKeys(keyList=['q', 'space'])
-
-#             if len(theseKeys) > 0 and theseKeys[0] == 'q':
-#                 if expInfo['EEG'] == '1':
-#                     port.setData(0)
-#                     # print('port quit')
-#                 core.quit()
-
-#         # draw iti
-#         iti_dur = random() + iti_dur_default
-#         draw_iti(win, iti_dur, 0)
-
-#         thisExp.nextEntry()
-
-#     if indx == len(reexpopics)-1:
-#         draw_text(goodbye_text, float('inf'), 1, [])
-#         if expInfo['EEG'] == '1':
-#             port.setData(0)
-#             # print('port quit')
-#             core.quit()
-#     # draw VAS
-#     # VAS_text.text = 'Siia tuleb küsimus...'
-
-# # endregion (RE-EXPOSURE)
