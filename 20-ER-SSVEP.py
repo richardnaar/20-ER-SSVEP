@@ -907,6 +907,10 @@ if expInfo['skipSSVEP'] == '0':
             elif ti == nTrials:
                 break
 
+            # current image and information about the second half
+            current_image = images[ti-picCount]
+            sndHalfCond = condData['cond'][ti]
+
             # Draw FIXATION
             draw_fix(win, fixation, fixDuration)
 
@@ -929,10 +933,6 @@ if expInfo['skipSSVEP'] == '0':
 
             trigger_second = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + trigdic[condData['emo'][ti]] + \
                 trigdic[condData['picset'][ti]] + trigdic['second']
-
-            # current image and information about the second half
-            current_image = images[ti-picCount]
-            sndHalfCond = condData['cond'][ti]
 
             # draw the flickering picture
             draw_ssvep(win, stimDuration, ti, secondCueStart,
