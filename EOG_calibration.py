@@ -119,7 +119,7 @@ def draw_calibDot(win, dotDur, position, trigN):
     # trigDic[str(counter)]
     while (clock.getTime()-startTime) <= dotDur:
         t = startTime-clock.getTime()
-        outerCircle.size = sin(2*pi*t*0.25)
+        outerCircle.size = sin(2*pi*t*(0.5/dotDur))
         outerCircle.pos, innerCircle.pos = position, position
         outerCircle.draw(), innerCircle.draw()
         win.flip()
@@ -176,11 +176,12 @@ draw_text(introText, float('inf'), 1, clickMouseText)
 while calibrate:
     for position in randPosList:
         draw_calibDot(win, 2.5, posDic[str(position)], position)
+        core.wait(0.5)
         win.flip()
         with open(dataDir+filename, 'a') as file_object:
             file_object.write(
                 expInfo['participant'] + ',' + str(position) + ',' + str(posDic[str(position)][0]) + ',' + str(posDic[str(position)][1]) + '\n')
-        core.wait(1)
+        core.wait(0.5)
         if position == randPosList[-1]:
             doc = clock.getTime()
             print('aeg: ' + str(doc-tic))
