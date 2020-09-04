@@ -993,22 +993,11 @@ if expInfo['skipSSVEP'] == '0':
             try:
                 if (ti+1) % pauseAfterEvery == 0:
                     # this is just for piloting
-                    blockCounter += 1
-                    if blockCounter % 2:
-                        A = 0.25
-                    else:
-                        A = 0.4
-                    # text.pos = (0, 0)  # change text position back
-                    if ti+1 < nTrials:
-                        if expInfo['testMonkey'] == '0':
-                            playSounds()
-                            draw_text(pause_text, float('inf'), 0, [])
-                            draw_text(start_text3, float(
-                                'inf'), 1, clickMouseText)  #
-                            # draw_text(clickMouseText, float('inf'), 1, [])
-                        else:
-                            draw_text(pause_text, 0.2, 0, [])
-
+                    # blockCounter += 1
+                    # if blockCounter % 2:
+                    #     A = 0.25
+                    # else:
+                    #     A = 0.4
                     picCount += pauseAfterEvery
                     images = []
                     start = ti+1
@@ -1020,6 +1009,17 @@ if expInfo['skipSSVEP'] == '0':
                     for file in condData['trialID'][start:end]:
                         images.append(visual.ImageStim(win=win, image=current_pic_dir + '\\' + str(
                             condData['imageFile'][file]), units='deg', size=picSize, name=str(condData['imageFile'][file])))  # + '.jpg'
+
+                    if ti+1 < nTrials:
+                        if expInfo['testMonkey'] == '0':
+                            playSounds()
+                            draw_text(pause_text, float('inf'), 0, [])
+                            draw_text(start_text3, float(
+                                'inf'), 1, clickMouseText)  #
+                            # draw_text(clickMouseText, float('inf'), 1, [])
+                        else:
+                            draw_text(pause_text, 0.2, 0, [])
+
             except:
                 print(
                     'Variable "pauseAfterEvery" empty or smaller than 1 - pause will be skipped')
