@@ -23,7 +23,7 @@ import psychopy
 from psychopy import locale_setup, visual, core, data, event, logging, monitors, gui
 
 
-expInfo = {'participant': 'Participant', 'EEG': '1', 'Chemicum': '1'}
+expInfo = {'participant': 'Participant', 'EEG': '0', 'Chemicum': '0'}
 
 if expInfo['EEG'] == '1':
     # print('set port')
@@ -47,10 +47,10 @@ dlg = gui.DlgFromDict(dictionary=expInfo, title='EOG-calibration')
 if dlg.OK == False:
     core.quit()  # user pressed cancel
 
-introText = 'Tere tulemast katsesse!\n\n Selles katseosas seadistame Sinu näole asetatud elektroode.\n\n Kalibreerimise õnnestumiseks jälgi palun hoolikalt eraanile ilmuvaid ringe.'
+introText = 'Tere tulemast katsesse!\n\nSelles katseosas seadistame Sinu näole asetatud elektroode.\n\nKalibreerimise õnnestumiseks jälgi palun hoolikalt eraanile ilmuvaid ringe.'
 clickMouseText = "[Jätkamiseks vajuta hiireklahvi]"
 
-monSettings = {'size': (1024, 768), 'fullscr': True}
+monSettings = {'size': (1024, 768), 'fullscr': False}
 
 win = visual.Window(
     size=monSettings['size'], fullscr=monSettings['fullscr'], screen=0, color='black',
@@ -59,6 +59,7 @@ win = visual.Window(
 
 clock = core.Clock()
 calibrate = True
+tic = clock.getTime()
 
 mouse = event.Mouse(win=win)
 mouse.setVisible(False)
@@ -164,7 +165,7 @@ for posy in np.flip(v):
         counter += 1
         posDic[str(counter)] = (posx, posy)
 
-randPosList = list(range(1, len(posDic)))
+randPosList = list(range(1, len(posDic)+1))
 shuffle(randPosList)
 
 draw_text(introText, float('inf'), 1, clickMouseText)
@@ -174,15 +175,18 @@ draw_text(introText, float('inf'), 1, clickMouseText)
 
 while calibrate:
     for position in randPosList:
-        draw_calibDot(win, 2, posDic[str(position)], position)
+        draw_calibDot(win, 2.5, posDic[str(position)], position)
         win.flip()
         with open(dataDir+filename, 'a') as file_object:
             file_object.write(
                 expInfo['participant'] + ',' + str(position) + ',' + str(posDic[str(position)][0]) + ',' + str(posDic[str(position)][1]) + '\n')
         core.wait(1)
         if position == randPosList[-1]:
+            doc = clock.getTime()
+            print('aeg: ' + str(doc-tic))
             calibrate = False
             # close and quit
             if expInfo['EEG'] == '1':
+                core.wait(0.25)
                 port.setData(0)
                 win.close(), core.quit()

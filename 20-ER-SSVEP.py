@@ -328,6 +328,11 @@ expInfo['pictureSize'] = list(picSize)
 expInfo['boxSize'] = boxSize
 
 pause_text = 'See on paus. Palun oota kuni eksperimentaator taaskäivitab mõõtmise . . .'
+reExpoText = 'Algamas on katse viimane plokk, kus sa ei pea enam pilte raami värvi alusel erineval moel vaatama.\nSelles plokis näed lühidalt varem nähtud pilte uuesti ning me \
+    palume sul hinnata, kui negatiivset tunnet nähtud pilt sinus hetkel tekitab. \nNegatiivsuse hindamiseks saad kasutada juba tuttavat vastuseskaalat. Lähtu vastamisel tundest,\
+    mille pilt sinus siin ja praegu tekitab. \n\n Palun oota, kuni eksperimentaator taaskäivitab mõõtmise...'
+
+
 practice_text1 = "Järgmiseks tutvustame sulle katse ajal esitatavaid küsimusi."
 practice_text2 = "Nüüd saad kirjeldatud ülesannet näitepiltidega harjutada."
 
@@ -1026,14 +1031,14 @@ if expInfo['skipSSVEP'] == '0':
 # region RE-EXPOSURE
 if expInfo['reExposure'] == '1':
     gIndx, reExposure = '1', True
-    draw_text(pause_text, float('inf'), 0, [])
+    draw_text(reExpoText, float('inf'), 0, [])
     # reexpopics = []
     reExpoTable = newTable.sample(frac=1).reset_index(drop=True)
 
     # loadpics(pic_dir, newTable['imageFile'], len(newTable['imageFile']),
     #          reexpopics, 'deg', (picSize[0], picSize[1]))
 
-    draw_text('Re-exposure intro', float('inf'), 1, clickMouseText)  #
+    draw_text(clickMouseText, float('inf'), 1, clickMouseText)  #
 
     for tindx in range(0, len(reexpopics)):
 
