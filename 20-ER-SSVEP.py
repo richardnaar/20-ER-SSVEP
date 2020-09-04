@@ -69,7 +69,7 @@ expName = os.path.basename(__file__)  # + data.getDateStr()
 
 expInfo = {'participant': 'Participant', 'EEG': '0', 'Chemicum': '0',
            'stimFrequency': '30', 'testMonkey': '0', 'pauseAfterEvery': '32', 'countFrames': '1', 'reExposure': '0',
-           'triggerTest': '0', 'showIntro': '1', 'defaultFrameRate': '85', 'skipSSVEP': '1'}
+           'triggerTest': '0', 'showIntro': '1', 'defaultFrameRate': '85', 'skipSSVEP': '0'}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 if dlg.OK == False:
@@ -316,6 +316,7 @@ else:
     A = 0.25
     expInfo['contrastChange'] = A*2  # save data
 
+blockCounter = 0  # this is just for piloting - comment out later
 
 # endregion (SETUP WINDOW)
 
@@ -519,7 +520,8 @@ def draw_ssvep(win, duration, ti, secondEventStart, current_image, sndHalfCond):
 
             # flip and send the trigger
             win.flip()
-            if not secondCuePresented:
+            if not secondCuePresented:  # and time >= Window.getFutureFlip()
+                # callOnFlip(print(time))
                 sendTrigger(picStartTime, trigger_first, expInfo['EEG'])
                 firstCue = True
                 if not picPresented:
@@ -581,6 +583,7 @@ def draw_fix(win, fixation, duration):
 
 
 def draw_iti(win, iti_dur, showHint):
+    win.clearBuffer()
     rndpos = np.random.choice(range(2), 2, replace=False)
     iti_time = clock.getTime()  # win.getFutureFlipTime(clock='ptb')  #
     itiPresented = False
@@ -984,6 +987,12 @@ if expInfo['skipSSVEP'] == '0':
             pauseStart = clock.getTime()  # win.getFutureFlipTime(clock='ptb')
             try:
                 if (ti+1) % pauseAfterEvery == 0:
+                    # this is just for piloting
+                    blockCounter += 1
+                    if blockCounter % 2:
+                        A = 0.25
+                    else:
+                        A = 0.4
                     # text.pos = (0, 0)  # change text position back
                     if ti+1 < nTrials:
                         if expInfo['testMonkey'] == '0':
