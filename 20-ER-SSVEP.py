@@ -270,7 +270,7 @@ if expInfo['testMonkey'] == '1':
     monSettings = {'size': (1920/2, 1080/2), 'fullscr': False}
     boxdenom = float('inf')
 else:
-    monSettings = {'size': (1024, 768), 'fullscr': True}
+    monSettings = {'size': (800, 768), 'fullscr': True} # 1024, 768
     boxdenom = float('inf')  # 2.8
 
 win = visual.Window(

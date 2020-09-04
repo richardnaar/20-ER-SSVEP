@@ -1,17 +1,6 @@
+# EOG calibration
+
 # import
-
-# import psychopy
-# from psychopy import locale_setup, gui, visual, core, data, event, logging, monitors
-
-# import os  # system and path functions
-# import pandas as pd  # data structures
-# import serial
-# import platform
-# import sys
-# import PIL
-
-# from numpy import pi, sin, random, zeros
-
 
 import numpy as np
 
@@ -20,7 +9,7 @@ from numpy.random import random, randint, shuffle
 
 import os  # system and path functions
 import psychopy
-from psychopy import locale_setup, visual, core, data, event, logging, monitors, gui
+from psychopy import locale_setup, visual, core, data, event, logging, monitors, gui, sound
 
 
 expInfo = {'participant': 'Participant', 'EEG': '0', 'Chemicum': '0'}
