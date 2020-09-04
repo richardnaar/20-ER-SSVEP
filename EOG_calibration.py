@@ -153,8 +153,8 @@ outerCircle = visual.Polygon(
 trigBase = '10000000'
 posDic = {}
 trigDic = {}
-horiz = (34*0.62)-6
-vert = (28*0.62)-6
+horiz = (34*0.62)-10
+vert = (28*0.62)-10
 
 h = np.linspace(-horiz, horiz, 4)
 v = np.linspace(-vert, vert, 4)
