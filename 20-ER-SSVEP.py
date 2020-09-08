@@ -14,7 +14,7 @@ muudatused: anna draw_ssveple 1 pilt korraga, jm, triggerid,win.flip iti ja muja
 
 # region IMPORT MODULES
 
-# future should make it possible to run the same code under Python 2
+# future should make it possible to run the same code under  Python 2
 # from __future__ import absolute_import, division
 import psychopy
 from psychopy import locale_setup, gui, visual, core, data, event, logging, monitors, sound
@@ -68,7 +68,7 @@ print('PsychoPy version: ' + psychopy.__version__)
 expName = os.path.basename(__file__)  # + data.getDateStr()
 
 expInfo = {'participant': 'Participant', 'EEG': '0', 'Chemicum': '0',
-           'stimFrequency': '30', 'testMonkey': '0', 'pauseAfterEvery': '43', 'countFrames': '1', 'reExposure': '0',
+           'stimFrequency': '42.5', 'testMonkey': '0', 'pauseAfterEvery': '43', 'countFrames': '1', 'reExposure': '1',
            'triggerTest': '0', 'showIntro': '1', 'defaultFrameRate': '85', 'skipSSVEP': '0'}
 
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
@@ -81,11 +81,16 @@ expInfo['expName'] = expName
 # Set durartions
 if expInfo['testMonkey'] == '1':
     expInfo['participant'] = 'Monkey'
-    reExpoFixDur, reExpStimDur, reExpItiDur = 1, 2.6, 2.5
+    reExpoFixDur, reExpStimDur, reExpItiDur = 0.4, 0.4, 0.4
     greyDur = 0.4
     fixDuration, stimDuration, iti_dur_default, secondCueTime = \
-        1.4,    12.6 + greyDur,  2.5,  [6.6+greyDur,
-                                        7+greyDur, 7.4+greyDur, 7.8+greyDur]
+        0.4,     0.4,   0.4,  [0.1,
+                               0.2, 0.3, 0.4]
+    # reExpoFixDur, reExpStimDur, reExpItiDur = 1, 2.6, 2.5
+    # greyDur = 0.4
+    # fixDuration, stimDuration, iti_dur_default, secondCueTime = \
+    #     1.4,    12.6 + greyDur,  2.5,  [6.6+greyDur,
+    #                                     7+greyDur, 7.4+greyDur, 7.8+greyDur]
 else:
     reExpoFixDur, reExpStimDur, reExpItiDur = 1, 2.6, 1.5
     greyDur = 0.4  # 85 Hz
@@ -328,10 +333,6 @@ expInfo['pictureSize'] = list(picSize)
 expInfo['boxSize'] = boxSize
 
 pause_text = 'See on paus. Palun oota kuni eksperimentaator taaskäivitab mõõtmise . . .'
-reExpoText = 'Algamas on katse viimane plokk, kus sa ei pea enam pilte raami värvi alusel erineval moel vaatama.\nSelles plokis näed lühidalt varem nähtud pilte uuesti ning me \
-    palume sul hinnata, kui negatiivset tunnet nähtud pilt sinus hetkel tekitab.\nNegatiivsuse hindamiseks saad kasutada juba tuttavat vastuseskaalat. Lähtu vastamisel tundest,\
-    mille pilt sinus siin ja praegu tekitab.\n\n Palun oota, kuni eksperimentaator taaskäivitab mõõtmise...'
-
 
 practice_text1 = "Järgmiseks tutvustame sulle katse ajal esitatavaid küsimusi."
 practice_text2 = "Nüüd saad kirjeldatud ülesannet näitepiltidega harjutada."
@@ -363,6 +364,11 @@ self_VAS_max = 'Väga negatiivselt'
 control_VAS = 'Millist juhendit Sa pildi vaatamise ajal viimasena rakendasid?'
 control_VAS_min = 'VAATA PILTI'
 control_VAS_max = 'MÕTLE MUUST'
+
+reExpoText = 'Algamas on katse viimane plokk, kus sa ei pea enam pilte raami värvi alusel erineval moel vaatama.\n\nSelles plokis näed lühidalt varem nähtud pilte uuesti ning me \
+palume sul hinnata, kui negatiivset tunnet nähtud pilt sinus hetkel tekitab.\n\nNegatiivsuse hindamiseks saad kasutada juba tuttavat vastuseskaalat. Lähtu vastamisel tundest,\
+mille pilt sinus siin ja praegu tekitab.\n\nPalun oota, kuni eksperimentaator taaskäivitab mõõtmise...'
+
 # Initiate clock to keep track of time
 clock = core.Clock()
 text_h = 0.7
@@ -507,6 +513,7 @@ def draw_ssvep(win, duration, ti, secondEventStart, current_image, sndHalfCond):
     picStartTime = clock.getTime()
     text.pos, frameN, secondCueTime = (0, -horiz/boxdenom), 0, False
     secondCuePresented, contrastNotYetChanged, picPresented, eventPos = False, True, False, 'first'
+    win.flip()  # this should ensure that the loop starts exactly after the flip (if waitBlanking set True)
     time = clock.getTime() - picStartTime
     while (time) < duration:
         frameN += 1
@@ -1025,6 +1032,7 @@ if expInfo['skipSSVEP'] == '0':
                             # draw_text(clickMouseText, float('inf'), 1, [])
                         else:
                             draw_text(pause_text, 0.2, 0, [])
+                            playSounds()
 
             except:
                 print(
@@ -1037,6 +1045,7 @@ if expInfo['skipSSVEP'] == '0':
 # region RE-EXPOSURE
 if expInfo['reExposure'] == '1':
     gIndx, reExposure = '1', True
+    playSounds()
     draw_text(reExpoText, float('inf'), 0, [])
     # reexpopics = []
     reExpoTable = newTable.sample(frac=1).reset_index(drop=True)
@@ -1066,6 +1075,8 @@ if expInfo['reExposure'] == '1':
         thisExp.addData('fixDuration', reExpoFixDur)
         thisExp.addData('triaslN', tindx+1)
         thisExp.addData('picBytes', os.stat(pic_dir + '\\' + picName).st_size)
+        thisExp.addData('first cue', condic[reExpoTable['cond'][tindx]][0])
+        thisExp.addData('second cue', condic[reExpoTable['cond'][tindx]][1])
 
         reExpoTrigger = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[reExpoTable['cond'][tindx]][0]] + \
             trigdic[reExpoTable['emo'][tindx]] + \
@@ -1095,6 +1106,7 @@ if expInfo['reExposure'] == '1':
         thisExp.nextEntry()
 
     if tindx == len(reexpopics)-1:
+        playSounds()
         draw_text(goodbye_text, float('inf'), 1, [])
         if expInfo['EEG'] == '1':
             port.setData(0)

@@ -41,7 +41,7 @@ introText = 'Tere tulemast katsesse!\n\nSelles katseosas seadistame Sinu näole 
 clickMouseText = "[Jätkamiseks vajuta hiireklahvi]"
 byeTxt = 'Kalibreerimine on lõppenud'
 
-monSettings = {'size': (1024, 768), 'fullscr': False}
+monSettings = {'size': (800, 600), 'fullscr': True}
 
 win = visual.Window(
     size=monSettings['size'], fullscr=monSettings['fullscr'], screen=0, color='black',
@@ -185,8 +185,8 @@ while calibrate:
                 expInfo['participant'] + ',' + str(position) + ',' + str(posDic[str(position)][0]) + ',' + str(posDic[str(position)][1]) + '\n')
         core.wait(0.5)
         if position == randPosList[-1]:
-            draw_text(byeTxt,  float('inf'), 1, clickMouseText)
             playSounds()
+            draw_text(byeTxt,  float('inf'), 1, clickMouseText)
             doc = clock.getTime()
             print('aeg: ' + str(doc-tic))
             calibrate = False
