@@ -26,7 +26,7 @@ implist = dir([impdir, '*.bdf']);                                           % ma
 
 %% Import and find events
 
-for subi = 7:length(implist);
+for subi = 4:length(implist);
 fprintf('loading participant: %s \n', implist(subi).name);
 
 ALLEEG = []; EEG = []; CURRENTSET = [];                                     % erase anything in the eeglab. 
