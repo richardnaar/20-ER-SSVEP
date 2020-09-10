@@ -28,33 +28,35 @@ import sys
 import PIL
 
 from numpy import pi, sin, random, zeros
-from numpy.random import random, randint, shuffle
+from numpy.random import random, randint, shuffle, seed
 
 import numpy as np
 
 # endregion (IMPORT MODULES )
 
-boxcols = [[1.000, 0.804, 0.004], [-1.000, 0.686, 0.639]]
-shuffle(boxcols)
-# colstrdic can be used in the instructions
-if boxcols[0][0] > 0:
-    colstrdic = {'VAATA PILTI': 'KOLLANE', 'MÕTLE MUUST': 'SININE'}
-    # folder with the intro pictures
-    intro_pictures = 'stimuli\\instructions\\vaata-kollane'
-else:
-    colstrdic = {'VAATA PILTI': 'SININE', 'MÕTLE MUUST': 'KOLLANE'}
-    # folder with the intro pictures
-    intro_pictures = 'stimuli\\instructions\\vaata-sinine'
 
-# region DEFINE PICTURE FOLDERS (and name of the condition file)
-# relative to the os.getcwd()
-# intro_pictures = 'stimuli\\instructions'  # folder with the intro pictures
+# # region DEFINE PICTURE FOLDERS (and name of the condition file)
+# random.seed()
+# boxcols = [[1.000, 0.804, 0.004], [-1.000, 0.686, 0.639]]
+# shuffle(boxcols)
+# # colstrdic can be used in the instructions
+# if boxcols[0][0] > 0:
+#     colstrdic = {'VAATA PILTI': 'KOLLANE', 'MÕTLE MUUST': 'SININE'}
+#     # folder with the intro pictures
+#     intro_pictures = 'stimuli\\instructions\\vaata-kollane'
+# else:
+#     colstrdic = {'VAATA PILTI': 'SININE', 'MÕTLE MUUST': 'KOLLANE'}
+#     # folder with the intro pictures
+#     intro_pictures = 'stimuli\\instructions\\vaata-sinine'
 
-training_pics = 'stimuli\\practice'  # folder with the training pictures
-ssvep_exp = 'stimuli\\images'  # folder with the experimental pictures
-conditionFile = 'ERSSVEP_images'  # name of the condition file
+# # relative to the os.getcwd()
+# # intro_pictures = 'stimuli\\instructions'  # folder with the intro pictures
 
-# endregion DEFINE PICTURE FOLDERS
+# training_pics = 'stimuli\\practice'  # folder with the training pictures
+# ssvep_exp = 'stimuli\\images'  # folder with the experimental pictures
+# conditionFile = 'ERSSVEP_images'  # name of the condition file
+
+# # endregion DEFINE PICTURE FOLDERS
 
 # region SET UP THE INFO DIALOG AND EXPERIMENT HANDLER
 # get the current directory
@@ -118,6 +120,32 @@ thisExp = data.ExperimentHandler(
     dataFileName=filename)
 
 # endregion (SET UP THE EPERIMENT INFO DATA)
+
+# region DEFINE PICTURE FOLDERS (and name of the condition file)
+randSeed = round(random()*1000)
+expInfo['randomSeed'] = randSeed
+seed(randSeed)
+boxcols = [[1.000, 0.804, 0.004], [-1.000, 0.686, 0.639]]
+shuffle(boxcols)
+# colstrdic can be used in the instructions
+if boxcols[0][0] > 0:
+    colstrdic = {'VAATA PILTI': 'KOLLANE', 'MÕTLE MUUST': 'SININE'}
+    # folder with the intro pictures
+    intro_pictures = 'stimuli\\instructions\\vaata-kollane'
+else:
+    colstrdic = {'VAATA PILTI': 'SININE', 'MÕTLE MUUST': 'KOLLANE'}
+    # folder with the intro pictures
+    intro_pictures = 'stimuli\\instructions\\vaata-sinine'
+
+# relative to the os.getcwd()
+# intro_pictures = 'stimuli\\instructions'  # folder with the intro pictures
+
+training_pics = 'stimuli\\practice'  # folder with the training pictures
+ssvep_exp = 'stimuli\\images'  # folder with the experimental pictures
+conditionFile = 'ERSSVEP_images'  # name of the condition file
+
+# endregion DEFINE PICTURE FOLDERS
+
 
 # region EEG PORT SETUP
 
@@ -645,7 +673,7 @@ def draw_text(txt, pause_dur, mouse_resp, secondTxt):
             break
 
 
-def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_high, slf_scale, slf_set, controlQ, sendTriggers):
+def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_high, slf_scale, slf_set, controlQ, sendTriggers, trial):
 
     # Initialize components for Routine "VAS"
     VAS_startTime = clock.getTime()
@@ -695,13 +723,13 @@ def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_h
             win.flip()
             if sendTriggers:
                 if reExposure == False:
-                    trigger = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][1]] + \
-                        trigdic[condData['emo'][ti]] + \
-                        trigdic[condData['picset'][ti]] + trigdic[eventPos]
+                    trigger = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][trial]][1]] + \
+                        trigdic[condData['emo'][trial]] + \
+                        trigdic[condData['picset'][trial]] + trigdic[eventPos]
                 else:
-                    trigger = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[reExpoTable['cond'][tindx]][1]] + \
-                        trigdic[reExpoTable['emo'][tindx]] + \
-                        trigdic[reExpoTable['picset'][tindx]] + \
+                    trigger = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[reExpoTable['cond'][trial]][1]] + \
+                        trigdic[reExpoTable['emo'][trial]] + \
+                        trigdic[reExpoTable['picset'][trial]] + \
                         trigdic[eventPos]
                 sendTrigger(VAS_startTime, trigger, expInfo['EEG'])
 
@@ -897,9 +925,9 @@ if expInfo['skipSSVEP'] == '0':
                 cText = clickMouseText
             if routinedic[gIndx] == 'training' and int(text2present) == len(TextDic):
                 draw_VAS(win, self_VAS, self_VAS_min, self_VAS_max, item,
-                         scale_low, scale_high, slf_scale, slf_set, 0, 0)
+                         scale_low, scale_high, slf_scale, slf_set, 0, 0, None)
                 draw_VAS(win, control_VAS, control_VAS_min,
-                         control_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 1, 0)
+                         control_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 1, 0, None)
             draw_text(TextDic[text2present], float(
                 'inf'), mouse_resp, cText)  #
             core.wait(0.25)
@@ -946,9 +974,12 @@ if expInfo['skipSSVEP'] == '0':
                 trigdic[condData['emo'][ti]] + \
                 trigdic[condData['picset'][ti]] + trigdic['first']
 
-            trigger_second = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][0]] + trigdic[condData['emo'][ti]] + \
+            trigger_second = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][ti]][1]] + trigdic[condData['emo'][ti]] + \
                 trigdic[condData['picset'][ti]] + trigdic['second']
 
+            # trigger = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[condData['cond'][trial]][1]] + \
+            #             trigdic[condData['emo'][trial]] + \
+            #             trigdic[condData['picset'][trial]] + trigdic[eventPos]
             # draw the flickering picture
             draw_ssvep(win, stimDuration, ti, secondCueStart,
                        current_image, sndHalfCond)
@@ -977,11 +1008,11 @@ if expInfo['skipSSVEP'] == '0':
 
             if condData['presentVAS'][ti] == 1:
                 draw_VAS(win, self_VAS, self_VAS_min,
-                         self_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 0, 1)
+                         self_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 0, 1, ti)
 
             if condData['presentVAS_control'][ti] == 1:
                 draw_VAS(win, control_VAS, control_VAS_min,
-                         control_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 1, 1)
+                         control_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 1, 1, ti)
 
             # ITI
             if expInfo['testMonkey'] == '0':
@@ -1096,7 +1127,7 @@ if expInfo['reExposure'] == '1':
                 core.quit()
 
         draw_VAS(win, self_VAS, self_VAS_min, self_VAS_max, item,
-                 scale_low, scale_high, slf_scale, slf_set, 0, 1)
+                 scale_low, scale_high, slf_scale, slf_set, 0, 1, tindx)
 
         # draw iti
         iti_dur = random() + reExpItiDur
