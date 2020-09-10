@@ -26,7 +26,7 @@ implist = dir([impdir, '*.bdf']);                                           % ma
 
 %% Import and find events
 
-for subi = 5:length(implist);
+for subi = 7:length(implist);
 fprintf('loading participant: %s \n', implist(subi).name);
 
 ALLEEG = []; EEG = []; CURRENTSET = [];                                     % erase anything in the eeglab. 
@@ -44,13 +44,22 @@ EEG = pop_biosig([impdir, implist(subi).name], 'ref',exg1+4:exg1+5);       % ref
  
 [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, CURRENTSET, 'setname', implist(subi).name(1:end-4));% imporditud andmestiku salvestamine
 
-EEG.data = EEG.data([1:32 exg1:exg1+3],:); EEG.nbchan = 32;                 % mittevajalike kanalite eemaldamine (32 peakanalit, 4 silma, täiendav EMG kanal, GSR 1 ja 2, Pletüsmograf)
+% rawData = EEG.data;
+
+EEG.data = EEG.data([1:32 exg1:exg1+3],:); % EEG.nbchan = 32;  exg1+6 exg1+8:exg1+9               % mittevajalike kanalite eemaldamine (32 peakanalit, 4 silma, täiendav EMG kanal, GSR 1 ja 2, Pletüsmograf)
 [ALLEEG EEG CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET); 
 
 % IMPORT CHANNEL LOCATIONS
 EEG = pop_chanedit(EEG, 'load',{'32_4EOG.ced' 'filetype' 'autodetect'});     % Edit the channel locations structure of an EEGLAB dataset, EEG.chanlocs. 
 [ALLEEG EEG CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET); 
 % EEG = pop_chanedit(EEG, 'load',{[datDir 'BioSemi64_4.loc'] 'filetype' 'autodetect'});     % Edit the channel locations structure of an EEGLAB dataset, EEG.chanlocs. 
+% [ALLEEG EEG CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET); 
+
+% EEG.data = [EEG.data; rawData([exg1+6 exg1+8:exg1+9],:)];
+% EEG.chanlocs(37).labels = {'Corrugator'}; EEG.chanlocs(37).urchan = 37;
+% EEG.chanlocs(38).labels = {'GRS1'}; EEG.chanlocs(38).urchan = 38;
+% EEG.chanlocs(39).labels = {'GRS2'}; EEG.chanlocs(39).urchan = 39;
+% EEG.nbchan = 39;
 % [ALLEEG EEG CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET); 
 
 else
@@ -93,17 +102,165 @@ end
 %%
 counter = 0;
 for ij = 1:length(EEG.event)
-    if strcmp(EEG.event(ij).instruction, 'Vaata') && strcmp(EEG.event(ij).trialEvent, 'FirstCue') && strcmp(EEG.event(ij).valence,'Neg')
+    if strcmp(EEG.event(ij).instruction, 'Vaata') && strcmp(EEG.event(ij).trialEvent, 'SecondCue') && strcmp(EEG.event(ij).valence,'Neg')
         counter = counter + 1;
     end
 end    
 counter
+
+%% 20-ER-SSEP
+
+blockType =        {'Training'; 'Experiment';};
+instruction =      {'Vaata'; 'Mõtle muust'};
+valence =          {'Neg'; 'Ntr'};
+picSet =           {'A'; 'B'; 'C'; 'D'};
+trialEvent =       {'FirstCue'; 'SecondCue'; 'Question'; 'reExpo'};
+
+% find( strcmp({EEG.event.blockType}, blockType{2})) % 2
+% find( strcmp({EEG.event.instruction}, instruction{1})) 
+% find( strcmp({EEG.event.valence}, valence{1}))
+
+% allIndx  = find( strcmp({EEG.event.trialEvent}, trialEvent{1}));
+
+allIndx = zeros(1, length(EEG.event));
+counter = 0;
+for ij = 1:length(EEG.event)
+    if strcmp(EEG.event(ij).trialEvent, 'FirstCue')&& strcmp(EEG.event(ij).valence, 'Ntr')
+%       strcmp(EEG.event(ij).trialEvent, 'FirstCue')
+%         strcmp(EEG.event(ij).trialEvent, 'FirstCue') && strcmp(EEG.event(ij).instruction, 'Vaata')
+%         strcmp(EEG.event(ij).trialEvent, 'reExpo') 
+%         strcmp(EEG.event(ij).trialEvent, 'FirstCue') && strcmp(EEG.event(ij).picSet,'B') ...
+%             || strcmp(EEG.event(ij).trialEvent, 'FirstCue') && strcmp(EEG.event(ij).picSet,'D')
+        counter = counter + 1;
+        allIndx(ij) = 1;
+    end
+end    
+allIndx = find(allIndx);
+% .* find( strcmp({EEG.event.picSet}, [picSet{1}])) .*...
+%     find( strcmp({EEG.event.picSet}, [picSet{3}]));
+
+% new segments
+
+eventOnset = {EEG.event(allIndx).latency}; % find start of the epoch 
+
+% end
+
+end
+% fprintf('Found %d events. \n', currentIndx-1)
+fprintf('Found %d events. \n', length(eventOnset))
+
+%% select channels
+
+if lightSensor == 0
+% electrodes = {'O1', 'Oz', 'O2','PO3', 'PO4'}; %  'PO8' [0], ,'PO7'  
+% electrodes = {'O1', 'Oz', 'O2', 'PO3', 'PO4', 'P7' ,'P3','Pz', 'P4', 'P8', 'CP5', 'CP1', 'CP2', 'CP6'};
+electrodes = {'P7' ,'P3','Pz', 'P4', 'P8', 'CP5', 'CP1', 'CP2', 'CP6'};
+% electrodes = {'Oz'};
+else
+electrodes = {'Erg1'};    
+end
+
+elec2plot = find(ismember({EEG.chanlocs.labels}, electrodes)); % find electrode indexes
+% elec2plot = 73;
+
+fprintf('\nNumber of electrodes aggregated:  %d ', length(elec2plot)); fprintf('\n')
+
+%%
+if lightSensor == 1;transient = 0; else transient = 0.6; end % this is in seconds
+srate = EEG.srate;
+%%
+thisCueEvent = 0;
+meanComplexFFT = [];
+while (thisCueEvent <= length(eventOnset)-1) % length(eventOnset)-2
+thisCueEvent = thisCueEvent + 1;
+startSampleERP = round(eventOnset{thisCueEvent}+transient*srate);
+
+
+    startSample = round(eventOnset{thisCueEvent}+transient*srate ); 
+    trialDur = 12; % 
+
+     % redifine the end or the start (for coherent averaging)
+     endSample = startSample+trialDur*srate; % find the event offset if the epoch is calculated from cue event
+          
+    % Pull out a timeseries that follows/preceeds the event 
+
+    allSamples = EEG.data(elec2plot,startSample:endSample-1); % channels
+    allSamplesERP = EEG.data(elec2plot,startSampleERP:endSample-1); %-mean(EEG.data(elec2plot,startSampleERP-(srate*0.25):startSampleERP-1),2);
+%     allSamplesERP = bsxfun(@minus, EEG.data(elec2plot,startSampleERP:endSample-1), mean(EEG.data(elec2plot,startSampleERP-(srate*0.25):startSampleERP-1),2)); 
+    % eventIndx = 1:length(event) % loop through the event categories
+
+    if size(elec2plot,2) > 1
+        allSamples=squeeze(mean(allSamples(1:end-1, :))); % mean of channels
+        allSamplesERP=squeeze(mean(allSamples(1:end-1, :))); % mean of channels
+    end
+    
+    allSamplesERP = allSamplesERP-mean(mean(EEG.data(elec2plot,startSampleERP-(srate*0.25):startSampleERP-1),2));
+    
+    % We can now bin into 1 second intervals
+    rebinnedData=reshape(allSamples, EEG.srate*2,trialDur/2);
+    fftRebinned=fft(rebinnedData); % Perform FFT down time
+    
+    meanERP{subi, thisCueEvent} = allSamplesERP;
+    meanComplexFFT(:,thisCueEvent) = mean(fftRebinned,2); % nb abs % This is the mean complex FFT for this trial (averaged across bins)
+    grandAverageERP{subi, thisCueEvent} = allSamplesERP; 
+end
+
+grandAverage{subi} = mean(meanComplexFFT,2); % Average across trials - the abs means we do NOT still keep coherent information
+% grandAverage{subi, segIndx, valIndx, condIndx} 
+
+nfft = ceil( EEG.srate/.25 ); % .5 Hz resolution
+hz = linspace(0,EEG.srate,nfft);
+
+stem(hz(2:500), abs( mean(grandAverage{subi}(2:500,:),2) ) )
+
+
+%% SNR
+
+fdat = abs(grandAverage{subi}(1:200)).^2;
+% proov = squeeze(mean(mean(cell2mat(grandAverage),2),3));
+% fdat = abs(proov(1:99)).^2;
+
+snrE = zeros(1,size(fdat,1));
+skipbins =  4; % 0.5 Hz, hard-coded!
+numbins  = 8+skipbins; %  2 Hz, also hard-coded!
+
+% loop over frequencies and compute SNR
+for hzi=numbins+1:length(fdat)-numbins-1
+    numer = fdat(hzi);
+    denom = rms( fdat([hzi-numbins:hzi-skipbins hzi+skipbins:hzi+numbins]) ); 
+    snrE(hzi) = numer./denom;
+end  
+
+
+nfft = ceil( EEG.srate/.25 ); % .5 Hz resolution
+hz = linspace(0,EEG.srate,nfft);
+
+stem(hz(1:size(snrE,2)),snrE)
+
+%%
+% %     subplot(2,2,eventIndx); hold on
+% %     title(strrep(events{eventIndx}, '_',' '))
+
+%    bar(abs(grandAverage(2:49)));
+
+%     bar(abs(grandAverage{eventIndx}(2:60)));
+allSnrE{subi, segIndx, valIndx, condIndx} = snrE;
+% p.subject(subi).condition(eventIndx).data.EEG.average.snr = snrE; 
+
+% %     bar(allSnrE{subi,eventIndx});
+
+%     stem(abs(grandAverage{eventIndx}(2:60)),'k','linew',3,'markersize',2.5,'markerfacecolor','r')
+%     bar(squeeze( mean(snrE(:, eventIndx, 1:end),1)));
+
+% end % next sub
+
+%% end of 20-ER-SSEP 
 %%
 % %% find events
 
 events = {'Pic'}; % 'pic_non-distr_pos'
 % segment = {'first', 'first-second', 'second'}; segv = 0; % old segments
-segment = {'first', 'second', 'third', 'fourth', 'fifth'}; segv = 1;
+% segment = {'first', 'second', 'third', 'fourth', 'fifth'}; segv = 1;
 % segment = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'}; segv = 1;
 % segment = {'1', '2', '3', '4', '5', '6'}; segv = 1;
 
