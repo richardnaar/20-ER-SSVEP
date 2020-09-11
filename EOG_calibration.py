@@ -168,7 +168,7 @@ for posy in np.flip(v):
         posDic[str(counter)] = (posx, posy)
 
 randPosList = list(range(1, len(posDic)+1))
-shuffle(randPosList)
+np.random.shuffle(randPosList)
 
 draw_text(introText, float('inf'), 0, [])
 
