@@ -34,30 +34,6 @@ import numpy as np
 
 # endregion (IMPORT MODULES )
 
-
-# # region DEFINE PICTURE FOLDERS (and name of the condition file)
-# random.seed()
-# boxcols = [[1.000, 0.804, 0.004], [-1.000, 0.686, 0.639]]
-# shuffle(boxcols)
-# # colstrdic can be used in the instructions
-# if boxcols[0][0] > 0:
-#     colstrdic = {'VAATA PILTI': 'KOLLANE', 'MÕTLE MUUST': 'SININE'}
-#     # folder with the intro pictures
-#     intro_pictures = 'stimuli\\instructions\\vaata-kollane'
-# else:
-#     colstrdic = {'VAATA PILTI': 'SININE', 'MÕTLE MUUST': 'KOLLANE'}
-#     # folder with the intro pictures
-#     intro_pictures = 'stimuli\\instructions\\vaata-sinine'
-
-# # relative to the os.getcwd()
-# # intro_pictures = 'stimuli\\instructions'  # folder with the intro pictures
-
-# training_pics = 'stimuli\\practice'  # folder with the training pictures
-# ssvep_exp = 'stimuli\\images'  # folder with the experimental pictures
-# conditionFile = 'ERSSVEP_images'  # name of the condition file
-
-# # endregion DEFINE PICTURE FOLDERS
-
 # region SET UP THE INFO DIALOG AND EXPERIMENT HANDLER
 # get the current directory
 dirpath = os.getcwd()
@@ -110,6 +86,7 @@ filename = dirpath + '\\data\\' + \
 print('Data folder and filename... ' + filename[-48:])
 
 runInfo = str(platform.uname()[0:])
+expInfo['runInfo'] = runInfo
 
 # An ExperimentHandler isn't essential but helps with data saving
 thisExp = data.ExperimentHandler(
@@ -125,18 +102,21 @@ thisExp = data.ExperimentHandler(
 randSeed = round(random()*1000)
 expInfo['randomSeed'] = randSeed
 seed(randSeed)
-boxcols = [[1.000, 0.804, 0.004], [-1.000, 0.686, 0.639]]
-shuffle(boxcols)
-# colstrdic can be used in the instructions
-if boxcols[0][0] > 0:
+# boxcols = [[1.000, 0.804, 0.004], [-1.000, 0.686, 0.639]]
+# shuffle(boxcols)
+# colstrdic can be used in the instructions boxcols[0][0]
+if randint(2) > 0:
     colstrdic = {'VAATA PILTI': 'KOLLANE', 'MÕTLE MUUST': 'SININE'}
     # folder with the intro pictures
     intro_pictures = 'stimuli\\instructions\\vaata-kollane'
+    boxcols = [[1.000, 0.804, 0.004], [-1.000, 0.686, 0.639]]
 else:
     colstrdic = {'VAATA PILTI': 'SININE', 'MÕTLE MUUST': 'KOLLANE'}
     # folder with the intro pictures
     intro_pictures = 'stimuli\\instructions\\vaata-sinine'
+    boxcols = [[-1.000, 0.686, 0.639], [1.000, 0.804, 0.004]]
 
+expInfo['vaataCol'] = colstrdic['VAATA PILTI']
 # relative to the os.getcwd()
 # intro_pictures = 'stimuli\\instructions'  # folder with the intro pictures
 
@@ -218,7 +198,8 @@ if noData == False:
     # define newTable as data frame in pandas
     newTable, picsets = pd.DataFrame(), np.unique(table['picset'])
     # randomize picsets
-    shuffle(picsets)
+    # shuffle(picsets)
+    np.random.shuffle(picsets)
     trueSetSize, counter, tilist = int(len(table)/len(picsets)), 0, list()
 
     # iterate randomly through all the picsets
@@ -227,7 +208,8 @@ if noData == False:
         currentset = table[table['picset'] == seti].reset_index(drop=True)
         # tilist randomizes trials within each set
         rndtilist = list(range(counter*trueSetSize, trueSetSize * (counter+1)))
-        shuffle(rndtilist)
+        # shuffle(rndtilist)
+        np.random.shuffle(rndtilist)
         tilist = tilist + rndtilist
         # iterate through all the emo categories
         for valencei in np.unique(currentset['emo']):
@@ -260,7 +242,8 @@ if noData == False:
 
             secondCueRndList = list()
             for sndcue in range(0, int(np.ceil(setSize/len(secondCueTime)))+1):
-                shuffle(secondCueTime)
+                # shuffle(secondCueTime)
+                np.random.shuffle(secondCueTime)
                 secondCueRndList = secondCueRndList+secondCueTime
             secondCueRndList = secondCueRndList[0:setSize]
             # # define 2nd cue times similarly for each emotion category in each set separately
@@ -688,7 +671,7 @@ def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_h
     scale_low.setText(label_low)
     scale_high.setText(label_high)
 
-    if expInfo['testMonkey'] == '0':
+    if expInfo['testMonkey'] == '1':
         VAS_noResponse = False
         VAS_resp = 'test'
         VAS_RT = 0
