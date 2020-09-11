@@ -352,15 +352,14 @@ practiceTextDic = {'1': practice_text1, '2': practice_text2}
 
 practiceTrialText = 'Palun kirjelda katse läbiviijale, millist ülesannet/ülesandeid Sa viimase pildi vaatamise ajal täitsid.'
 
-start_text1 = "Aitäh, harjutus on läbi ja nüüd algab katse põhiosa! Oota kuni katse läbiviija on ruumist lahkunud."
-start_text3 = "Meeldetuletuseks: Tee iga pildi vaatamise ajal seda, mida pildi raami värv ütleb. \n\n" + colstrdic["VAATA PILTI"] + \
+start_text1 = "Aitäh, harjutus on läbi ja nüüd algab katse põhiosa!\n\nPalun oota kuni eksperimentaator käivitab mõõtmise . . ."
+start_text2 = "Meeldetuletuseks: Tee iga pildi vaatamise ajal seda, mida pildi raami värv ütleb. \n\n" + colstrdic["VAATA PILTI"] + \
     ": Keskendu pildil kujutatule ja reageeri loomulikult. \n\n" + colstrdic["MÕTLE MUUST"] + ": Mõtle pildiga mitteseotud neutraalsele tegevusele või esemele, et vähendada negatiivseid tundeid. \n\n\
 Alusta juhendi rakendamist kohe, kui pilt ekraanile ilmub. \n\nHoia mõlema juhendi rakendamise ajal pilk ekraanil. \n\n" \
 + "Katses on pilte, kus pildi esitamise ajal ülesanne muutub.\nProovi uut juhendit rakendada kohe, kui märksõna ja raami värv muutuvad."
-start_text2 = 'Palun oota kuni eksperimentaator käivitab mõõtmise . . .'
+# start_text2 = 'Palun oota kuni eksperimentaator käivitab mõõtmise . . .'
 
-expTextDic = {'1': start_text1, '2': start_text2,
-              '3': start_text3}
+expTextDic = {'1': start_text1, '2': start_text2}
 
 clickMouseText = "[Jätkamiseks vajuta hiireklahvi]"
 
