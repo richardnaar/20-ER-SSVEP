@@ -338,7 +338,7 @@ blockCounter = 0  # this is just for piloting - comment out later
 
 # region INITIALIZE TASK COMPONENTS
 boxSize = 2
-horiz, vert = 34*0.62, 28*0.62,
+horiz, vert = round(34*0.62), round(28*0.62)
 picSize = (horiz, vert)
 expInfo['pictureSize'] = list(picSize)
 expInfo['boxSize'] = boxSize
