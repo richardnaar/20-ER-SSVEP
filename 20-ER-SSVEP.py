@@ -346,7 +346,7 @@ expInfo['boxSize'] = boxSize
 pause_text = 'See on paus. Palun oota kuni eksperimentaator taaskäivitab mõõtmise . . .'
 
 practice_text1 = "Järgmiseks tutvustame sulle katse ajal esitatavaid küsimusi."
-practice_text2 = "Nüüd saad kirjeldatud ülesannet näitepiltidega harjutada."
+practice_text2 = "Nüüd saad kirjeldatud ülesannet nelja näitepiltidega harjutada."
 
 practiceTextDic = {'1': practice_text1, '2': practice_text2}
 
@@ -357,9 +357,11 @@ start_text2 = "Meeldetuletuseks: Tee iga pildi vaatamise ajal seda, mida pildi r
     ": Keskendu pildil kujutatule ja reageeri loomulikult. \n\n" + colstrdic["MÕTLE MUUST"] + ": Mõtle pildiga mitteseotud neutraalsele tegevusele või esemele, et vähendada negatiivseid tundeid. \n\n\
 Alusta juhendi rakendamist kohe, kui pilt ekraanile ilmub. \n\nHoia mõlema juhendi rakendamise ajal pilk ekraanil. \n\n" \
 + "Katses on pilte, kus pildi esitamise ajal ülesanne muutub.\nProovi uut juhendit rakendada kohe, kui märksõna ja raami värv muutuvad."
-# start_text2 = 'Palun oota kuni eksperimentaator käivitab mõõtmise . . .'
 
 expTextDic = {'1': start_text1, '2': start_text2}
+
+# start_text3 = 'Palun oota kuni eksperimentaator käivitab mõõtmise . . .'
+
 
 clickMouseText = "[Jätkamiseks vajuta hiireklahvi]"
 
@@ -375,10 +377,10 @@ control_VAS = 'Millist juhendit Sa pildi vaatamise ajal viimasena rakendasid?'
 control_VAS_min = 'VAATA PILTI'
 control_VAS_max = 'MÕTLE MUUST'
 
-reExpoText = 'Algamas on katse viimane plokk, kus sa ei pea enam pilte raami värvi alusel erineval moel vaatama.\n\nSelles plokis näed lühidalt varem nähtud pilte uuesti ning me \
-palume sul hinnata, kui negatiivset tunnet nähtud pilt sinus hetkel tekitab.\n\nNegatiivsuse hindamiseks saad kasutada juba tuttavat vastuseskaalat. Lähtu vastamisel tundest,\
-mille pilt sinus siin ja praegu tekitab.\n\nPalun oota, kuni eksperimentaator taaskäivitab mõõtmise...'
-
+reExpoText = 'Algamas on katse viimane plokk, kus sa ei pea enam muust mõtlema, vaid pilte lihtsalt vaatama. Seepärast pole piltidel enam ka värvilisi raame.\n\nSa näed varem nähtud \
+pilte uuesti, aga palju lühemaks ajaks. Me palume sul hinnata, kui negatiivset tunnet nähtud pilt sinus hetkel tekitab. Negatiivsuse hindamiseks saad kasutada juba tuttavat vastuseskaalat. \
+Lähtu vastamisel tundest, mille pilt sinus siin ja praegu tekitab.\n\nMeid huvitab su esmane reaktsioon, seepärast vasta pigem kiiresti ja pikalt juurdlemata.\n\nPalun oota, kuni \
+eksperimentaator taaskäivitab mõõtmise...'
 # Initiate clock to keep track of time
 clock = core.Clock()
 text_h = 0.7
@@ -670,10 +672,10 @@ def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_h
     scale_low.setText(label_low)
     scale_high.setText(label_high)
 
-    if expInfo['testMonkey'] == '1':
-        VAS_noResponse = False
-        VAS_resp = 'test'
-        VAS_RT = 0
+    # if expInfo['testMonkey'] == '1':
+    #     VAS_noResponse = False
+    #     VAS_resp = 'test'
+    #     VAS_RT = 0
 
     while VAS_noResponse:
         if not event.getKeys('q'):
@@ -692,9 +694,9 @@ def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_h
                 prevButtonState = buttons
                 if sum(buttons) > 0:  # state changed to a new click
                     # check if the mouse was inside our 'clickable' objects
-                    VAS_noResponse = False
                     VAS_RT = clock.getTime() - VAS_startTime
-                    VAS_resp = (mx[0]/scale_width)*100
+                    VAS_resp = ((mx[0]+scale_width)/scale_width)*50
+                    VAS_noResponse = False
 
             # update/draw components on each frame
             item.draw(), scale_low.draw(), scale_high.draw(), slf_scale.draw()
@@ -1003,10 +1005,11 @@ if expInfo['skipSSVEP'] == '0':
                 iti_dur = iti_dur_default
 
             #
-            if np.random.choice(10, 1) == 8 or routinedic[gIndx] == 'training':
+            if (np.random.choice(10, 1) == 8 and ti != nTrials-1) or (routinedic[gIndx] == 'training' and ti != nTrials-1):
                 showHint = 1
             else:
                 showHint = 0
+            thisExp.addData('showHint', showHint)
 
             if routinedic[gIndx] == 'training':
                 draw_text(practiceTrialText, float('inf'), 1, [])
@@ -1018,12 +1021,6 @@ if expInfo['skipSSVEP'] == '0':
             pauseStart = clock.getTime()  # win.getFutureFlipTime(clock='ptb')
             try:
                 if (ti+1) % pauseAfterEvery == 0:
-                    # this is just for piloting
-                    # blockCounter += 1
-                    # if blockCounter % 2:
-                    #     A = 0.25
-                    # else:
-                    #     A = 0.4
                     picCount += pauseAfterEvery
                     images = []
                     start = ti+1
@@ -1040,7 +1037,7 @@ if expInfo['skipSSVEP'] == '0':
                         if expInfo['testMonkey'] == '0':
                             playSounds()
                             draw_text(pause_text, float('inf'), 0, [])
-                            draw_text(start_text3, float(
+                            draw_text(start_text2, float(
                                 'inf'), 1, clickMouseText)  #
                             # draw_text(clickMouseText, float('inf'), 1, [])
                         else:

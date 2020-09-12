@@ -39,7 +39,7 @@ if dlg.OK == False:
 introText = 'Tere tulemast katsesse!\n\nSelles katseosas seadistame Sinu näole asetatud elektroode.\n\nKalibreerimise õnnestumiseks jälgi palun hoolikalt eraanile ilmuvaid ringe.\
     \n\n\n\nPalun oota kuni eksperimentaator käivitab katse...'
 clickMouseText = "[Jätkamiseks vajuta hiireklahvi]"
-byeTxt = 'Kalibreerimine on lõppenud'
+byeTxt = 'Aitäh, kalibreerimine on lõppenud. Kutsu palun katse läbiviija.'
 
 monSettings = {'size': (800, 600), 'fullscr': True}
 
