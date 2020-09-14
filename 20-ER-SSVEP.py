@@ -43,7 +43,7 @@ print('PsychoPy version: ' + psychopy.__version__)
 # filename of the script
 expName = os.path.basename(__file__)  # + data.getDateStr()
 
-expInfo = {'participant': 'Participant', 'EEG': '1', 'Chemicum': '1',
+expInfo = {'participant': 'ERS00', 'EEG': '1', 'Chemicum': '1',
            'stimFrequency': '42.5', 'testMonkey': '0', 'pauseAfterEvery': '43', 'countFrames': '1', 'reExposure': '1',
            'triggerTest': '0', 'showIntro': '1', 'defaultFrameRate': '85', 'skipSSVEP': '0'}
 
