@@ -2,12 +2,10 @@
 # -*- coding: utf-8 -*-
 
 """
-SSVEP task 02/09/2020
+SSVEP task 14/09/2020
 monitor setting (e.g. testMonitor to ERSSVEP)
 set up the folders (ssvep_iaps, training_pics, intro_pics)
-viewing angle: 34x28 (Hajcak jt 2013)
-NB - programmi katkestamiseks vajuta klaviatuuril "q"
-muudatused: anna draw_ssveple 1 pilt korraga, jm, triggerid,win.flip iti ja mujal võiks olla 1 x
+Press "q" to quit
 """
 
 # C:\Program Files\PsychoPy3\Lib\site-packages\psychopy\demos\coder\stimuli
@@ -45,7 +43,7 @@ print('PsychoPy version: ' + psychopy.__version__)
 # filename of the script
 expName = os.path.basename(__file__)  # + data.getDateStr()
 
-expInfo = {'participant': 'Participant', 'EEG': '0', 'Chemicum': '0',
+expInfo = {'participant': 'Participant', 'EEG': '1', 'Chemicum': '1',
            'stimFrequency': '42.5', 'testMonkey': '0', 'pauseAfterEvery': '43', 'countFrames': '1', 'reExposure': '1',
            'triggerTest': '0', 'showIntro': '1', 'defaultFrameRate': '85', 'skipSSVEP': '0'}
 
