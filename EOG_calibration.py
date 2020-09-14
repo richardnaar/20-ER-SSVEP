@@ -186,7 +186,7 @@ while calibrate:
         core.wait(0.5)
         if position == randPosList[-1]:
             playSounds()
-            draw_text(byeTxt,  3, 1, clickMouseText)
+            draw_text(byeTxt,  float('inf'), 1, clickMouseText)
             doc = clock.getTime()
             print('aeg: ' + str(doc-tic))
             calibrate = False
