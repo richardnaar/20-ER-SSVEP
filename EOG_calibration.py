@@ -12,7 +12,7 @@ import psychopy
 from psychopy import locale_setup, visual, core, data, event, logging, monitors, gui, sound
 
 
-expInfo = {'participant': 'Participant', 'EEG': '0', 'Chemicum': '0'}
+expInfo = {'participant': 'Participant', 'EEG': '1', 'Chemicum': '1'}
 
 if expInfo['EEG'] == '1':
     # print('set port')
@@ -50,7 +50,6 @@ win = visual.Window(
 
 clock = core.Clock()
 calibrate = True
-tic = clock.getTime()
 
 mouse = event.Mouse(win=win)
 mouse.setVisible(False)
@@ -187,8 +186,6 @@ while calibrate:
         if position == randPosList[-1]:
             playSounds()
             draw_text(byeTxt,  float('inf'), 1, clickMouseText)
-            doc = clock.getTime()
-            print('aeg: ' + str(doc-tic))
             calibrate = False
             # close and quit
             if expInfo['EEG'] == '1':
