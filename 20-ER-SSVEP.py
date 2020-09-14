@@ -670,10 +670,10 @@ def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_h
     scale_low.setText(label_low)
     scale_high.setText(label_high)
 
-    # if expInfo['testMonkey'] == '1':
-    #     VAS_noResponse = False
-    #     VAS_resp = 'test'
-    #     VAS_RT = 0
+    if expInfo['testMonkey'] == '1':
+        VAS_noResponse = False
+        VAS_resp = 'test'
+        VAS_RT = 0
 
     while VAS_noResponse:
         if not event.getKeys('q'):
