@@ -410,7 +410,7 @@ text_low = visual.TextStim(win=win,
 continueText = visual.TextStim(win=win,
                                text='insert txt here',
                                font='Arial',
-                               pos=(12.5, -12.5), height=text_h, wrapWidth=20, ori=0,
+                               pos=(horiz/3, -vert/2), height=text_h, wrapWidth=20, ori=0,
                                color='white', colorSpace='rgb', opacity=1,
                                languageStyle='LTR',
                                depth=0.0)  # 6, -8
