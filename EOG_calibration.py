@@ -36,8 +36,8 @@ dlg = gui.DlgFromDict(dictionary=expInfo, title='EOG-calibration')
 if dlg.OK == False:
     core.quit()  # user pressed cancel
 
-introText = 'Tere tulemast katsesse!\n\nSelles katseosas seadistame Sinu näole asetatud elektroode.\n\nKalibreerimise õnnestumiseks jälgi palun hoolikalt eraanile ilmuvaid ringe.\
-    \n\n\n\nPalun oota kuni eksperimentaator käivitab katse...'
+introText = 'Enne katsega alustamist seadistame Sinu näole asetatud elektroode.\n\nKui katse läbiviija on programmi käivitanud, ilmuvad ekraanile väikesed ringid. Sinu ülesandeks\
+on neid ringe hoolikalt vaadata.\n\n\n\nPalun oota kuni eksperimentaator käivitab katse...'
 clickMouseText = "[Jätkamiseks vajuta hiireklahvi]"
 byeTxt = 'Aitäh, kalibreerimine on lõppenud. Kutsu palun katse läbiviija.'
 
@@ -186,7 +186,7 @@ while calibrate:
         core.wait(0.5)
         if position == randPosList[-1]:
             playSounds()
-            draw_text(byeTxt,  float('inf'), 1, clickMouseText)
+            draw_text(byeTxt,  3, 1, clickMouseText)
             doc = clock.getTime()
             print('aeg: ' + str(doc-tic))
             calibrate = False
