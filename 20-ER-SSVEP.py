@@ -100,7 +100,6 @@ thisExp = data.ExperimentHandler(
 randSeed = round(random()*1000)
 expInfo['randomSeed'] = randSeed
 seed(randSeed)
-seed(727)  # NB SEE TULEB @RA MUUTA
 
 # boxcols = [[1.000, 0.804, 0.004], [-1.000, 0.686, 0.639]]
 # shuffle(boxcols)
