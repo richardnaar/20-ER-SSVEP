@@ -100,6 +100,8 @@ thisExp = data.ExperimentHandler(
 randSeed = round(random()*1000)
 expInfo['randomSeed'] = randSeed
 seed(randSeed)
+seed(727)  # NB SEE TULEB @RA MUUTA
+
 # boxcols = [[1.000, 0.804, 0.004], [-1.000, 0.686, 0.639]]
 # shuffle(boxcols)
 # colstrdic can be used in the instructions boxcols[0][0]
@@ -721,11 +723,11 @@ def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_h
 
     # save the rating and RT
     if controlQ == 1:
-        thisExp.addData('vas_response_slf', VAS_resp)
-        thisExp.addData('vas_RT_slf', VAS_RT)
-    else:
         thisExp.addData('vas_response_control', VAS_resp)
         thisExp.addData('vas_RT_control', VAS_RT)
+    else:
+        thisExp.addData('vas_response_slf', VAS_resp)
+        thisExp.addData('vas_RT_slf', VAS_RT)
     mouse.setVisible(False)
     core.wait(0.25)
 
