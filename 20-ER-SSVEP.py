@@ -722,6 +722,8 @@ def draw_VAS(win, question_text, label_low, label_high, item, scale_low, scale_h
 
     # save the rating and RT
     if controlQ == 1:
+        if (trial != None) and (condic[condData['cond'][trial]][1] == 'VAATA PILTI'):
+            VAS_resp = 100 - VAS_resp
         thisExp.addData('vas_response_control', VAS_resp)
         thisExp.addData('vas_RT_control', VAS_RT)
     else:
