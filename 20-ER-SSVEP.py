@@ -588,7 +588,6 @@ def draw_fix(win, fixation, duration):
     fixStartTime = clock.getTime()
     time = clock.getTime() - fixStartTime
     fixPresented = False
-    # rndpos = np.random.choice(range(2), 2, replace=False)
     while (time) < duration:
         if not event.getKeys('q'):
 

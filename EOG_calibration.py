@@ -11,7 +11,6 @@ import os  # system and path functions
 import psychopy
 from psychopy import locale_setup, visual, core, data, event, logging, monitors, gui, sound
 
-
 expInfo = {'participant': 'Participant', 'EEG': '1', 'Chemicum': '1'}
 
 if expInfo['EEG'] == '1':
