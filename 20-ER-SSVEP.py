@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-SSVEP task 14/09/2020
+SSVEP task 25/09/2020
 monitor setting (e.g. testMonitor to ERSSVEP)
 set up the folders (ssvep_iaps, training_pics, intro_pics)
 Press "q" to quit
@@ -29,6 +29,7 @@ from numpy import pi, sin, random, zeros
 from numpy.random import random, randint, shuffle, seed
 
 import numpy as np
+from win32api import GetSystemMetrics
 
 # endregion (IMPORT MODULES )
 
@@ -293,6 +294,10 @@ win = visual.Window(
     blendMode='avg', useFBO=False, monitor='ERSSVEP',
     units='deg', waitBlanking=True)
 
+if GetSystemMetrics(0) != 800:
+    print('Viga: Sea resolutsiooniks: 800 x 600 (Desktop > parem klõps > screen resolution)')
+    win.close(), core.quit()
+
 # Hide mouse
 
 mouse = event.Mouse(win=win)
@@ -519,7 +524,6 @@ def sendTrigger(trigStart, trigN, EEG):
 
 
 def draw_ssvep(win, duration, ti, secondEventStart, current_image, sndHalfCond):
-    cueDuration = 1  # on training trials only
     text.color = "black"
     picStartTime = clock.getTime()
     text.pos, frameN, secondCueTime = (0, -horiz/boxdenom), 0, False

@@ -10,8 +10,9 @@ from numpy.random import random, randint, shuffle
 import os  # system and path functions
 import psychopy
 from psychopy import locale_setup, visual, core, data, event, logging, monitors, gui, sound
+from win32api import GetSystemMetrics
 
-expInfo = {'participant': 'Participant', 'EEG': '1', 'Chemicum': '1'}
+expInfo = {'participant': 'Participant', 'EEG': '0', 'Chemicum': '0'}
 
 if expInfo['EEG'] == '1':
     # print('set port')
@@ -46,6 +47,10 @@ win = visual.Window(
     size=monSettings['size'], fullscr=monSettings['fullscr'], screen=0, color='black',
     blendMode='avg', useFBO=False, monitor='ERSSVEP',
     units='deg', waitBlanking=True)
+
+if GetSystemMetrics(0) != 800:
+    print('Viga: Sea resolutsiooniks: 800 x 600 (Desktop > parem klõps > screen resolution)')
+    win.close(), core.quit()
 
 clock = core.Clock()
 calibrate = True
