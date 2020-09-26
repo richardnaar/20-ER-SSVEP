@@ -984,7 +984,7 @@ if expInfo['skipSSVEP'] == '0':
             thisExp.addData('secondCueTime', condData['secondCueTime'][ti])
             thisExp.addData('picset', condData['picset'][ti])
             thisExp.addData('cond', condic[condData['cond'][ti]])
-            thisExp.addData('Question', condData['presentVAS'][ti])
+            # thisExp.addData('Question', condData['presentVAS'][ti])
             thisExp.addData('valence', condData['emo'][ti])
             thisExp.addData('pictureID', picName)
             thisExp.addData('fixDuration', fixDuration)
@@ -995,10 +995,12 @@ if expInfo['skipSSVEP'] == '0':
                 current_pic_dir + '\\' + picName).st_size)
 
             if condData['presentVAS'][ti] == 1:
+                thisExp.addData('Question', 1)
                 draw_VAS(win, self_VAS, self_VAS_min,
                          self_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 0, 1, ti)
 
             if condData['presentVAS_control'][ti] == 1:
+                thisExp.addData('Question', 1)
                 draw_VAS(win, control_VAS, control_VAS_min,
                          control_VAS_max, item, scale_low, scale_high, slf_scale, slf_set, 1, 1, ti)
 
@@ -1083,7 +1085,7 @@ if expInfo['reExposure'] == '1':
         thisExp.addData('secondCueTime', reExpoTable['secondCueTime'][tindx])
         thisExp.addData('picset', reExpoTable['picset'][tindx])
         thisExp.addData('cond', condic[reExpoTable['cond'][tindx]])
-        thisExp.addData('Question', reExpoTable['presentVAS'][tindx])
+        # thisExp.addData('Question', reExpoTable['presentVAS'][tindx])
         thisExp.addData('valence', reExpoTable['emo'][tindx])
         thisExp.addData('pictureID', picName)
         thisExp.addData('fixDuration', reExpoFixDur)
@@ -1095,7 +1097,8 @@ if expInfo['reExposure'] == '1':
         reExpoTrigger = '1' + trigdic[routinedic[gIndx]] + trigdic[condic[reExpoTable['cond'][tindx]][0]] + \
             trigdic[reExpoTable['emo'][tindx]] + \
             trigdic[reExpoTable['picset'][tindx]] + trigdic['reExposure']
-
+        if any([reExpoTable['presentVAS'][tindx], reExpoTable['presentVAS_control'][tindx]]):
+            thisExp.addData('Question', 1)
         start_time = clock.getTime()
         while (clock.getTime() - start_time) < reExpStimDur:
             reexpopics[tindx].draw(), win.flip()

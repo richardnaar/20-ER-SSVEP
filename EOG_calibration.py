@@ -12,7 +12,7 @@ import psychopy
 from psychopy import locale_setup, visual, core, data, event, logging, monitors, gui, sound
 from win32api import GetSystemMetrics
 
-expInfo = {'participant': 'Participant', 'EEG': '0', 'Chemicum': '0'}
+expInfo = {'participant': 'juku', 'EEG': '0', 'Chemicum': '0'}
 
 if expInfo['EEG'] == '1':
     # print('set port')
@@ -23,6 +23,10 @@ if expInfo['EEG'] == '1':
         port = parallel.ParallelPort(address=0xe010)
         port.setData(0)
 
+dlg = gui.DlgFromDict(dictionary=expInfo, title='EOG-calibration')
+if dlg.OK == False:
+    core.quit()  # user pressed cancel
+
 dirpath = os.getcwd()
 dataDir = dirpath + '\\data\\'
 date = data.getDateStr()
@@ -32,9 +36,6 @@ with open(dataDir+filename, 'a') as file_object:
     file_object.write('Participant' + ',' +
                       'Position' + ',' + 'x' + ',' + 'y' + '\n')
 
-dlg = gui.DlgFromDict(dictionary=expInfo, title='EOG-calibration')
-if dlg.OK == False:
-    core.quit()  # user pressed cancel
 
 introText = 'Enne katsega alustamist seadistame Sinu näole asetatud elektroode.\n\nKui katse läbiviija on programmi käivitanud, ilmuvad ekraanile väikesed ringid. Sinu ülesandeks\
 on neid ringe hoolikalt vaadata.\n\n\n\nPalun oota kuni eksperimentaator käivitab katse...'
@@ -48,9 +49,9 @@ win = visual.Window(
     blendMode='avg', useFBO=False, monitor='ERSSVEP',
     units='deg', waitBlanking=True)
 
-if GetSystemMetrics(0) != 800:
-    print('Viga: Sea resolutsiooniks: 800 x 600 (Desktop > parem klõps > screen resolution)')
-    win.close(), core.quit()
+# if GetSystemMetrics(0) != 800:
+#     print('Viga: Sea resolutsiooniks: 800 x 600 (Desktop > parem klõps > screen resolution)')
+#     win.close(), core.quit()
 
 clock = core.Clock()
 calibrate = True
